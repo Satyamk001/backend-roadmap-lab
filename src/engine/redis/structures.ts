@@ -199,6 +199,7 @@ export class RedisStructuresEngine {
         opsCount: this.opsCount,
         typeDistribution: typeDist,
       },
+      lastCommand: this.eventLog[0]?.command,
       whatJustHappened: this.whatJustHappened,
       whyItMatters: this.whyItMatters,
       eventLog: [...this.eventLog].slice(0, 100),
@@ -209,13 +210,29 @@ export class RedisStructuresEngine {
     this.tick++;
     this.opsCount++;
     this.eventLog.unshift({
-      id: `evt-${this.tick}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `evt-${this.tick}-${this.eventLog.length}`,
       tick: this.tick,
       command,
       result,
       impact,
       type,
     });
+  }
+
+  /** Clears the simulation without seeding the default five-structure dashboard. */
+  public clear(): void {
+    this.entries.clear();
+    this.eventLog = [];
+    this.tick = 0;
+    this.opsCount = 0;
+    this.whatJustHappened = 'Simulation cleared. Ab ek focused scenario load karo.';
+    this.whyItMatters = 'Ek demo me ek hi structure ka behaviour dekhna sabse fast learning path hai.';
+  }
+
+  /** Lets a demo set a scenario-specific starting explanation. */
+  public setNarrative(whatJustHappened: string, whyItMatters: string): void {
+    this.whatJustHappened = whatJustHappened;
+    this.whyItMatters = whyItMatters;
   }
 
   // --- STRING COMMANDS ---
@@ -492,23 +509,23 @@ export class RedisStructuresEngine {
   }
 
   // --- SORTED SET (ZSET) COMMANDS ---
-  public zadd(key: string, score: number, member: string): number {
+  private upsertZSetScore(
+    key: string,
+    score: number,
+    member: string
+  ): { isNew: number; zval: ZSetValue; encoding: RedisEncoding; bytes: number } | null {
     const existing = this.entries.get(key);
     let zval: ZSetValue;
     let isNew = 1;
 
     if (existing) {
-      if (existing.value.type !== 'zset') {
-        this.pushLog(`ZADD ${key} ${score} ${member}`, 'ERR WrongType', 'Key is not a ZSet', 'error');
-        return 0;
-      }
+      if (existing.value.type !== 'zset') return null;
       zval = existing.value;
       if (zval.byMember[member] !== undefined) isNew = 0;
       zval.byMember[member] = score;
-      // Re-sort
-      const list: ZSetMember[] = Object.entries(zval.byMember).map(([m, s]) => ({ member: m, score: s }));
-      list.sort((a, b) => (a.score !== b.score ? a.score - b.score : a.member.localeCompare(b.member)));
-      zval.sorted = list;
+      zval.sorted = Object.entries(zval.byMember)
+        .map(([m, s]) => ({ member: m, score: s }))
+        .sort((a, b) => (a.score !== b.score ? a.score - b.score : a.member.localeCompare(b.member)));
     } else {
       zval = {
         type: 'zset',
@@ -526,22 +543,48 @@ export class RedisStructuresEngine {
       lastUpdatedTick: this.tick,
     });
 
-    this.pushLog(`ZADD ${key} ${score} ${member}`, `(integer) ${isNew}`, `Member '${member}' updated with score ${score}. Encoding: '${encoding}'`);
+    return { isNew, zval, encoding, bytes };
+  }
+
+  public zadd(key: string, score: number, member: string): number {
+    const existing = this.entries.get(key);
+    if (existing && existing.value.type !== 'zset') {
+      this.pushLog(`ZADD ${key} ${score} ${member}`, 'ERR WrongType', 'Key is not a ZSet', 'error');
+      this.whatJustHappened = `Error: Key "${key}" ZSet nahi hai.`;
+      this.whyItMatters = 'ZADD sirf sorted-set keys par chalta hai; wrong type par WRONGTYPE error aata hai.';
+      return 0;
+    }
+
+    const result = this.upsertZSetScore(key, score, member)!;
+    this.pushLog(
+      `ZADD ${key} ${score} ${member}`,
+      `(integer) ${result.isNew}`,
+      `Member '${member}' updated with score ${score}. Encoding: '${result.encoding}'`
+    );
     this.whatJustHappened = `ZSet "${key}" me member "${member}" score=${score} ke saath insert/update hua.`;
     this.whyItMatters = 'Sorted Set hamesha ordered rehta hai (Skiplist + Hashtable); top-N range queries O(log N + M) me ho jaati hain.';
-    return isNew;
+    return result.isNew;
   }
 
   public zincrby(key: string, increment: number, member: string): number {
     const existing = this.entries.get(key);
-    let currentScore = 0;
-    if (existing && existing.value.type === 'zset' && existing.value.byMember[member] !== undefined) {
-      currentScore = existing.value.byMember[member];
+    if (existing && existing.value.type !== 'zset') {
+      this.pushLog(`ZINCRBY ${key} ${increment} ${member}`, 'ERR WrongType', 'Key is not a ZSet', 'error');
+      this.whatJustHappened = `Error: Key "${key}" ZSet nahi hai, isliye score increment nahi hua.`;
+      this.whyItMatters = 'Leaderboard commands sirf sorted-set keys par valid hain.';
+      return 0;
     }
-    const newScore = currentScore + increment;
-    this.zadd(key, newScore, member);
 
-    this.pushLog(`ZINCRBY ${key} ${increment} ${member}`, `"${newScore}"`, `Score atomically changed from ${currentScore} to ${newScore}`);
+    const currentScore =
+      existing?.value.type === 'zset' ? existing.value.byMember[member] ?? 0 : 0;
+    const newScore = currentScore + increment;
+
+    const result = this.upsertZSetScore(key, newScore, member)!;
+    this.pushLog(
+      `ZINCRBY ${key} ${increment} ${member}`,
+      `"${newScore}"`,
+      `Score atomically changed from ${currentScore} to ${newScore}. Encoding: '${result.encoding}'`
+    );
     this.whatJustHappened = `Leaderboard "${key}": "${member}" ka score +${increment} hokar ${newScore} ho gaya!`;
     this.whyItMatters = 'Game events par `ZINCRBY` atomic call hoti hai — DB sorting ya heavy locking ki zarurat nahi hoti.';
     return newScore;

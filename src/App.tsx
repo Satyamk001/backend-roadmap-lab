@@ -2,13 +2,13 @@ import { useState } from 'react';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import { Navbar } from './components/layout/Navbar';
 import { Sidebar } from './components/layout/Sidebar';
+import { ScrollToTop } from './components/layout/ScrollToTop';
 import { CommandPalette } from './components/layout/CommandPalette';
 import { HomePage } from './pages/HomePage';
 import { StagePage } from './pages/StagePage';
 import { DayPage } from './pages/DayPage';
 import { SingleDemoPage } from './pages/SingleDemoPage';
 import { NotFoundPage } from './pages/NotFoundPage';
-import { Footer } from './components/layout/Footer';
 
 export function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
@@ -16,7 +16,8 @@ export function App() {
 
   return (
     <BrowserRouter>
-      <div className="min-h-screen bg-theme-bg text-theme-text flex flex-col font-sans transition-colors duration-150">
+      <ScrollToTop />
+      <div className="app-canvas min-h-screen text-theme-text flex flex-col font-sans transition-colors duration-150">
         {/* Accessible Skip to Content Link */}
         <a
           href="#main-content"
@@ -30,7 +31,7 @@ export function App() {
           onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
         />
 
-        <div className="flex-1 flex max-w-6xl w-full mx-auto">
+        <div className="flex-1 flex w-full">
           {/* Desktop & Mobile Slide-Over Sidebar */}
           <Sidebar
             isMobileOpen={isMobileSidebarOpen}
@@ -49,12 +50,10 @@ export function App() {
           </main>
         </div>
 
-        {/* Global Footer */}
-        <Footer />
-
         {/* Global Quick Command Palette (Cmd+K) */}
         <CommandPalette
           isOpen={isCommandPaletteOpen}
+          onOpen={() => setIsCommandPaletteOpen(true)}
           onClose={() => setIsCommandPaletteOpen(false)}
         />
       </div>

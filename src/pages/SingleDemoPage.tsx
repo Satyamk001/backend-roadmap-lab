@@ -27,7 +27,7 @@ export const SingleDemoPage: React.FC = () => {
   };
 
   return (
-    <div className="space-y-4 max-w-6xl mx-auto py-2">
+    <div className="space-y-4 w-full max-w-7xl mx-auto py-2">
       {/* Top Bar with Breadcrumbs & Actions */}
       <div className="flex flex-wrap items-center justify-between gap-3">
         <Breadcrumbs

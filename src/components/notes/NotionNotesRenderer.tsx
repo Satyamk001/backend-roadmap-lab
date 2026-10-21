@@ -6,9 +6,10 @@ import {
   TableBlock,
   CalloutBlock,
   DetailsBlock,
+  HeadingBlock,
   CodeBlock as CodeBlockType,
 } from '../../lib/notionNotesParser';
-import { ExternalLink, Copy, Check, ChevronRight } from 'lucide-react';
+import { ExternalLink, Copy, Check, ChevronRight, List } from 'lucide-react';
 
 interface InlineSpansProps {
   spans: InlineSpan[];
@@ -87,7 +88,7 @@ export const RenderTableBlock: React.FC<{ block: TableBlock }> = ({ block }) => 
                 {block.headers.cells.map((cell, cIdx) => (
                   <th
                     key={cIdx}
-                    className="px-3.5 py-2.5 text-xs font-bold text-theme-text tracking-wide whitespace-nowrap"
+                    className="px-3.5 py-2.5 text-[13px] font-bold text-theme-text tracking-wide whitespace-nowrap"
                   >
                     <InlineSpans spans={cell.inlines} />
                   </th>
@@ -104,7 +105,7 @@ export const RenderTableBlock: React.FC<{ block: TableBlock }> = ({ block }) => 
                 {row.cells.map((cell, cIdx) => (
                   <td
                     key={cIdx}
-                    className="px-3.5 py-2.5 align-top text-theme-text text-xs sm:text-sm leading-relaxed"
+                    className="px-3.5 py-2.5 align-top text-theme-text text-[13px] sm:text-[15px] leading-relaxed"
                   >
                     <InlineSpans spans={cell.inlines} />
                   </td>
@@ -124,7 +125,7 @@ export const RenderCalloutBlock: React.FC<{ block: CalloutBlock }> = ({ block })
       <span className="text-xl flex-shrink-0 select-none leading-none pt-0.5" aria-hidden="true">
         {block.icon}
       </span>
-      <div className="space-y-2 flex-1 text-sm leading-relaxed text-theme-text">
+      <div className="space-y-2 flex-1 text-[15px] leading-relaxed text-theme-text">
         <RenderBlockList blocks={block.children} />
       </div>
     </div>
@@ -134,7 +135,7 @@ export const RenderCalloutBlock: React.FC<{ block: CalloutBlock }> = ({ block })
 export const RenderDetailsBlock: React.FC<{ block: DetailsBlock }> = ({ block }) => {
   return (
     <details className="group my-3 rounded-xl border border-theme-border bg-theme-surface overflow-hidden transition-all duration-150">
-      <summary className="px-4 py-3 bg-theme-surface-alt/40 hover:bg-theme-surface-alt cursor-pointer list-none flex items-center justify-between text-sm sm:text-[15px] font-semibold text-theme-text select-none">
+      <summary className="px-4 py-3 bg-theme-surface-alt/40 hover:bg-theme-surface-alt cursor-pointer list-none flex items-center justify-between text-[15px] font-semibold text-theme-text select-none">
         <div className="flex items-center gap-2 pr-2">
           <ChevronRight className="w-4 h-4 text-theme-accent transition-transform duration-200 group-open:rotate-90 flex-shrink-0" />
           <span className="leading-snug">
@@ -145,7 +146,7 @@ export const RenderDetailsBlock: React.FC<{ block: DetailsBlock }> = ({ block })
           Tap to view
         </span>
       </summary>
-      <div className="p-4 border-t border-theme-border text-sm leading-relaxed space-y-3 bg-theme-surface">
+      <div className="p-4 border-t border-theme-border text-[15px] leading-relaxed space-y-3 bg-theme-surface">
         <RenderBlockList blocks={block.children} />
       </div>
     </details>
@@ -193,6 +194,63 @@ export const RenderCodeBlock: React.FC<{ block: CodeBlockType }> = ({ block }) =
   );
 };
 
+function scrollToNotesHeading(id: string) {
+  const target = document.getElementById(id);
+  if (!target) return;
+
+  const scroller = target.closest('[data-notes-scroller]') as HTMLElement | null;
+  if (scroller) {
+    const top =
+      target.getBoundingClientRect().top -
+      scroller.getBoundingClientRect().top +
+      scroller.scrollTop -
+      16;
+    scroller.scrollTo({ top: Math.max(0, top), behavior: 'smooth' });
+  } else {
+    target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  target.focus({ preventScroll: true });
+}
+
+const NotesContents: React.FC<{ headings: HeadingBlock[] }> = ({ headings }) => {
+  if (headings.length < 3) return null;
+
+  return (
+    <nav
+      aria-label="Notes contents"
+      className="mb-5 rounded-xl border border-theme-border bg-theme-surface-alt/40 overflow-hidden"
+    >
+      <details className="group">
+        <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[16px] font-semibold text-theme-text select-none hover:bg-theme-surface-alt/70 transition-colors">
+          <span className="flex items-center gap-2">
+            <List className="w-4 h-4 text-theme-accent flex-shrink-0" aria-hidden="true" />
+            <span>Contents</span>
+            <span className="rounded-full border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[12px] font-normal text-theme-muted">
+              {headings.length} sections
+            </span>
+          </span>
+          <ChevronRight className="w-4 h-4 text-theme-muted transition-transform duration-200 group-open:rotate-90 flex-shrink-0" />
+        </summary>
+
+        <ol className="grid grid-cols-1 sm:grid-cols-2 gap-x-4 gap-y-1 border-t border-theme-border p-3">
+          {headings.map((heading, index) => (
+            <li key={heading.id}>
+              <button
+                type="button"
+                onClick={() => scrollToNotesHeading(heading.id)}
+                className="w-full text-left rounded-md px-2 py-1.5 text-[15px] leading-snug text-theme-muted hover:bg-theme-surface hover:text-theme-text transition-colors"
+              >
+                {index + 1}. {heading.text}
+              </button>
+            </li>
+          ))}
+        </ol>
+      </details>
+    </nav>
+  );
+};
+
 export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
   return (
     <>
@@ -203,7 +261,9 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
               return (
                 <h1
                   key={idx}
-                  className="text-2xl font-extrabold text-theme-text mt-8 mb-3 pb-1 border-b border-theme-border"
+                  id={block.id}
+                  tabIndex={-1}
+                  className="text-[28px] sm:text-[32px] leading-tight font-extrabold tracking-tight text-theme-text mt-8 mb-3 pb-1 border-b border-theme-border scroll-mt-4"
                 >
                   <InlineSpans spans={block.inlines} />
                 </h1>
@@ -213,7 +273,9 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
               return (
                 <h2
                   key={idx}
-                  className="text-xl font-bold text-theme-text mt-7 mb-2.5 pb-1 border-b border-theme-border/60"
+                  id={block.id}
+                  tabIndex={-1}
+                  className="text-[22px] sm:text-[24px] leading-snug font-bold tracking-tight text-theme-text mt-7 mb-2.5 pb-1 border-b border-theme-border/60 scroll-mt-4"
                 >
                   <InlineSpans spans={block.inlines} />
                 </h2>
@@ -223,7 +285,9 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
               return (
                 <h3
                   key={idx}
-                  className="text-base sm:text-lg font-semibold text-theme-text mt-5 mb-2"
+                  id={block.id}
+                  tabIndex={-1}
+                  className="text-[17px] sm:text-[18px] leading-snug font-semibold tracking-tight text-theme-text mt-5 mb-2 scroll-mt-4"
                 >
                   <InlineSpans spans={block.inlines} />
                 </h3>
@@ -232,7 +296,9 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
             return (
               <h4
                 key={idx}
-                className="text-sm sm:text-base font-semibold text-theme-text mt-4 mb-1.5"
+                id={block.id}
+                tabIndex={-1}
+                className="text-[16px] leading-snug font-semibold text-theme-text mt-4 mb-1.5 scroll-mt-4"
               >
                 <InlineSpans spans={block.inlines} />
               </h4>
@@ -251,7 +317,7 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
               return (
                 <ol
                   key={idx}
-                  className="my-2.5 space-y-1.5 pl-5 list-decimal text-sm leading-relaxed text-theme-text"
+                  className="my-2.5 space-y-1.5 pl-5 list-decimal text-[15px] leading-relaxed text-theme-text"
                 >
                   {block.items.map((item, iIdx) => (
                     <li key={iIdx}>
@@ -264,7 +330,7 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
             return (
               <ul
                 key={idx}
-                className="my-2.5 space-y-1.5 pl-5 list-disc text-sm leading-relaxed text-theme-text marker:text-theme-accent"
+                className="my-2.5 space-y-1.5 pl-5 list-disc text-[15px] leading-relaxed text-theme-text marker:text-theme-accent"
               >
                 {block.items.map((item, iIdx) => (
                   <li key={iIdx}>
@@ -278,7 +344,7 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
             return (
               <blockquote
                 key={idx}
-                className="my-3 pl-3.5 border-l-4 border-theme-accent/60 italic text-sm text-theme-muted leading-relaxed"
+                className="my-3 pl-3.5 border-l-4 border-theme-accent/60 italic text-[15px] text-theme-muted leading-relaxed"
               >
                 <InlineSpans spans={block.inlines} />
               </blockquote>
@@ -289,7 +355,7 @@ export const RenderBlockList: React.FC<{ blocks: Block[] }> = ({ blocks }) => {
             return (
               <p
                 key={idx}
-                className="my-2 text-sm sm:text-[15px] leading-relaxed text-theme-text"
+                className="my-2 text-[15px] leading-relaxed text-theme-text"
               >
                 <InlineSpans spans={block.inlines} />
               </p>
@@ -308,6 +374,13 @@ export interface NotionNotesRendererProps {
 
 export const NotionNotesRenderer: React.FC<NotionNotesRendererProps> = ({ markdown }) => {
   const blocks = useMemo(() => parseNotionMarkdown(markdown), [markdown]);
+  const topLevelHeadings = useMemo(
+    () =>
+      blocks.filter(
+        (block): block is HeadingBlock => block.type === 'heading' && block.level === 2
+      ),
+    [blocks]
+  );
 
   if (blocks.length === 0) {
     return (
@@ -319,6 +392,7 @@ export const NotionNotesRenderer: React.FC<NotionNotesRendererProps> = ({ markdo
 
   return (
     <div className="notion-notes-root space-y-1 select-text">
+      <NotesContents headings={topLevelHeadings} />
       <RenderBlockList blocks={blocks} />
     </div>
   );

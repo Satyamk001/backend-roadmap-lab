@@ -34,25 +34,46 @@
   ],
   "demos": [
     {
-      "id": "redis-data-structures",
-      "title": "In-memory data structures",
-      "summary": "Strings, Hashes for sessions, Lists, Sets, and Sorted Sets in volatile RAM.",
+      "id": "redis-string-value",
+      "title": "String: one key, one value",
+      "summary": "Ek key ke andar ek value: counter, JSON cache, ya raw string. Redis ke liye value sirf bytes hai.",
       "difficulty": "easy",
-      "notesAnchor": "redis-data-structures"
+      "notesAnchor": "strings"
     },
     {
-      "id": "redis-ttl-eviction",
-      "title": "TTL and eviction policies",
-      "summary": "RAM limits (maxmemory), active/lazy TTL expiration, and eviction policies (noeviction, allkeys-lru, volatile-lru).",
+      "id": "redis-hash-session",
+      "title": "Hash: fields inside a key",
+      "summary": "Ek session key ke andar alag fields. Role badlo ya login count badhao — poora object rewrite nahi hota.",
+      "difficulty": "easy",
+      "notesAnchor": "hashes"
+    },
+    {
+      "id": "redis-list-vs-set",
+      "title": "List vs Set: order or uniqueness",
+      "summary": "Same search events, do alag guarantees: List order aur duplicates rakhti hai; Set sirf unique values.",
+      "difficulty": "easy",
+      "notesAnchor": "sahi-data-structure-kaise-choose-karein"
+    },
+    {
+      "id": "redis-zset-leaderboard",
+      "title": "Sorted set: score decides rank",
+      "summary": "Har player ka score hi uska rank hai. Score badla, rank khud badal jaata hai — manual sorting nahi.",
+      "difficulty": "easy",
+      "notesAnchor": "sorted-sets-zset-leaderboard-ka-dil"
+    },
+    {
+      "id": "redis-ttl-vs-eviction",
+      "title": "TTL vs eviction: why a key disappears",
+      "summary": "TTL time se key hatata hai; eviction memory full hone par policy se key chunta hai. Same result, alag reason.",
       "difficulty": "medium",
-      "notesAnchor": "memory-and-eviction"
+      "notesAnchor": "memory-eviction-persistence-se-pehle-ye-zaruri"
     },
     {
-      "id": "redis-rdb-aof-persistence",
-      "title": "RDB and AOF persistence",
-      "summary": "Point-in-time snapshots (RDB fork/COW), write-ahead append log (AOF fsync policies), and crash recovery replay.",
-      "difficulty": "hard",
-      "notesAnchor": "rdb-aof-persistence"
+      "id": "redis-rdb-vs-aof",
+      "title": "RDB vs AOF: what survives a crash",
+      "summary": "RDB last snapshot tak ka data deta hai; AOF fsynced commands replay karta hai. Crash karke khud difference dekho.",
+      "difficulty": "medium",
+      "notesAnchor": "persistence-2-aof-append-only-file"
     }
   ],
   "notesUrl": "https://app.notion.com/p/3f9bcc23fb65814ca41bed93a259d096",

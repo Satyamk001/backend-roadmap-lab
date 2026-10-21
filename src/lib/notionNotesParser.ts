@@ -84,6 +84,7 @@ export interface HeadingBlock {
   type: 'heading';
   level: number;
   text: string;
+  id: string;
   inlines: InlineSpan[];
 }
 
@@ -270,13 +271,41 @@ function parseTableBlock(rawHtml: string): TableBlock {
 }
 
 /**
+ * Stable, URL-safe id for a notes heading.
+ * Keycap emojis (1️⃣, 2️⃣...) are stripped before slugifying so "2️⃣ Strings"
+ * becomes "strings", not "2-strings".
+ */
+export function slugifyHeading(text: string): string {
+  const withoutKeycaps = text.replace(/[0-9#*]\uFE0F?\u20E3/g, ' ');
+  return (
+    withoutKeycaps
+      .normalize('NFKD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '') || 'section'
+  );
+}
+
+function uniqueHeadingId(text: string, seen: Map<string, number>): string {
+  const base = slugifyHeading(text);
+  const count = seen.get(base) ?? 0;
+  seen.set(base, count + 1);
+  return count === 0 ? base : `${base}-${count + 1}`;
+}
+
+/**
  * Main parser: transforms Notion markdown snapshot text into an array of Block elements.
  */
-export function parseNotionMarkdown(raw: string): Block[] {
+export function parseNotionMarkdown(raw: string, seenHeadingIds: Map<string, number> = new Map()): Block[] {
   if (!raw || !raw.trim()) return [];
 
-  // 1. Sanitize top-level empty blocks & database blocks that add no value
+  // 1. Sanitize top-level empty blocks & database blocks that add no value.
+  // Normalize CRLF first: the Notion snapshots use CRLF, and mixed line endings
+  // made list/heading boundaries consume the wrong number of characters.
   let cleaned = raw
+    .replace(/\r\n/g, '\n')
+    .replace(/\r/g, '\n')
     .replace(/<empty-block\/>/gi, '')
     .replace(/<database[^>]*>[\s\S]*?<\/database>/gi, '')
     .trim();
@@ -290,7 +319,17 @@ export function parseNotionMarkdown(raw: string): Block[] {
   // - <details>...</details>
   // Or line-by-line for headings, lists, quotes, dividers, and paragraphs.
 
+  let guard = 0;
+  let lastLength = -1;
   while (cleaned.length > 0) {
+    guard++;
+    if (guard > 20000 || cleaned.length === lastLength) {
+      throw new Error(
+        `notionNotesParser made no progress near: ${JSON.stringify(cleaned.slice(0, 180))}`
+      );
+    }
+    lastLength = cleaned.length;
+
     // Trim leading whitespace newlines
     cleaned = cleaned.replace(/^\n+/, '');
     if (!cleaned) break;
@@ -321,7 +360,7 @@ export function parseNotionMarkdown(raw: string): Block[] {
       const icon = calloutMatch[1] || '💡';
       const color = calloutMatch[2];
       const innerContent = calloutMatch[3].trim();
-      const children = parseNotionMarkdown(innerContent);
+      const children = parseNotionMarkdown(innerContent, seenHeadingIds);
       blocks.push({
         type: 'callout',
         icon,
@@ -343,7 +382,7 @@ export function parseNotionMarkdown(raw: string): Block[] {
         summaryText = summaryMatch[1].trim();
         bodyText = inner.slice(summaryMatch[0].length).trim();
       }
-      const children = parseNotionMarkdown(bodyText);
+      const children = parseNotionMarkdown(bodyText, seenHeadingIds);
       blocks.push({
         type: 'details',
         summary: summaryText,
@@ -371,6 +410,7 @@ export function parseNotionMarkdown(raw: string): Block[] {
         type: 'heading',
         level,
         text,
+        id: uniqueHeadingId(text, seenHeadingIds),
         inlines: parseInlineSpans(text),
       });
       cleaned = cleaned.slice(headingMatch[0].length);
@@ -402,17 +442,17 @@ export function parseNotionMarkdown(raw: string): Block[] {
     }
 
     // Check 8: List block (- item or 1. item)
-    const listLineMatch = cleaned.match(/^(\s*)([-*]|\d+\.)\s+([^\r\n]+)/);
+    const listLineMatch = cleaned.match(/^([ \t]*)([-*]|\d+\.)[ \t]+([^\r\n]+)/);
     if (listLineMatch) {
       const isOrdered = /^\d+\./.test(listLineMatch[2]);
       const items: ListItem[] = [];
-      const lines = cleaned.split(/\r?\n/);
+      const lines = cleaned.split('\n');
       let consumedChars = 0;
 
       for (const line of lines) {
         const itemMatch = isOrdered
-          ? line.match(/^\s*\d+\.\s+([^\r\n]+)/)
-          : line.match(/^\s*[-*]\s+([^\r\n]+)/);
+          ? line.match(/^[ \t]*\d+\.[ \t]+([^\r\n]+)/)
+          : line.match(/^[ \t]*[-*][ \t]+([^\r\n]+)/);
 
         if (itemMatch) {
           items.push({
@@ -458,8 +498,8 @@ export function parseNotionMarkdown(raw: string): Block[] {
         line.startsWith('<details') ||
         /^#{1,6}\s+/.test(line) ||
         /^(?:---|[*]{3,})\s*$/.test(line) ||
-        /^\s*[-*]\s+/.test(line) ||
-        /^\s*\d+\.\s+/.test(line) ||
+        /^[ \t]*[-*][ \t]+/.test(line) ||
+        /^[ \t]*\d+\.[ \t]+/.test(line) ||
         line.startsWith('>')
       ) {
         if (paraLines.length > 0) {
