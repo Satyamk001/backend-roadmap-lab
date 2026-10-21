@@ -1,6 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import { matchesTopic } from '../../../engine/rabbitmq/topicMatcher';
-import { Send, RotateCcw, ChevronDown, ChevronUp, Layers, CheckCircle2, XCircle, ShieldAlert, Info } from 'lucide-react';
+import { Send, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, XCircle, ShieldAlert, Info } from 'lucide-react';
 
 interface TopicBinding {
   id: string;
@@ -32,7 +32,6 @@ export const TopicWildcardsDemo: React.FC = () => {
   const currentKey = (customKey.trim() || activeKey).toLowerCase();
   const words = currentKey.split('.').filter(Boolean);
 
-  const [lastEvaluatedKey, setLastEvaluatedKey] = useState<string>('order.created.in');
   const [statusWhat, setStatusWhat] = useState<string>(
     "'order.created.in' (3 words) ne 'order.#' aur '#' ko match kiya, par 'order.*' ne reject kiya kyunki * sirf exactly 1 word leta hai."
   );
@@ -55,7 +54,6 @@ export const TopicWildcardsDemo: React.FC = () => {
   const handleSend = useCallback(
     (keyToSend?: string) => {
       const key = (keyToSend ?? currentKey).trim();
-      setLastEvaluatedKey(key);
 
       const matches = TOPIC_BINDINGS.filter((b) => matchesTopic(b.pattern, key));
       if (matches.length === 0) {
@@ -83,7 +81,6 @@ export const TopicWildcardsDemo: React.FC = () => {
   const handleReset = () => {
     setActiveKey('order.created.in');
     setCustomKey('');
-    setLastEvaluatedKey('order.created.in');
     setUnroutedCount(0);
     setStatusWhat("'order.created.in' reset ho gaya. Presets click karke token matching test karein.");
     setStatusWhy("Topic exchange dot-separated words par token matching karta hai.");

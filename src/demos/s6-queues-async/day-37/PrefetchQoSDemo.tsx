@@ -41,15 +41,8 @@ export const PrefetchQoSDemo: React.FC = () => {
     sync();
   };
 
-  const handleReloadBatch = () => {
-    setIsPlaying(false);
-    engine.reset();
-    sync();
-  };
-
   const handleReset = () => {
     setIsPlaying(false);
-    engine.setPrefetch(0);
     engine.reset();
     sync();
   };
@@ -147,9 +140,9 @@ export const PrefetchQoSDemo: React.FC = () => {
             </button>
 
             <button
-              onClick={handleReloadBatch}
+              onClick={handleReset}
               className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reload new batch"
+              title="Reset"
             >
               <RotateCcw className="w-4 h-4" />
             </button>

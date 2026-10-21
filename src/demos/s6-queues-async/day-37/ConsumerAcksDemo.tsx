@@ -3,7 +3,7 @@ import {
   RabbitMqConsumerAckEngine,
   AckDemoSnapshot,
 } from '../../../engine/rabbitmq/consumerAckEngine';
-import { Send, RotateCcw, ChevronDown, ChevronUp, Check, X, Skull, ShieldCheck, AlertOctagon, Info } from 'lucide-react';
+import { Send, RotateCcw, ChevronDown, ChevronUp, Check, Skull, ShieldCheck, AlertOctagon, Info } from 'lucide-react';
 
 export const ConsumerAcksDemo: React.FC = () => {
   const [engine] = useState(() => new RabbitMqConsumerAckEngine(false));

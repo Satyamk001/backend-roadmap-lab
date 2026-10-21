@@ -3,12 +3,6 @@ import { Send, RotateCcw, ChevronDown, ChevronUp, Users, Copy, AlertTriangle, In
 
 type ArchitectureMode = 'pubsub' | 'workqueue' | 'shared_queue_bug';
 
-interface QueueItem {
-  id: string;
-  name: string;
-  count: number;
-}
-
 export const PubSubWorkQueueDemo: React.FC = () => {
   const [mode, setMode] = useState<ArchitectureMode>('pubsub');
   const [msgSeq, setMsgSeq] = useState<number>(1);
@@ -29,7 +23,6 @@ export const PubSubWorkQueueDemo: React.FC = () => {
   });
 
   // Shared queue bug state (Billing & Email sharing 1 queue)
-  const [sharedQueueCount, setSharedQueueCount] = useState<number>(0);
   const [sharedServiceProcessed, setSharedServiceProcessed] = useState<{
     billing: string[];
     email: string[];
@@ -89,7 +82,6 @@ export const PubSubWorkQueueDemo: React.FC = () => {
         ...prev,
         [targetService]: [currentId, ...prev[targetService]].slice(0, 5),
       }));
-      setSharedQueueCount((prev) => prev + 1);
 
       setStatusWhat(
         `🚨 BUG DETECTED! '${currentId}' sirf ${targetService.toUpperCase()} service ko mila. Doosri service ke paas ye event gaya hi nahi!`
@@ -127,7 +119,6 @@ export const PubSubWorkQueueDemo: React.FC = () => {
       'Worker 2': 0,
       'Worker 3': 0,
     });
-    setSharedQueueCount(0);
     setSharedServiceProcessed({ billing: [], email: [] });
     setStatusWhat('Queues aur workers reset ho gaye.');
     setStatusWhy('Publish order.created button dabakar test karein.');
