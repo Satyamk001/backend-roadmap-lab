@@ -42,21 +42,16 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
   return (
     <header className="space-y-4">
       {/* Title */}
-      <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-theme-text">
+      <h1 className="text-[30px] font-extrabold leading-[1.12] tracking-tight text-theme-text sm:text-[38px]">
         Day {day.dayNumber}: {day.title}
       </h1>
 
       {/* 1-Line Core Mental Model / Definition */}
-      <div className="flex items-start gap-3 p-3.5 rounded-xl bg-theme-surface-alt/70 border border-theme-border shadow-xs text-sm sm:text-[15px] text-theme-text leading-relaxed">
+      <div className="flex items-start gap-3 rounded-xl border border-theme-border border-l-4 border-l-theme-primary bg-theme-surface p-4 text-[16px] leading-snug text-theme-text shadow-xs sm:text-[17px]">
         <span className="text-lg flex-shrink-0 select-none pt-0.5 leading-none" aria-hidden="true">
           💡
         </span>
-        <div className="flex-1 space-y-0.5">
-          <span className="text-[11px] font-bold uppercase tracking-wider text-theme-accent">
-            Core Mental Model
-          </span>
-          <p className="font-semibold text-theme-text">{definition}</p>
-        </div>
+        <p className="font-semibold text-theme-text">{definition}</p>
       </div>
 
       {/* 3 Scannable Key Takeaway Cards */}
@@ -65,17 +60,17 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
           {keyPoints.map((point, idx) => (
             <div
               key={idx}
-              className="p-3.5 rounded-xl border border-theme-border bg-theme-surface shadow-xs space-y-1.5 transition-all duration-150 hover:border-theme-accent/40"
+              className="p-4 rounded-xl border border-theme-border bg-theme-surface shadow-xs space-y-1.5 transition-all duration-150 hover:border-theme-accent/40"
             >
               <div className="flex items-center gap-2">
                 <span className="text-base select-none leading-none" aria-hidden="true">
                   {point.icon || '📌'}
                 </span>
-                <h3 className="font-bold text-xs sm:text-sm text-theme-text tracking-tight">
+                <h3 className="text-[16px] font-bold leading-snug tracking-tight text-theme-text">
                   {point.title}
                 </h3>
               </div>
-              <p className="text-xs sm:text-[13px] text-theme-muted leading-relaxed">
+              <p className="text-[15px] text-theme-muted leading-relaxed">
                 {point.description}
               </p>
             </div>
@@ -89,7 +84,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
           <button
             type="button"
             onClick={() => setShowRecap(!showRecap)}
-            className="text-xs text-theme-muted hover:text-theme-text flex items-center gap-1.5 select-none transition-colors"
+            className="text-[15px] text-theme-muted hover:text-theme-text flex items-center gap-1.5 select-none transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5 text-theme-accent" />
             <span>
@@ -103,7 +98,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
           </button>
 
           {showRecap && (
-            <div className="mt-2.5 p-3.5 rounded-xl bg-theme-surface border border-theme-border text-xs sm:text-sm text-theme-muted leading-relaxed select-text animate-in fade-in duration-150">
+            <div className="mt-2.5 p-4 rounded-xl bg-theme-surface border border-theme-border text-[15px] text-theme-muted leading-relaxed select-text animate-in fade-in duration-150">
               <p>{day.recap}</p>
             </div>
           )}

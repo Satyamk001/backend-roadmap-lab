@@ -26,10 +26,12 @@ export const demoRegistry: Record<string, React.LazyExoticComponent<React.Compon
   'bullmq-pipeline': React.lazy(() => import('./s6-queues-async/day-35/JobLifecycleDemo')),
 
   // Day 22: Redis (in story order)
-  'redis-data-structures': React.lazy(() => import('./s4-caching-redis/day-22/RedisStructuresDemo')),
-  'redis-ttl-eviction': React.lazy(() => import('./s4-caching-redis/day-22/TtlEvictionDemo')),
-  'redis-rdb-aof-persistence': React.lazy(() => import('./s4-caching-redis/day-22/PersistenceDemo')),
-  'redis-structures-explorer': React.lazy(() => import('./s4-caching-redis/day-22/RedisStructuresDemo')),
+  'redis-string-value': React.lazy(() => import('./s4-caching-redis/day-22/StringDemo')),
+  'redis-hash-session': React.lazy(() => import('./s4-caching-redis/day-22/HashDemo')),
+  'redis-list-vs-set': React.lazy(() => import('./s4-caching-redis/day-22/ListSetDemo')),
+  'redis-zset-leaderboard': React.lazy(() => import('./s4-caching-redis/day-22/ZSetDemo')),
+  'redis-ttl-vs-eviction': React.lazy(() => import('./s4-caching-redis/day-22/TtlVsEvictionDemo')),
+  'redis-rdb-vs-aof': React.lazy(() => import('./s4-caching-redis/day-22/RdbVsAofDemo')),
 
   // Day 1: Node.js Event Loop
   'event-loop-visualizer': React.lazy(() => import('./s1-nodejs-internals/day-01/EventLoopVisualizerDemo')),

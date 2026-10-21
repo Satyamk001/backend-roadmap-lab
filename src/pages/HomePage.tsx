@@ -8,7 +8,7 @@ export const HomePage: React.FC = () => {
   const stages = getAllStages();
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto py-2">
+    <div className="space-y-6 w-full max-w-7xl mx-auto py-2">
       {/* Direct, Clean Page Header */}
       <div className="space-y-1.5 pb-2 border-b border-theme-border">
         <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-theme-text flex items-center gap-2.5">

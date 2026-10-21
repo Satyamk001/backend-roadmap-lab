@@ -1,10 +1,12 @@
-import React, { useState, Suspense } from 'react';
+import React, { useState, Suspense, useCallback, useEffect, useRef } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { getStage, getDay } from '../lib/content';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
+import { DayPager } from '../components/layout/DayPager';
 import { DayHeader } from '../components/common/DayHeader';
 import { getDemoComponent } from '../demos/registry';
 import { NotionNotesRenderer } from '../components/notes/NotionNotesRenderer';
+import { NotesProvider } from '../components/notes/NotesContext';
 import { BookOpen, ExternalLink, ChevronDown, ChevronUp, Maximize2, Minimize2 } from 'lucide-react';
 
 export const DayPage: React.FC = () => {
@@ -18,6 +20,86 @@ export const DayPage: React.FC = () => {
 
   const [showNotesDrawer, setShowNotesDrawer] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
+  const [pendingNotesAnchor, setPendingNotesAnchor] = useState<string | null>(null);
+  const notesDrawerRef = useRef<HTMLDivElement>(null);
+  const notesScrollRef = useRef<HTMLDivElement>(null);
+  const tabBarRef = useRef<HTMLDivElement>(null);
+
+  const openNotes = useCallback((anchor?: string) => {
+    setShowNotesDrawer(true);
+    if (anchor) setPendingNotesAnchor(anchor);
+  }, []);
+
+  const openNotesFromPager = useCallback(() => {
+    setShowNotesDrawer(true);
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    notesDrawerRef.current?.scrollIntoView({
+      behavior: reduceMotion ? 'auto' : 'smooth',
+      block: 'start',
+    });
+  }, []);
+
+  // DayPage is reused across route changes, so reset per-day UI state when the
+  // pager moves to another day or stage.
+  useEffect(() => {
+    setActiveDemoId(day?.demos?.[0]?.id || '');
+    setShowNotesDrawer(false);
+  }, [stageId, dayId]);
+
+  // Keep the active demo tab visible when tabs are switched with 1-6 on a
+  // narrow screen, where the tab strip scrolls horizontally.
+  useEffect(() => {
+    const bar = tabBarRef.current;
+    if (!bar) return;
+
+    const activeTab = bar.querySelector<HTMLElement>(
+      `[data-demo-tab="${activeDemoId}"]`
+    );
+    if (!activeTab) return;
+
+    const barRect = bar.getBoundingClientRect();
+    const tabRect = activeTab.getBoundingClientRect();
+    // Left-align the active tab so the next tabs stay visible as a hint that
+    // the strip scrolls; centering a long tab hides all of its neighbours.
+    const targetLeft =
+      bar.scrollLeft + (tabRect.left - barRect.left);
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+
+    bar.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior: reduceMotion ? 'auto' : 'smooth',
+    });
+  }, [activeDemoId]);
+
+  useEffect(() => {
+    if (!showNotesDrawer || !pendingNotesAnchor) return;
+
+    // The drawer mounts on the same render that opens it. Wait one frame so
+    // the heading has a layout box before measuring its position.
+    const timer = window.setTimeout(() => {
+      const scroller = notesScrollRef.current;
+      const target = document.getElementById(pendingNotesAnchor);
+
+      if (scroller && target) {
+        const top =
+          target.getBoundingClientRect().top -
+          scroller.getBoundingClientRect().top +
+          scroller.scrollTop -
+          16;
+
+        notesDrawerRef.current?.scrollIntoView({
+          behavior: 'smooth',
+          block: 'start',
+        });
+        scroller.scrollTo({ top: Math.max(0, top), behavior: 'auto' });
+        target.focus({ preventScroll: true });
+      }
+
+      setPendingNotesAnchor(null);
+    }, 80);
+
+    return () => window.clearTimeout(timer);
+  }, [showNotesDrawer, pendingNotesAnchor]);
 
   // Keyboard shortcuts: 1-6 for tabs, Space for primary action, R for reset
   React.useEffect(() => {
@@ -63,7 +145,7 @@ export const DayPage: React.FC = () => {
   const DemoComponent = currentDemo ? getDemoComponent(currentDemo.id) : null;
 
   return (
-    <div className="w-full max-w-[1000px] mx-auto py-2 space-y-6 text-theme-text">
+    <div className="w-full max-w-7xl mx-auto py-2 space-y-6 text-theme-text">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -78,15 +160,19 @@ export const DayPage: React.FC = () => {
       {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
       {day.demos && day.demos.length > 1 && (
         <div className="space-y-2">
-          <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-theme-border no-scrollbar select-none">
+          <div
+            ref={tabBarRef}
+            className="flex flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1 select-none no-scrollbar sm:flex-wrap sm:overflow-visible"
+          >
             {day.demos.map((d, idx) => {
               const isActive = (currentDemo?.id || '') === d.id;
               return (
                 <button
                   key={d.id}
+                  data-demo-tab={d.id}
                   type="button"
                   onClick={() => setActiveDemoId(d.id)}
-                  className={`px-3 py-1.5 rounded-lg text-sm font-semibold whitespace-nowrap transition-all duration-150 active:scale-[0.98] flex items-center gap-1.5 ${
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[15px] font-semibold transition-all duration-150 active:scale-[0.98] ${
                     isActive
                       ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
                       : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
@@ -107,8 +193,8 @@ export const DayPage: React.FC = () => {
             })}
           </div>
 
-          <div className="flex items-center justify-between text-[11px] text-theme-muted px-1 select-none">
-            <div className="flex items-center gap-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[13px] text-theme-muted select-none">
+            <div className="flex flex-wrap items-center gap-3">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.5 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
                 <span>Switch tabs</span>
@@ -138,7 +224,9 @@ export const DayPage: React.FC = () => {
               </div>
             }
           >
-            <DemoComponent />
+            <NotesProvider onOpen={openNotes}>
+              <DemoComponent />
+            </NotesProvider>
           </Suspense>
         ) : (
           <div className="p-8 text-center bg-theme-surface border border-theme-border rounded-xl text-theme-muted">
@@ -148,11 +236,14 @@ export const DayPage: React.FC = () => {
       </div>
 
       {/* Collapsed "Read the notes" Drawer (Notion tags formatted cleanly) */}
-      <div className="border border-theme-border rounded-xl overflow-hidden bg-theme-surface shadow-xs">
+      <div
+        ref={notesDrawerRef}
+        className="scroll-mt-24 border border-theme-border rounded-xl overflow-hidden bg-theme-surface shadow-xs"
+      >
         <button
           type="button"
           onClick={() => setShowNotesDrawer(!showNotesDrawer)}
-          className="w-full flex items-center justify-between p-3.5 bg-theme-surface-alt hover:bg-theme-border/40 text-sm font-semibold text-theme-text transition-colors select-none"
+          className="w-full flex items-center justify-between p-3.5 bg-theme-surface-alt hover:bg-theme-border/40 text-[15px] font-semibold text-theme-text transition-colors select-none"
         >
           <div className="flex items-center gap-2">
             <BookOpen className="w-4 h-4 text-theme-accent" />
@@ -167,7 +258,7 @@ export const DayPage: React.FC = () => {
                   e.stopPropagation();
                   setIsNotesExpanded(!isNotesExpanded);
                 }}
-                className="hidden sm:flex items-center gap-1 text-xs text-theme-muted hover:text-theme-text p-1 rounded hover:bg-theme-surface transition-colors"
+                className="hidden sm:flex items-center gap-1 text-[13px] text-theme-muted hover:text-theme-text p-1 rounded hover:bg-theme-surface transition-colors"
                 title={isNotesExpanded ? 'Collapse reader view' : 'Expand reader view'}
               >
                 {isNotesExpanded ? (
@@ -190,7 +281,7 @@ export const DayPage: React.FC = () => {
                 target="_blank"
                 rel="noreferrer"
                 onClick={(e) => e.stopPropagation()}
-                className="text-xs text-theme-accent hover:underline flex items-center gap-1 font-normal"
+                className="text-[13px] text-theme-accent hover:underline flex items-center gap-1 font-normal"
               >
                 <span>Open in Notion</span>
                 <ExternalLink className="w-3 h-3" />
@@ -206,7 +297,9 @@ export const DayPage: React.FC = () => {
 
         {showNotesDrawer && (
           <div
-            className={`p-4 sm:p-6 border-t border-theme-border text-sm leading-relaxed overflow-y-auto ${
+            ref={notesScrollRef}
+            data-notes-scroller
+            className={`p-4 sm:p-6 border-t border-theme-border text-[15px] leading-relaxed overflow-y-auto ${
               isNotesExpanded ? 'max-h-[85vh]' : 'max-h-[550px]'
             }`}
           >
@@ -218,6 +311,8 @@ export const DayPage: React.FC = () => {
           </div>
         )}
       </div>
+
+      <DayPager stage={stage} day={day} onOpenNotes={openNotesFromPager} />
     </div>
   );
 };

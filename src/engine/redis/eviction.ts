@@ -28,6 +28,8 @@ export interface EvictionLogEvent {
   action: string;
   detail: string;
   type: 'success' | 'error' | 'info';
+  /** Key this event refers to, used by the UI to highlight the affected card. */
+  key?: string;
 }
 
 export interface EvictionSnapshot {
@@ -148,14 +150,20 @@ export class RedisEvictionEngine {
     return sum;
   }
 
-  private pushLog(action: string, detail: string, type: 'success' | 'error' | 'info' = 'success'): void {
+  private pushLog(
+    action: string,
+    detail: string,
+    type: 'success' | 'error' | 'info' = 'success',
+    key?: string
+  ): void {
     this.opsCount++;
     this.eventLog.unshift({
-      id: `evt-${this.tickCount}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `evt-${this.tickCount}-${this.eventLog.length}`,
       tick: this.tickCount,
       action,
       detail,
       type,
+      key,
     });
   }
 
@@ -170,13 +178,15 @@ export class RedisEvictionEngine {
 
     if (this.policy === 'noeviction') {
       this.rejectedWritesCount++;
+      const projected = currentUsed + requiredBytes;
       this.pushLog(
         'WRITE REJECTED (OOM)',
-        `maxmemory ${this.maxmemoryBytes}B reached. 'noeviction' policy writes ko reject karti hai`,
+        `Naya write ${requiredBytes}B ka hai: ${currentUsed}B + ${requiredBytes}B = ${projected}B > ${this.maxmemoryBytes}B limit. 'noeviction' policy ne reject kiya.`,
         'error'
       );
-      this.whatJustHappened = `Memory full (${currentUsed}B / ${this.maxmemoryBytes}B)! 'noeviction' ne write reject kiya.`;
-      this.whyItMatters = 'Session stores aur BullMQ queues me noeviction use karte hain taaki data silently udd na jaye.';
+      this.whatJustHappened = `Write reject: ${currentUsed}B + ${requiredBytes}B = ${projected}B, limit ${this.maxmemoryBytes}B. 'noeviction' ne naya key accept nahi kiya.`;
+      this.whyItMatters =
+        "'noeviction' purana data silently evict karne ke bajaye naya write reject karta hai — data loss se bachne ke liye.";
       return false;
     }
 
@@ -203,7 +213,8 @@ export class RedisEvictionEngine {
       this.pushLog(
         `EVICTED (${this.policy})`,
         `Key '${victim.key}' (${victim.sizeBytes}B) removed to free memory`,
-        'info'
+        'info',
+        victim.key
       );
       this.whatJustHappened = `Memory limit breach! Key "${victim.key}" ko '${this.policy}' ke hisaab se evict kiya.`;
       this.whyItMatters = 'Pure cache me LRU/LFU purani keys silently evict karta hai bina app ko break kiye.';
@@ -279,7 +290,7 @@ export class RedisEvictionEngine {
     });
 
     const ttlText = ttlSeconds ? ` (TTL: ${ttlSeconds}s)` : ' (Permanent)';
-    this.pushLog(`ADD KEY '${key}'`, `${sizeBytes}B allocated${ttlText}`);
+    this.pushLog(`ADD KEY '${key}'`, `${sizeBytes}B allocated${ttlText}`, 'success', key);
     this.whatJustHappened = `Nayi key "${key}" (${sizeBytes} B) memory me store hui${ttlText}.`;
     this.whyItMatters = 'Har key RAM leti hai; bounded memory me TTL lagana leak prevention ka first defense hai.';
     return true;
@@ -292,7 +303,7 @@ export class RedisEvictionEngine {
     this.tickCount++;
     const item = this.keys.get(key);
     if (!item) {
-      this.pushLog(`ACCESS '${key}'`, '(nil) - Key not found', 'info');
+      this.pushLog(`ACCESS '${key}'`, '(nil) - Key not found', 'info', key);
       this.whatJustHappened = `Key "${key}" access ki koshish ki par key memory me nahi mili.`;
       this.whyItMatters = 'Cache miss par application backend DB se data fetch karti hai.';
       return false;
@@ -302,7 +313,7 @@ export class RedisEvictionEngine {
     if (item.expiresAtTick !== undefined && this.tickCount >= item.expiresAtTick) {
       this.keys.delete(key);
       this.expiredKeysCount++;
-      this.pushLog(`LAZY EXPIRED '${key}'`, `TTL expired at tick ${item.expiresAtTick}. Deleted on read!`, 'info');
+      this.pushLog(`LAZY EXPIRED '${key}'`, `TTL expired at tick ${item.expiresAtTick}. Deleted on read!`, 'info', key);
       this.whatJustHappened = `Key "${key}" ka TTL expire ho chuka tha; read request aate hi lazy delete ho gayi.`;
       this.whyItMatters = 'Redis lazy expiry read time par hoti hai — CPU time waste kiye bina memory free hoti hai.';
       return false;
@@ -310,7 +321,7 @@ export class RedisEvictionEngine {
 
     item.lastAccessedTick = this.tickCount;
     item.accessCount++;
-    this.pushLog(`ACCESS '${key}'`, `Hits: ${item.accessCount}, LastAccessed updated to tick ${this.tickCount}`);
+    this.pushLog(`ACCESS '${key}'`, `Hits: ${item.accessCount}, LastAccessed updated to tick ${this.tickCount}`, 'success', key);
     this.whatJustHappened = `Key "${key}" access hui (LRU updated, Hits: ${item.accessCount}).`;
     this.whyItMatters = 'Recent aur frequent access se key LRU/LFU eviction list me end par chali jaati hai (safe rehti hai).';
     return true;
@@ -321,22 +332,71 @@ export class RedisEvictionEngine {
    */
   public advanceTime(seconds: number = 10): void {
     this.tickCount += seconds;
-    const expiredCount = this.performLazyAndActiveExpiration();
-    this.pushLog(`TIME ADVANCED +${seconds}s`, `Current tick: ${this.tickCount}. ${expiredCount} expired keys cleaned.`);
-    this.whatJustHappened = `Time ${seconds}s aage badha. Active expiration ne ${expiredCount} expired keys delete kiye.`;
-    this.whyItMatters = 'Redis active expiry periodically random keys sample karke background me saaf karti rehti hai.';
+    const expired = this.expireDueKeys();
+
+    for (const item of expired) {
+      this.pushLog(
+        `TTL EXPIRED '${item.key}'`,
+        `TTL ${item.ttlSeconds}s khatam at tick ${item.expiresAtTick}; key memory se hat gayi.`,
+        'info',
+        item.key
+      );
+    }
+
+    this.pushLog(
+      `TIME ADVANCED +${seconds}s`,
+      `Current tick: ${this.tickCount}. ${expired.length} expired keys cleaned.`
+    );
+    this.whatJustHappened =
+      expired.length > 0
+        ? `Time ${seconds}s aage badha aur ${expired.length} TTL key expire hui: ${expired
+            .map((item) => item.key)
+            .join(', ')}.`
+        : `Time ${seconds}s aage badha; koi TTL key expire nahi hui.`;
+    this.whyItMatters =
+      'TTL expiry time-based hai: key ka waqt khatam hua, isliye woh gayi. Memory full hone ki zarurat nahi.';
   }
 
   private performLazyAndActiveExpiration(): number {
-    let count = 0;
+    return this.expireDueKeys().length;
+  }
+
+  private expireDueKeys(): EvictionKeyItem[] {
+    const expired: EvictionKeyItem[] = [];
     for (const [key, item] of this.keys.entries()) {
       if (item.expiresAtTick !== undefined && this.tickCount >= item.expiresAtTick) {
         this.keys.delete(key);
-        count++;
         this.expiredKeysCount++;
+        expired.push(item);
       }
     }
-    return count;
+    return expired;
+  }
+
+  /** Lets a focused demo set a scenario-specific explanation. */
+  public setNarrative(whatJustHappened: string, whyItMatters: string): void {
+    this.whatJustHappened = whatJustHappened;
+    this.whyItMatters = whyItMatters;
+  }
+
+  /**
+   * Loads a clean, deterministic scenario. Used by focused demos so the first
+   * screen is explainable and does not depend on constructor seeding.
+   */
+  public loadScenario(
+    items: Array<{ key: string; sizeBytes: number; ttlSeconds?: number }>,
+    narrative?: { whatJustHappened: string; whyItMatters: string }
+  ): void {
+    this.clear();
+    for (const item of items) {
+      this.addKeyDirect(item.key, item.sizeBytes, item.ttlSeconds);
+    }
+    this.whatJustHappened =
+      narrative?.whatJustHappened ??
+      `${items.length} keys memory me load hui. Ab TTL ya memory pressure trigger karo.`;
+    this.whyItMatters =
+      narrative?.whyItMatters ??
+      'TTL time se key hatati hai; eviction memory full hone par policy se key chunti hai.';
   }
 
   /**
@@ -359,7 +419,7 @@ export class RedisEvictionEngine {
   public fillMemoryToLimit(): void {
     let index = 1;
     while (this.calculateUsedMemory() < this.maxmemoryBytes && index <= 5) {
-      const keyName = `bulk:temp_${index}_${Math.random().toString(36).slice(2, 5)}`;
+      const keyName = `bulk:temp_${index}`;
       const success = this.addKey(keyName, 180, index % 2 === 0 ? 30 : undefined);
       if (!success) break;
       index++;

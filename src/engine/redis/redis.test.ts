@@ -95,6 +95,30 @@ describe('Redis In-Memory Structures Engine', () => {
     expect(sorted[2].member).toBe('player3');
     expect(sorted[2].score).toBe(90);
   });
+
+  it('logs one event for one ZINCRBY command', () => {
+    engine.del('lb:one-log');
+    engine.zadd('lb:one-log', 10, 'alice');
+    const before = engine.getSnapshot().eventLog.length;
+
+    engine.zincrby('lb:one-log', 5, 'alice');
+    const snap = engine.getSnapshot();
+
+    expect(snap.eventLog.length).toBe(before + 1);
+    expect(snap.eventLog[0].command).toContain('ZINCRBY');
+    expect(snap.eventLog[0].result).toBe('"15"');
+  });
+
+  it('is deterministic for the same seed and actions', () => {
+    const other = new RedisStructuresEngine();
+
+    engine.incr('views:home', 2);
+    other.incr('views:home', 2);
+    engine.zincrby('lb:global', 15, 'bob');
+    other.zincrby('lb:global', 15, 'bob');
+
+    expect(engine.getSnapshot()).toEqual(other.getSnapshot());
+  });
 });
 
 describe('Redis Eviction & TTL Engine', () => {
@@ -148,6 +172,69 @@ describe('Redis Eviction & TTL Engine', () => {
     expect(snap.keys.find((k) => k.key === 'recent_key')).toBeDefined();
     expect(snap.keys.find((k) => k.key === 'new_key')).toBeDefined();
     expect(snap.stats.evictedKeysCount).toBe(1);
+  });
+
+  it('logs the key name when TTL expires it', () => {
+    const engine = new RedisEvictionEngine('allkeys-lru', 1000);
+    engine.loadScenario([
+      { key: 'sess:short', sizeBytes: 100, ttlSeconds: 10 },
+      { key: 'cache:keep', sizeBytes: 100 },
+    ]);
+
+    engine.advanceTime(15);
+
+    const snap = engine.getSnapshot();
+    expect(snap.keys.map((key) => key.key)).toEqual(['cache:keep']);
+    expect(snap.stats.expiredKeysCount).toBe(1);
+    expect(
+      snap.eventLog.some(
+        (event) => event.action.startsWith('TTL EXPIRED') && event.key === 'sess:short'
+      )
+    ).toBe(true);
+  });
+
+  it('runs the TTL -> eviction -> noeviction demo sequence', () => {
+    const engine = new RedisEvictionEngine('allkeys-lru', 1000);
+    engine.loadScenario([
+      { key: 'sess:auth_u101', sizeBytes: 180, ttlSeconds: 20 },
+      { key: 'sess:auth_u102', sizeBytes: 180, ttlSeconds: 45 },
+      { key: 'cache:catalog_v1', sizeBytes: 250 },
+      { key: 'views:post_42', sizeBytes: 120 },
+    ]);
+
+    engine.advanceTime(25);
+    expect(engine.getSnapshot().stats.expiredKeysCount).toBe(1);
+
+    expect(engine.addKey('bulk:report_1', 300)).toBe(true);
+    expect(engine.addKey('bulk:report_2', 300)).toBe(true);
+    expect(engine.getSnapshot().stats.evictedKeysCount).toBeGreaterThan(0);
+    expect(
+      engine.getSnapshot().eventLog.some((event) => event.action.startsWith('EVICTED'))
+    ).toBe(true);
+
+    engine.setPolicy('noeviction');
+    expect(engine.addKey('bulk:report_3', 300)).toBe(false);
+    expect(engine.getSnapshot().stats.rejectedWritesCount).toBe(1);
+  });
+
+  it('is deterministic for the same scenario and actions', () => {
+    const create = () => {
+      const engine = new RedisEvictionEngine('allkeys-lru', 1000);
+      engine.loadScenario([
+        { key: 'a', sizeBytes: 300, ttlSeconds: 10 },
+        { key: 'b', sizeBytes: 400 },
+      ]);
+      return engine;
+    };
+
+    const first = create();
+    const second = create();
+    first.advanceTime(15);
+    second.advanceTime(15);
+    first.addKey('c', 500);
+    second.addKey('c', 500);
+
+    expect(first.getSnapshot()).toEqual(second.getSnapshot());
   });
 });
 
@@ -207,5 +294,71 @@ describe('Redis Persistence Engine (RDB & AOF)', () => {
     snap = engine.getSnapshot();
     expect(snap.serverStatus).toBe('running');
     expect(snap.ramKeys['important:data']).toBe('survive');
+  });
+
+  it('reports the exact write lost after an RDB-only crash', () => {
+    const engine = new RedisPersistenceEngine();
+    engine.reset();
+    engine.setAofEnabled(false);
+    engine.write('SET', 'cart:u101', '1');
+
+    engine.crashServer();
+    engine.restartServer();
+
+    const snap = engine.getSnapshot();
+    expect(snap.lastCrashReport?.recoveredSource).toBe('RDB');
+    expect(snap.lastCrashReport?.totalBeforeCrash).toBe(4);
+    expect(snap.lastCrashReport?.recoveredCount).toBe(3);
+    expect(snap.lastCrashReport?.lostCount).toBe(1);
+    expect(snap.lastCrashReport?.lostKeys).toEqual(['cart:u101']);
+  });
+
+  it('recovers every fsynced AOF write with zero loss', () => {
+    const engine = new RedisPersistenceEngine();
+    engine.reset();
+    engine.setAofEnabled(true);
+    engine.setFsyncPolicy('always');
+    engine.write('SET', 'cart:u101', '7');
+
+    engine.crashServer();
+    engine.restartServer();
+
+    const snap = engine.getSnapshot();
+    expect(snap.lastCrashReport?.recoveredSource).toBe('AOF');
+    expect(snap.lastCrashReport?.lostCount).toBe(0);
+    expect(snap.ramKeys['cart:u101']).toBe('7');
+  });
+
+  it('loses the everysec buffer but recovers after the fsync boundary', () => {
+    const engine = new RedisPersistenceEngine();
+    engine.reset();
+    engine.setFsyncPolicy('everysec');
+    engine.write('SET', 'cart:u101', '1');
+
+    engine.crashServer();
+    engine.restartServer();
+    expect(engine.getSnapshot().lastCrashReport?.lostKeys).toEqual(['cart:u101']);
+
+    engine.reset();
+    engine.setFsyncPolicy('everysec');
+    engine.write('SET', 'cart:u101', '1');
+    engine.advanceTime(1);
+
+    engine.crashServer();
+    engine.restartServer();
+    const snap = engine.getSnapshot();
+    expect(snap.lastCrashReport?.lostCount).toBe(0);
+    expect(snap.ramKeys['cart:u101']).toBe('1');
+  });
+
+  it('does not append to AOF while the log is disabled', () => {
+    const engine = new RedisPersistenceEngine();
+    engine.reset();
+    engine.setAofEnabled(false);
+    engine.write('SET', 'cart:u101', '1');
+
+    const snap = engine.getSnapshot();
+    expect(snap.ramKeys['cart:u101']).toBe('1');
+    expect(snap.aofBuffer).toHaveLength(0);
   });
 });

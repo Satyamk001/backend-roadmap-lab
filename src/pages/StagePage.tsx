@@ -13,7 +13,7 @@ export const StagePage: React.FC = () => {
   }
 
   return (
-    <div className="space-y-6 max-w-5xl mx-auto py-2">
+    <div className="space-y-6 w-full max-w-7xl mx-auto py-2">
       <Breadcrumbs items={[{ label: stage.title }]} />
 
       <div className="p-6 bg-theme-surface border border-theme-border rounded-xl shadow-sm space-y-3">

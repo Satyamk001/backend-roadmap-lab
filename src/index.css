@@ -15,17 +15,17 @@
   --color-accent: #B45309;
 
   /* Semantics */
-  --color-success: #059669;
+  --color-success: #047857;
   --color-success-bg: #ECFDF5;
   --color-error: #DC2626;
   --color-error-bg: #FEF2F2;
   --color-duplicate: #7C3AED;
   --color-duplicate-bg: #F5F3FF;
-  --color-inflight: #D97706;
+  --color-inflight: #B45309;
   --color-inflight-bg: #FFFBEB;
   --color-neutral: #57534E;
   --color-neutral-bg: #F5F5F4;
-  --color-info: #0284C7;
+  --color-info: #0369A1;
   --color-info-bg: #F0F9FF;
 
   /* Entity palette */
@@ -35,6 +35,26 @@
   --entity-4: #E11D48; /* Rose */
   --entity-5: #D97706; /* Amber */
   --entity-6: #4F46E5; /* Indigo */
+
+  /* Page background: warm spotlight + dot grid */
+  --page-dot: rgba(168, 152, 134, 0.28);
+  --page-glow-primary: rgba(251, 191, 119, 0.18);
+  --page-glow-primary-fade: rgba(251, 191, 119, 0);
+  --page-glow-primary-x: 62%;
+  --page-glow-primary-y: 18%;
+  --page-glow-secondary: rgba(245, 158, 11, 0.08);
+  --page-glow-secondary-fade: rgba(245, 158, 11, 0);
+  --page-glow-secondary-x: 28%;
+  --page-glow-secondary-y: 68%;
+
+  /* Sidebar timeline rail: neutral track, amber endpoint */
+  --sidebar-rail: #D6D3D1;
+  --sidebar-node-glow: rgba(245, 158, 11, 0.6);
+  --sidebar-node-glow-soft: rgba(245, 158, 11, 0.2);
+
+  /* Thin global scrollbars: warm neutral thumb, amber on hover */
+  --scrollbar-thumb: #C9B892;
+  --scrollbar-thumb-hover: var(--color-primary);
 }
 
 .dark {
@@ -52,9 +72,9 @@
   /* Semantics */
   --color-success: #34D399;
   --color-success-bg: #064E3B;
-  --color-error: #F87171;
+  --color-error: #FCA5A5;
   --color-error-bg: #7F1D1D;
-  --color-duplicate: #A78BFA;
+  --color-duplicate: #C4B5FD;
   --color-duplicate-bg: #4C1D95;
   --color-inflight: #FBBF24;
   --color-inflight-bg: #451A03;
@@ -70,6 +90,26 @@
   --entity-4: #FB7185;
   --entity-5: #FBBF24;
   --entity-6: #818CF8;
+
+  /* Page background: warm spotlight + dot grid */
+  --page-dot: rgba(250, 250, 249, 0.055);
+  --page-glow-primary: rgba(251, 191, 36, 0.12);
+  --page-glow-primary-fade: rgba(251, 191, 36, 0);
+  --page-glow-primary-x: 50%;
+  --page-glow-primary-y: 8%;
+  --page-glow-secondary: rgba(245, 158, 11, 0.06);
+  --page-glow-secondary-fade: rgba(245, 158, 11, 0);
+  --page-glow-secondary-x: 24%;
+  --page-glow-secondary-y: 64%;
+
+  /* Sidebar timeline rail: neutral track, amber endpoint */
+  --sidebar-rail: #3F3B37;
+  --sidebar-node-glow: rgba(251, 191, 36, 0.58);
+  --sidebar-node-glow-soft: rgba(251, 191, 36, 0.2);
+
+  /* Thin global scrollbars: neutral thumb, amber on hover */
+  --scrollbar-thumb: #57534E;
+  --scrollbar-thumb-hover: var(--color-primary);
 }
 
 html {
@@ -86,6 +126,38 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+}
+
+/* Page-level ambient lighting: static warm spotlight over a faint dot grid.
+   The fixed pseudo-element keeps the light anchored to the viewport while
+   content scrolls, and avoids background-attachment: fixed on mobile. */
+.app-canvas {
+  position: relative;
+  isolation: isolate;
+  background-color: var(--color-bg);
+}
+
+.app-canvas::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background-image:
+    radial-gradient(var(--page-dot) 1.25px, transparent 1.25px),
+    radial-gradient(
+      ellipse 78% 58% at var(--page-glow-primary-x) var(--page-glow-primary-y),
+      var(--page-glow-primary) 0%,
+      var(--page-glow-primary-fade) 68%
+    ),
+    radial-gradient(
+      circle at var(--page-glow-secondary-x) var(--page-glow-secondary-y),
+      var(--page-glow-secondary) 0%,
+      var(--page-glow-secondary-fade) 55%
+    );
+  background-size: 24px 24px, 100% 100%, 100% 100%;
+  background-position: 0 0, center top, center center;
+  background-repeat: repeat, no-repeat, no-repeat;
 }
 
 /* Headings: Plus Jakarta Sans with balanced tracking */
@@ -107,24 +179,48 @@ p {
 
 /* Accessible focus ring for keyboard navigation */
 :focus-visible {
-  outline: 2px solid var(--color-primary);
+  outline: 3px solid var(--color-primary);
   outline-offset: 2px;
 }
 
-/* Custom scrollbars with amber accent */
+/* Global thin scrollbars. Keep the track transparent so the bar blends with
+   whatever surface it is scrolling, and use the theme's amber accent only on
+   hover/drag. */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
+
 ::-webkit-scrollbar-track {
-  background: var(--color-bg);
+  background: transparent;
 }
+
 ::-webkit-scrollbar-thumb {
-  background: var(--color-border);
-  border-radius: 4px;
+  background-color: var(--scrollbar-thumb);
+  border-radius: 9999px;
 }
-::-webkit-scrollbar-thumb:hover {
-  background: var(--color-primary);
+
+::-webkit-scrollbar-thumb:hover,
+::-webkit-scrollbar-thumb:active {
+  background-color: var(--scrollbar-thumb-hover);
+}
+
+::-webkit-scrollbar-corner {
+  background: transparent;
+}
+
+::-webkit-scrollbar-button {
+  display: none;
+  width: 0;
+  height: 0;
+}
+
+/* Firefox fallback: WebKit pseudo-elements are not available there. */
+@supports not selector(::-webkit-scrollbar) {
+  * {
+    scrollbar-width: thin;
+    scrollbar-color: var(--scrollbar-thumb) transparent;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -134,4 +230,50 @@ p {
     transition-duration: 0.01ms !important;
     scroll-behavior: auto !important;
   }
+}
+
+/* Event-log selection: clicking a log line highlights the matching object. */
+.demo-highlight {
+  outline: 3px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Sidebar timeline: one thin rail per expanded stage, with a single
+   measured amber node marking the active day. The active row tint is
+   inset so the rail stays continuous beside it. */
+.sidebar-timeline {
+  position: relative;
+}
+
+.sidebar-timeline::before {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 2px;
+  bottom: 2px;
+  z-index: 1;
+  width: 1px;
+  border-radius: 9999px;
+  background: var(--sidebar-rail);
+  -webkit-mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  mask-image: linear-gradient(to bottom, transparent, black 10%, black 90%, transparent);
+  pointer-events: none;
+}
+
+.sidebar-timeline-node {
+  position: absolute;
+  left: 0;
+  top: 0;
+  z-index: 2;
+  width: 9px;
+  height: 9px;
+  margin-top: -4.5px;
+  border-radius: 9999px;
+  background: var(--color-primary);
+  box-shadow:
+    0 0 0 2px var(--color-surface-alt),
+    0 0 7px 1px var(--sidebar-node-glow),
+    0 0 14px 2px var(--sidebar-node-glow-soft);
+  pointer-events: none;
+  transition: transform 280ms cubic-bezier(0.22, 1, 0.36, 1);
 }

@@ -30,6 +30,8 @@ export interface PersistenceLogEvent {
   source: 'RAM' | 'RDB' | 'AOF' | 'CRASH' | 'RECOVERY';
   message: string;
   type: 'success' | 'error' | 'info';
+  /** Key this event refers to, used by the UI to highlight the affected card. */
+  key?: string;
 }
 
 export interface PersistenceSnapshot {
@@ -92,6 +94,7 @@ export class RedisPersistenceEngine {
 
   // Crash report
   private lastCrashReport?: PersistenceSnapshot['lastCrashReport'];
+  private lastRamBeforeCrash: Record<string, string> | null = null;
   private eventLog: PersistenceLogEvent[] = [];
 
   private whatJustHappened: string = 'Redis persistence engine active with AOF (everysec) aur RDB background saves.';
@@ -162,14 +165,26 @@ export class RedisPersistenceEngine {
     };
   }
 
-  private pushLog(source: PersistenceLogEvent['source'], message: string, type: 'success' | 'error' | 'info' = 'success'): void {
+  private pushLog(
+    source: PersistenceLogEvent['source'],
+    message: string,
+    type: 'success' | 'error' | 'info' = 'success',
+    key?: string
+  ): void {
     this.eventLog.unshift({
-      id: `evt-${this.tickCount}-${Math.random().toString(36).slice(2, 7)}`,
+      id: `evt-${this.tickCount}-${this.eventLog.length}`,
       tick: this.tickCount,
       source,
       message,
       type,
+      key,
     });
+  }
+
+  /** Lets a focused demo set a scenario-specific starting explanation. */
+  public setNarrative(whatJustHappened: string, whyItMatters: string): void {
+    this.whatJustHappened = whatJustHappened;
+    this.whyItMatters = whyItMatters;
   }
 
   /**
@@ -197,27 +212,31 @@ export class RedisPersistenceEngine {
       this.cowOverheadBytes += 4096; // 4KB Linux memory page duplicated on write
     }
 
-    // Append to AOF Buffer
-    const entry: AofEntry = {
-      id: `aof-${this.tickCount}-${Math.random().toString(36).slice(2, 6)}`,
-      command,
-      key,
-      value,
-      tick: this.tickCount,
-    };
-    this.aofBuffer.push(entry);
+    // AOF is optional. In RDB-only mode the append buffer must stay empty.
+    if (this.aofEnabled) {
+      const entry: AofEntry = {
+        id: `aof-${this.tickCount}-${this.aofDiskFile.length + this.aofBuffer.length}`,
+        command,
+        key,
+        value,
+        tick: this.tickCount,
+      };
+      this.aofBuffer.push(entry);
 
-    // If fsync policy is ALWAYS, flush immediately to disk
-    if (this.fsyncPolicy === 'always') {
-      this.flushAofBuffer();
+      if (this.fsyncPolicy === 'always') {
+        this.flushAofBuffer();
+      }
     }
 
-    this.pushLog('RAM', `${command} ${key} = "${value}" RAM me likha gaya`, 'success');
-    this.whatJustHappened = `Write "${command} ${key} ${value}" RAM me update hua aur AOF buffer me append hua.`;
-    this.whyItMatters =
-      this.fsyncPolicy === 'always'
-        ? 'always policy me har command ke turant baad disk par fsync hota hai (zero loss, slower).'
-        : 'everysec policy me command pehle RAM buffer me rehti hai; agle tick par disk par flush hogi.';
+    this.pushLog('RAM', `${command} ${key} = "${value}" RAM me likha gaya`, 'success', key);
+    this.whatJustHappened = this.aofEnabled
+      ? `Write "${command} ${key} ${value}" RAM me update hua aur AOF buffer me append hua.`
+      : `Write "${command} ${key} ${value}" sirf RAM me hua; AOF off hai.`;
+    this.whyItMatters = !this.aofEnabled
+      ? 'AOF off hone par crash recovery sirf RDB snapshot se hogi; naya write snapshot tak nahi pahuncha.'
+      : this.fsyncPolicy === 'always'
+      ? 'always policy me har command ke turant baad disk par fsync hota hai (zero loss, slower).'
+      : 'everysec policy me command pehle RAM buffer me rehti hai; agle tick par disk par flush hogi.';
     return true;
   }
 
@@ -299,7 +318,20 @@ export class RedisPersistenceEngine {
   public crashServer(): void {
     if (this.serverStatus === 'crashed') return;
     this.tickCount++;
+
+    // Keep a copy for the post-restart loss report before RAM is wiped.
+    this.lastRamBeforeCrash = {};
+    for (const [key, value] of this.ramKeys.entries()) {
+      this.lastRamBeforeCrash[key] = value;
+    }
+
     this.serverStatus = 'crashed';
+    const unflushedWrites = this.aofEnabled ? this.aofBuffer.length : 0;
+    const aofLossText = !this.aofEnabled
+      ? 'AOF off thi, isliye sirf RDB snapshot bachega.'
+      : unflushedWrites > 0
+      ? `${unflushedWrites} un-fsynced AOF writes bhi lost.`
+      : 'AOF buffer khaali tha, koi pending write nahi.';
 
     // Volatile RAM is instantly wiped
     this.ramKeys.clear();
@@ -309,12 +341,15 @@ export class RedisPersistenceEngine {
 
     this.pushLog(
       'CRASH',
-      `SERVER CRASHED (kill -9 / power failure)! RAM volatile memory wiped to 0. Unflushed AOF buffer lost.`,
+      `SERVER CRASHED (kill -9 / power failure)! RAM wiped. ${aofLossText}`,
       'error'
     );
 
-    this.whatJustHappened = `BOOM! Server crash hua. RAM ka saara data chala gaya aur un-fsynced buffer kho gaya.`;
-    this.whyItMatters = 'Volatile RAM bina disk persistence ke restart par poora data kho deti hai. Ab dekhte hain disk se kya bacha.';
+    this.whatJustHappened = `BOOM! Server crash hua. RAM ka data chala gaya${
+      unflushedWrites > 0 ? ` aur ${unflushedWrites} un-fsynced AOF write bhi` : ''
+    }.`;
+    this.whyItMatters =
+      'Crash ke baad RAM khaali hai. Ab decide hoga ki RDB snapshot ya AOF log se kitna data wapas aata hai.';
   }
 
   /**
@@ -331,11 +366,9 @@ export class RedisPersistenceEngine {
     // Redis recovery priority rule: If AOF enabled, Redis ALWAYS loads AOF first
     if (this.aofEnabled && (this.aofDiskFile.length > 0 || this.aofBaseSnapshot !== null)) {
       recoveredSource = 'AOF';
-      // Load base snapshot if exists
       if (this.aofBaseSnapshot) {
         recoveredKeys = { ...this.aofBaseSnapshot };
       }
-      // Replay incremental AOF log
       for (const entry of this.aofDiskFile) {
         if (entry.command === 'DEL') {
           delete recoveredKeys[entry.key];
@@ -344,37 +377,94 @@ export class RedisPersistenceEngine {
         }
       }
     } else if (this.rdbSnapshot) {
-      // Fallback to RDB snapshot
       recoveredSource = 'RDB';
       recoveredKeys = { ...this.rdbSnapshot.data };
     }
 
-    // Populate RAM with recovered keys
     this.ramKeys.clear();
     for (const [k, v] of Object.entries(recoveredKeys)) {
       this.ramKeys.set(k, v);
     }
 
+    const before = this.lastRamBeforeCrash ?? {};
+    const lostKeys = Object.keys(before).filter(
+      (key) => recoveredKeys[key] === undefined || recoveredKeys[key] !== before[key]
+    );
     const recoveredCount = this.ramKeys.size;
+
     this.lastCrashReport = {
-      totalBeforeCrash: recoveredCount,
+      totalBeforeCrash: Object.keys(before).length,
       recoveredCount,
-      lostCount: 0,
+      lostCount: lostKeys.length,
       recoveredSource,
-      lostKeys: [],
+      lostKeys,
     };
 
     this.pushLog(
       'RECOVERY',
-      `Server restarted! Recovered ${recoveredCount} keys via ${recoveredSource} playback.`,
-      'success'
+      `Server restarted via ${recoveredSource}. ${recoveredCount} keys recovered, ${lostKeys.length} ${
+        lostKeys.length === 1 ? 'write' : 'writes'
+      } lost${lostKeys.length > 0 ? `: ${lostKeys.join(', ')}` : ''}.`,
+      lostKeys.length > 0 ? 'info' : 'success'
     );
 
-    this.whatJustHappened = `Restart complete! Redis ne disk se ${recoveredSource} load karke ${recoveredCount} keys restore kar liye.`;
+    this.whatJustHappened =
+      lostKeys.length > 0
+        ? `Restart ke baad ${recoveredSource} se ${recoveredCount} keys aayi, par ${lostKeys.length} write lost: ${lostKeys.join(', ')}.`
+        : `Restart ke baad ${recoveredSource} se ${recoveredCount} keys restore hui — koi write lost nahi.`;
     this.whyItMatters =
       recoveredSource === 'AOF'
-        ? 'Dono files hone par Redis AOF se restart hota hai kyunki AOF zyada up-to-date hoti hai.'
-        : 'AOF off hone par Redis last RDB snapshot load karta hai (snapshot ke baad ke writes kho jaate hain).';
+        ? 'AOF replay ne har fsynced write wapas laaya. Isliye AOF crash durability ke liye stronger hai.'
+        : 'RDB sirf last snapshot ka data deta hai; snapshot ke baad ke writes crash par kho jaate hain.';
+
+    this.lastRamBeforeCrash = null;
+  }
+
+  /**
+   * Action: Enable or disable AOF. Disabling it makes RDB the recovery source.
+   */
+  public setAofEnabled(enabled: boolean): void {
+    if (this.aofEnabled === enabled) return;
+    this.tickCount++;
+    this.aofEnabled = enabled;
+    if (!enabled) this.aofBuffer = [];
+    this.pushLog(
+      'AOF',
+      enabled ? 'AOF enabled: writes ab append log me jaayengi.' : 'AOF disabled: restart par sirf RDB snapshot milega.',
+      'info'
+    );
+    this.whatJustHappened = enabled
+      ? 'AOF on ho gaya. Ab write commands append log me jaayengi.'
+      : 'AOF off ho gaya. Ab crash recovery sirf RDB snapshot se hogi.';
+    this.whyItMatters = enabled
+      ? 'AOF replay se snapshot ke baad ke writes bhi wapas aa sakte hain.'
+      : 'RDB-only mode me last snapshot ke baad ka data crash par lost ho sakta hai.';
+  }
+
+  /**
+   * Action: Advance virtual time. Models the everysec background fsync boundary.
+   */
+  public advanceTime(seconds: number = 1): void {
+    if (this.serverStatus === 'crashed') return;
+    this.tickCount += seconds;
+
+    if (this.fsyncPolicy === 'everysec' && this.aofBuffer.length > 0) {
+      const flushed = this.flushAofBuffer();
+      this.whatJustHappened = `everysec fsync boundary aayi: ${flushed} buffered writes disk par chale gaye.`;
+      this.whyItMatters =
+        'everysec me worst case 1 second ka data loss hota hai; buffer disk par pahuncha to crash ke baad replay hoga.';
+    } else {
+      this.pushLog(
+        'AOF',
+        `Time +${seconds}s. ${this.fsyncPolicy === 'everysec' ? 'AOF buffer already empty.' : `Policy '${this.fsyncPolicy}' me automatic fsync nahi hota.`}`,
+        'info'
+      );
+      this.whatJustHappened = `Time +${seconds}s. AOF buffer me ${this.aofBuffer.length} pending writes hain.`;
+      this.whyItMatters =
+        this.fsyncPolicy === 'always'
+          ? 'always policy har write ke baad flush karti hai, isliye buffer khaali rehta hai.'
+          : 'no policy me flush ka control OS ke paas hota hai; crash par pending writes kho sakte hain.';
+    }
   }
 
   /**
@@ -404,7 +494,10 @@ export class RedisPersistenceEngine {
     this.bgsaveCount = 0;
     this.bgsaveInProgress = false;
     this.serverStatus = 'running';
+    this.fsyncPolicy = 'everysec';
+    this.aofEnabled = true;
     this.lastCrashReport = undefined;
+    this.lastRamBeforeCrash = null;
     this.seedInitialDataset();
   }
 }

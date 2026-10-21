@@ -2,6 +2,7 @@ import React from 'react';
 import { Link } from 'react-router-dom';
 import { Sun, Moon, Monitor, Search, Menu } from 'lucide-react';
 import { useSettingsStore, ThemeMode } from '../../store/useSettingsStore';
+import { BrandMark } from './BrandMark';
 
 interface NavbarProps {
   onOpenCommandPalette: () => void;
@@ -10,6 +11,9 @@ interface NavbarProps {
 
 export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMobileMenu }) => {
   const { theme, setTheme } = useSettingsStore();
+  const isMac =
+    typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
+  const shortcutLabel = isMac ? '⌘K' : 'Ctrl K';
 
   const cycleTheme = () => {
     const next: Record<ThemeMode, ThemeMode> = {
@@ -33,7 +37,7 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMo
 
   return (
     <header className="sticky top-0 z-40 bg-theme-surface/95 backdrop-blur-md border-b border-theme-border">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 h-14 flex items-center justify-between gap-4">
+      <div className="w-full px-4 sm:px-6 lg:px-8 h-14 flex items-center justify-between gap-4">
         {/* Brand & Mobile Hamburger */}
         <div className="flex items-center gap-3">
           {onToggleMobileMenu && (
@@ -48,8 +52,8 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMo
           )}
 
           <Link to="/" className="flex items-center gap-2.5 group">
-            <div className="w-7 h-7 rounded-lg bg-theme-primary flex items-center justify-center font-mono font-bold text-theme-primary-text shadow-sm text-sm">
-              ⚡
+            <div className="w-7 h-7 rounded-lg bg-theme-primary flex items-center justify-center text-theme-primary-text shadow-sm">
+              <BrandMark />
             </div>
             <span className="font-bold tracking-tight text-theme-text text-base sm:text-lg">
               Backend Roadmap <span className="text-theme-accent">Lab</span>
@@ -62,13 +66,15 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMo
           <button
             type="button"
             onClick={onOpenCommandPalette}
-            className="flex items-center gap-2 px-3 py-1.5 text-xs text-theme-muted bg-theme-surface-alt border border-theme-border rounded-lg hover:border-amber-500/50 hover:text-theme-text active:scale-[0.98] transition-all shadow-xs"
-            aria-label="Open Command Palette (Cmd+K)"
+            className="flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-lg border border-theme-border bg-theme-surface-alt px-0 text-sm text-theme-muted shadow-xs transition-all hover:border-amber-500/50 hover:text-theme-text active:scale-[0.98] sm:w-56 sm:justify-start sm:px-3 md:w-72 lg:w-96"
+            aria-label={`Open search (${shortcutLabel})`}
+            aria-keyshortcuts="Control+K Meta+K"
+            title={`Search demos (${shortcutLabel})`}
           >
-            <Search className="w-3.5 h-3.5 text-amber-600 dark:text-amber-400" />
-            <span className="hidden sm:inline">Search demos...</span>
-            <kbd className="hidden sm:inline-block px-1.5 py-0.5 text-[10px] font-mono bg-theme-surface border border-theme-border rounded text-theme-muted">
-              ⌘K
+            <Search className="w-3.5 h-3.5 flex-shrink-0 text-amber-600 dark:text-amber-400" />
+            <span className="hidden flex-1 text-left sm:inline">Search demos...</span>
+            <kbd className="hidden shrink-0 px-1.5 py-0.5 text-[10px] font-mono bg-theme-surface border border-theme-border rounded text-theme-muted sm:inline-block">
+              {shortcutLabel}
             </kbd>
           </button>
 

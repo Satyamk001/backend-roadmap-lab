@@ -6,10 +6,11 @@ import { Badge } from '../common/Badge';
 
 interface CommandPaletteProps {
   isOpen: boolean;
+  onOpen: () => void;
   onClose: () => void;
 }
 
-export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose }) => {
+export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onOpen, onClose }) => {
   const [query, setQuery] = useState('');
   const [selectedIndex, setSelectedIndex] = useState(0);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -28,19 +29,18 @@ export const CommandPalette: React.FC<CommandPaletteProps> = ({ isOpen, onClose 
   // Global shortcut listener
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
-      if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
+        if (e.repeat) return;
         if (isOpen) onClose();
-        else {
-          // Open handled by parent or state
-        }
+        else onOpen();
       } else if (e.key === 'Escape' && isOpen) {
         onClose();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onClose]);
+  }, [isOpen, onOpen, onClose]);
 
   if (!isOpen) return null;
 

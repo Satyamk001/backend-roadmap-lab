@@ -1,21 +1,138 @@
-import React, { useState } from 'react';
-import { NavLink, useParams } from 'react-router-dom';
+import React, { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { NavLink, matchPath, useLocation } from 'react-router-dom';
 import { ChevronDown, ChevronRight, Layers, Calendar, X } from 'lucide-react';
 import { getAllStages } from '../../lib/content';
+import { DayMeta } from '../../types/content';
 
 interface SidebarProps {
   isMobileOpen?: boolean;
   onCloseMobile?: () => void;
 }
 
+interface StageDayListProps {
+  stageId: string;
+  days: DayMeta[];
+  isStageActive: boolean;
+  activeDayId?: string;
+  expandedStages: Record<string, boolean>;
+  onNavigate?: () => void;
+}
+
+const StageDayList: React.FC<StageDayListProps> = ({
+  stageId,
+  days,
+  isStageActive,
+  activeDayId,
+  expandedStages,
+  onNavigate,
+}) => {
+  const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
+  const [nodeY, setNodeY] = useState<number | null>(null);
+
+  // The node is shared by every row, so measure the active row and move it
+  // with a CSS transform instead of mounting one node per row.
+  useLayoutEffect(() => {
+    const link = activeLinkRef.current;
+    if (!link) {
+      setNodeY(null);
+      return;
+    }
+
+    const measure = () => {
+      if (link.isConnected) {
+        setNodeY(link.offsetTop + link.offsetHeight / 2);
+      }
+    };
+
+    measure();
+
+    const observer =
+      typeof ResizeObserver !== 'undefined' ? new ResizeObserver(measure) : null;
+    observer?.observe(link);
+    window.addEventListener('resize', measure);
+
+    return () => {
+      observer?.disconnect();
+      window.removeEventListener('resize', measure);
+    };
+  }, [activeDayId, isStageActive, days.length, expandedStages]);
+
+  return (
+    <div className="sidebar-timeline ml-4 my-1">
+      <div className="space-y-1">
+        {days.map((day) => {
+          const isDayActive =
+            isStageActive && (activeDayId === `day-${day.dayNumber}` || activeDayId === `${day.dayNumber}`);
+
+          return (
+            <NavLink
+              key={day.dayNumber}
+              ref={isDayActive ? activeLinkRef : undefined}
+              to={`/stage/${stageId}/day/${day.dayNumber}`}
+              onClick={onNavigate}
+              className={`group relative flex items-start gap-2.5 py-2 pl-4 pr-2 rounded-lg text-xs transition-all duration-150 ${
+                isDayActive ? 'text-theme-text' : 'text-theme-muted hover:text-theme-text'
+              }`}
+              title={`Day ${day.dayNumber}: ${day.trackerTask || day.title}`}
+            >
+              <span
+                aria-hidden="true"
+                className={`pointer-events-none absolute inset-y-0 left-3 right-0 rounded-lg transition-colors duration-150 ${
+                  isDayActive ? 'bg-theme-surface-alt' : 'bg-transparent group-hover:bg-theme-surface-alt'
+                }`}
+              />
+              <Calendar className="relative w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              <div className="relative min-w-0 flex-1 leading-snug">
+                <div className={`truncate ${isDayActive ? 'font-bold text-theme-text' : 'font-semibold text-theme-text'}`}>
+                  {day.trackerTask || day.title}
+                </div>
+                <div className={`text-[10px] ${isDayActive ? 'font-medium text-theme-accent' : 'text-theme-muted'}`}>
+                  Day {day.dayNumber}
+                </div>
+              </div>
+            </NavLink>
+          );
+        })}
+      </div>
+
+      {isStageActive && nodeY !== null && (
+        <span
+          aria-hidden="true"
+          className="sidebar-timeline-node"
+          style={{ transform: `translateY(${nodeY}px)` }}
+        />
+      )}
+    </div>
+  );
+};
+
 export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile }) => {
   const stages = getAllStages();
-  const { stageId, dayId } = useParams();
+  const location = useLocation();
+
+  // The sidebar lives above <Routes>, so useParams() is empty here.
+  // Match the location directly to keep stage/day highlighting in sync.
+  const dayMatch = matchPath(
+    { path: '/stage/:stageId/day/:dayId', end: false },
+    location.pathname
+  );
+  const stageMatch = matchPath(
+    { path: '/stage/:stageId', end: true },
+    location.pathname
+  );
+  const stageId = dayMatch?.params.stageId ?? stageMatch?.params.stageId;
+  const dayId = dayMatch?.params.dayId;
 
   // Collapsed by default except the current active stage
   const [expandedStages, setExpandedStages] = useState<Record<string, boolean>>({
     [stageId || 's6-queues-async']: true,
   });
+
+  // Keep the current stage visible when navigating between stages.
+  useEffect(() => {
+    if (!stageId) return;
+    setExpandedStages((prev) => (prev[stageId] ? prev : { ...prev, [stageId]: true }));
+  }, [stageId]);
 
   const toggleStage = (id: string) => {
     setExpandedStages((prev) => ({ ...prev, [id]: !prev[id] }));
@@ -48,7 +165,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
           const isExpanded = expandedStages[stage.id] ?? isStageActive;
 
           return (
-            <div key={stage.id} className="rounded-lg overflow-hidden">
+            <div key={stage.id} className="rounded-lg">
               {/* Stage Header */}
               <button
                 type="button"
@@ -72,36 +189,14 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
 
               {/* Days inside Stage (Stage > Day ONLY, demos are on day page) */}
               {isExpanded && stage.days && (
-                <div className="ml-3 pl-2 border-l border-theme-border my-1 space-y-1">
-                  {stage.days.map((day) => {
-                    const isDayActive =
-                      isStageActive && (dayId === `day-${day.dayNumber}` || dayId === `${day.dayNumber}`);
-
-                    return (
-                      <NavLink
-                        key={day.dayNumber}
-                        to={`/stage/${stage.id}/day/${day.dayNumber}`}
-                        onClick={onCloseMobile}
-                        className={`flex items-start gap-2.5 p-2 rounded-lg text-xs transition-all duration-150 active:scale-[0.98] ${
-                          isDayActive
-                            ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs ring-1 ring-black/10 dark:ring-white/10'
-                            : 'text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt'
-                        }`}
-                        title={`Day ${day.dayNumber}: ${day.trackerTask || day.title}`}
-                      >
-                        <Calendar className="w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
-                        <div className="min-w-0 flex-1 leading-snug">
-                          <div className={`font-semibold truncate ${isDayActive ? 'text-theme-primary-text' : 'text-theme-text'}`}>
-                            {day.trackerTask || day.title}
-                          </div>
-                          <div className={`text-[10px] ${isDayActive ? 'text-theme-primary-text/80' : 'text-theme-muted'}`}>
-                            Day {day.dayNumber}
-                          </div>
-                        </div>
-                      </NavLink>
-                    );
-                  })}
-                </div>
+                <StageDayList
+                  stageId={stage.id}
+                  days={stage.days}
+                  isStageActive={isStageActive}
+                  activeDayId={dayId}
+                  expandedStages={expandedStages}
+                  onNavigate={onCloseMobile}
+                />
               )}
             </div>
           );
