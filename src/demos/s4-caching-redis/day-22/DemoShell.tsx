@@ -145,17 +145,16 @@ export const DemoShell: React.FC<DemoShellProps> = ({
 
   return (
     <div ref={rootRef} className="w-full space-y-4 text-theme-text">
-      <header className="flex flex-wrap items-start justify-between gap-3 border-b border-theme-border pb-3">
-        <div className="min-w-0 w-full sm:w-auto sm:flex-1">
-          <div className="flex flex-wrap items-center gap-2">
-            <h2 className="text-[24px] font-extrabold leading-tight tracking-tight text-theme-text sm:text-[30px]">
-              {title}
-            </h2>
-            <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[13px] font-semibold text-theme-muted">
-              {difficultyLabel[difficulty]}
-            </span>
-          </div>
-          <p className="mt-1.5 text-[16px] leading-relaxed text-theme-muted">{summary}</p>
+      {/* The demo title already lives in the active tab; keep it for screen
+          readers without repeating it visually. */}
+      <h2 className="sr-only">{title}</h2>
+
+      <header className="flex flex-col gap-3 border-b border-theme-border pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
+          <span className="w-fit rounded-full border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[13px] font-semibold text-theme-muted">
+            {difficultyLabel[difficulty]}
+          </span>
+          <p className="min-w-0 flex-1 text-[16px] leading-relaxed text-theme-muted">{summary}</p>
         </div>
 
         <button

@@ -455,24 +455,16 @@ export const RdbVsAofDemo: React.FC = () => {
 
                 <div className="mt-2 h-10 overflow-y-auto">
                   {aofBufferEntries.length > 0 ? (
-                    <div className="rounded-lg border border-semantic-inflight/40 bg-semantic-inflight-bg px-2.5 py-2">
-                      <p className="flex items-center gap-1.5 text-[13px] font-semibold text-semantic-inflight">
-                        <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                        Buffer: {aofBufferEntries.length} pending fsync
-                      </p>
-                      {aofBufferEntries.map((entry) => (
-                        <code
-                          key={entry.id}
-                          data-highlight-id={`aof-buffer:${entry.key}`}
-                          className="mt-1 block break-all font-mono text-[12px] text-theme-text"
-                        >
-                          {entry.command} {entry.key} {entry.value}
-                        </code>
-                      ))}
-                    </div>
+                    <p
+                      data-highlight-id={`aof-buffer:${aofBufferEntries[aofBufferEntries.length - 1]?.key ?? ''}`}
+                      className="flex h-full items-center gap-1.5 rounded-lg border border-semantic-inflight/40 bg-semantic-inflight-bg px-2.5 text-[13px] font-semibold text-semantic-inflight"
+                    >
+                      <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                      Buffer: {aofBufferEntries.length} pending fsync
+                    </p>
                   ) : (
-                    <p className="rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 py-2 text-[13px] text-theme-muted">
-                      Buffer empty — pending writes sab fsynced hain.
+                    <p className="flex h-full items-center rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 text-[13px] text-theme-muted">
+                      Buffer empty — sab fsynced hain.
                     </p>
                   )}
                 </div>
