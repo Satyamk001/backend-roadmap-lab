@@ -3,6 +3,24 @@
   "title": "Event Loop Phases, libuv, Microtasks vs Macrotasks",
   "stageId": "s1-nodejs-internals",
   "trackerTask": "Event loop phases, libuv, microtasks vs macrotasks",
+  "definition": "Single-threaded non-blocking runtime powered by libuv event loop and priority microtask queues.",
+  "keyPoints": [
+    {
+      "icon": "🔄",
+      "title": "Event Loop Phases",
+      "description": "6 distinct phases (timers, pending, poll, check, close) executing callbacks in order."
+    },
+    {
+      "icon": "⚡",
+      "title": "Microtasks First",
+      "description": "process.nextTick and Promise drain immediately before the next macrotask runs."
+    },
+    {
+      "icon": "🧵",
+      "title": "libuv Offload",
+      "description": "Delegates OS async (network I/O) and thread pool (crypto, fs) off the single JS thread."
+    }
+  ],
   "recap": "Node.js ka event loop single thread par non-blocking I/O chalata hai libuv ke 6 phases (timers, pending, poll, check, close) ke zariye. Microtasks (process.nextTick aur Promises) har macrotask aur phase transition ke beech turant drain hote hain.",
   "concepts": [
     "Event Loop Phases",

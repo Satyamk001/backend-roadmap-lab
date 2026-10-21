@@ -3,6 +3,24 @@
   "title": "Redis Data Structures & Persistence",
   "stageId": "s4-caching-redis",
   "trackerTask": "Redis data structures & persistence",
+  "definition": "In-memory key-value data store providing sub-millisecond operations, automatic RAM eviction, and dual persistence engines.",
+  "keyPoints": [
+    {
+      "icon": "⚡",
+      "title": "In-Memory Structures",
+      "description": "Strings, Hashes, Lists, Sets & ZSets held in volatile RAM for sub-millisecond access."
+    },
+    {
+      "icon": "⏱️",
+      "title": "TTL & Eviction",
+      "description": "Key expiration and memory policies (noeviction, allkeys-lru, volatile-lru) when RAM fills up."
+    },
+    {
+      "icon": "💾",
+      "title": "Dual Persistence",
+      "description": "RDB point-in-time snapshots + AOF continuous append-log for crash durability and recovery."
+    }
+  ],
   "recap": "Redis RAM-based key-value store hai jisme Strings, Hashes, Lists, Sets aur Sorted Sets sub-millisecond operations dete hain. Memory limited hone ki wajah se TTL aur maxmemory eviction policies (noeviction vs allkeys-lru) tay karti hain ki memory bharne par data delete hoga ya write fail. Crash safety ke liye RDB periodic photos aur AOF continuous write-log milkar data recover karte hain.",
   "concepts": [
     "Strings & Atomic Counters",

@@ -2,6 +2,7 @@ import React, { useState, Suspense } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { getStage, getDay } from '../lib/content';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
+import { DayHeader } from '../components/common/DayHeader';
 import { getDemoComponent } from '../demos/registry';
 import { NotionNotesRenderer } from '../components/notes/NotionNotesRenderer';
 import { BookOpen, ExternalLink, ChevronDown, ChevronUp, Maximize2, Minimize2 } from 'lucide-react';
@@ -71,16 +72,8 @@ export const DayPage: React.FC = () => {
         ]}
       />
 
-      {/* Header: Title & Hand-Written 2-3 Sentence Recap */}
-      <div className="space-y-2">
-        <h1 className="text-2xl sm:text-3xl font-extrabold tracking-tight text-theme-text">
-          Day {day.dayNumber}: {day.title}
-        </h1>
-
-        <p className="text-[15px] sm:text-base text-theme-muted leading-relaxed max-w-3xl">
-          {day.recap || day.trackerTask}
-        </p>
-      </div>
+      {/* Header: Title, Short Definition, 3 Key Takeaway Cards & Collapsible Recap */}
+      <DayHeader day={day} />
 
       {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
       {day.demos && day.demos.length > 1 && (

@@ -13,8 +13,12 @@ export const demoRegistry: Record<string, React.LazyExoticComponent<React.Compon
   // Day 37: RabbitMQ
   'rabbitmq-exchange-routing': React.lazy(() => import('./s6-queues-async/day-37/RabbitMqExchangeDemo')),
 
-  // Day 35: BullMQ
-  'bullmq-pipeline': React.lazy(() => import('./s6-queues-async/day-35/BullMqPipelineDemo')),
+  // Day 35: BullMQ (in story order: Beginner to Advanced)
+  'queue-sync-vs-async': React.lazy(() => import('./s6-queues-async/day-35/SyncVsAsyncQueueDemo')),
+  'bullmq-job-lifecycle': React.lazy(() => import('./s6-queues-async/day-35/JobLifecycleDemo')),
+  'bullmq-worker-locks': React.lazy(() => import('./s6-queues-async/day-35/WorkerLocksStalledDemo')),
+  'bullmq-backoff-dlq': React.lazy(() => import('./s6-queues-async/day-35/BackoffDlqDemo')),
+  'bullmq-pipeline': React.lazy(() => import('./s6-queues-async/day-35/JobLifecycleDemo')),
 
   // Day 22: Redis (in story order)
   'redis-data-structures': React.lazy(() => import('./s4-caching-redis/day-22/RedisStructuresDemo')),

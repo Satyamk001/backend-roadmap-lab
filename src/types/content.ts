@@ -6,11 +6,19 @@ export interface DemoMeta {
   notesAnchor: string;
 }
 
+export interface KeyPoint {
+  icon?: string;
+  title: string;
+  description: string;
+}
+
 export interface DayMeta {
   dayNumber: number;
   title: string;
   stageId: string;
   trackerTask: string;
+  definition?: string;
+  keyPoints?: KeyPoint[];
   recap?: string;
   concepts: string[];
   demos: DemoMeta[];

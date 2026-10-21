@@ -3,6 +3,24 @@
   "title": "Kafka Fundamentals: Partitions, Consumer Groups, Offsets",
   "stageId": "s6-queues-async",
   "trackerTask": "Kafka fundamentals: partitions, consumer groups, offsets",
+  "definition": "Distributed append-only commit log partitioned for high-throughput, ordered stream processing.",
+  "keyPoints": [
+    {
+      "icon": "📦",
+      "title": "Partitions & Keys",
+      "description": "Same key hashes to the same partition, guaranteeing strict per-key message ordering."
+    },
+    {
+      "icon": "👥",
+      "title": "Consumer Groups",
+      "description": "Partitions are automatically divided across group members for scalable parallel consumption."
+    },
+    {
+      "icon": "🔖",
+      "title": "Offsets & Lag",
+      "description": "Bookmarked committed offset pointers track consumer position and unread backlog lag."
+    }
+  ],
   "recap": "Kafka ek distributed append-only commit log hai jo partitions me divided hota hai. Same key ke messages hamesha same partition me jaate hain taaki order maintain rahe. Consumer groups independent offsets ke saath parallelly messages consume karte hain.",
   "concepts": [
     "Append-only Commit Log",

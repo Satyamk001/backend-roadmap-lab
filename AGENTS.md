@@ -34,9 +34,11 @@ content/stages/<stage-slug>/stage.json
 content/stages/<stage-slug>/day-XX/meta.json
 content/stages/<stage-slug>/day-XX/notes.md      # raw snapshot, for agents only
 
-meta.json fields: dayNumber, title, stageId, trackerTask, recap, concepts[], demos[{id,title,idea,notesAnchor}], notesUrl, notionPageId, lastSynced, status.
+meta.json fields: dayNumber, title, stageId, trackerTask, definition, keyPoints[{icon,title,description}], recap, concepts[], demos[{id,title,summary,difficulty,notesAnchor}], notesUrl, notionPageId, lastSynced, status.
 
-recap is a hand-written 2 to 3 sentence Hinglish summary. Do not paste the first bullets of the notes.
+definition is a single crisp sentence answering "What is this topic fundamentally?" without a jargon wall.
+keyPoints is an array of exactly 3 scannable takeaway points ({icon, title, description}) answering what 3 core backend engineering problems today solves.
+recap is a hand-written 2 to 3 sentence Hinglish narrative summary. It is rendered inside a collapsed "Read detailed narrative recap" toggle in the header, preserving deep context without cluttering or pushing down the demo viewport.
 Build demos from what the notes actually say, using their terms and example data. Do not invent concepts. If unclear, choose the simplest reading and add TODO(notes).
 Navigation is generated from content/. Never hardcode nav links. Add a day with npm run new-day -- --stage s6 --day 39 --title "...".
 4. How a demo teaches
@@ -138,10 +140,16 @@ Typography: system sans (or Inter) for headings, labels and body, 15 to 16px min
 Light theme: soft shadows. Dark theme: 1px borders, no shadows. Focus ring: 3px amber outline. Respect prefers-reduced-motion.
 7. Layout
 
-Day page, top to bottom: title, the recap, then the demos one under another (or a tab bar of at most 5 short tab names). No stats row, no difficulty badges, no version tags.
+7. Layout
+
+Day page layout, top to bottom:
+1. Breadcrumbs (Roadmap > Stage > Day).
+2. DayHeader: Day title, the 1-line Core Mental Model definition box, 3 scannable key takeaway cards (in a 3-column grid on desktop, 1-column on mobile), and the collapsible "Read detailed narrative recap" toggle. Never dump a 3-sentence wall of text directly at the header.
+3. Story-ordered demo tab bar with keyboard shortcut badges (1-6).
+4. Active interactive simulation demo canvas (the largest element on the page).
+5. Collapsible "Read the notes (Notion study snapshot)" drawer at the bottom: formatted clean Web UI rendered via NotionNotesRenderer (HTML tables converted to responsive <table> with horizontal scroll, callouts with icons, details/summary accordions, code blocks with copy button). Never show raw Notion or HTML tags like <table>, <tr>, <td>, <callout>, <details>, <mention-page>.
 
 One content column, max width about 1000px, 16 to 24px between blocks.
-Do not show the raw notes. If notes are offered, render them as clean formatted text inside a collapsed "Read the notes" drawer with Notion tags converted or stripped, plus an "Open in Notion" link from notesUrl.
 Sidebar: Stage > Day only, sorted by stage then day, collapsed except the current stage. Demos are listed on the day page, not in the sidebar.
 Mobile (390px): sidebar becomes a menu button, demo stacks vertically, no horizontal page scroll (message lanes may scroll inside their own container). Support 360px up to 1440px.
 Accessibility: fully keyboard operable, visible focus, aria-live for the status line, labels on every icon button.
@@ -158,6 +166,7 @@ UI changes: open the page at 1440px and 390px in light and dark theme, take scre
 Report with this checklist, each item verified:
  every tab shows its own demo
  no raw markdown or Notion tags on the page
+ header has 1-line definition and 3 scannable takeaway cards; recap is collapsible
  default demo view has 5 or fewer controls and one "What just happened?" line
  amber is used only as accent; cards are neutral in both themes
  body text is 15px or larger; monospace only for data
@@ -165,14 +174,16 @@ Report with this checklist, each item verified:
  lint, test and build pass
 10. Workflow
 Check the task against this file.
-For a new day: sync its notes into content/, write recap and the demo list (one idea each, in teaching order), and show me the list before building.
+For a new day: sync its notes into content/, write definition, 3 keyPoints, recap, and the demo list (one idea each, in teaching order), and show me the list before building.
 Build one demo first, review it with screenshots, then build the rest.
 Work in small steps and ask before adding dependencies or changing this file.
 
 Commands: npm run dev, build, preview, test, lint, new-day.
 
  1. Do not
+Dump dense 3-sentence text paragraphs at the page header instead of the 1-line definition and 3 key takeaway cards.
 Show raw Notion markup, long note excerpts or placeholder copy to learners.
+Render raw HTML table tags (<table>, <tr>, <td>) or unparsed Notion tags in the notes drawer.
 Put Seed, Preset, Speed, timers or challenge counters above the demo by default.
 Fill every card with amber, or use amber as warning, as entity colour, or as text on light backgrounds.
 Hardcode nav entries, Notion URLs in components, or hex colours.

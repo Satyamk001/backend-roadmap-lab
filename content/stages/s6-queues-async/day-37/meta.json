@@ -3,6 +3,24 @@
   "title": "RabbitMQ: Exchanges, Routing, Acks",
   "stageId": "s6-queues-async",
   "trackerTask": "RabbitMQ: exchanges, routing, acks",
+  "definition": "Flexible message broker using exchanges and routing keys to decouple message producers from specific queues.",
+  "keyPoints": [
+    {
+      "icon": "🔀",
+      "title": "Exchanges & Routing",
+      "description": "Direct, Fanout, and Topic wildcard (*, #) exchanges decouple publishers from consumers."
+    },
+    {
+      "icon": "🛡️",
+      "title": "Acks & Requeue",
+      "description": "Manual acknowledgments (ack, nack, reject) prevent message loss during processing failures."
+    },
+    {
+      "icon": "🔄",
+      "title": "Prefetch & QoS",
+      "description": "Limits in-flight unacknowledged messages per worker, preventing consumer starvation."
+    }
+  ],
   "recap": "RabbitMQ exchanges messages ko routing keys aur binding rules ke basis par queues me push karte hain. Consumer acknowledgments (ack/nack) message loss rokte hain, jabki prefetch slow consumers ko overload hone se bachata hai.",
   "concepts": [
     "Direct/Fanout/Topic Exchanges",

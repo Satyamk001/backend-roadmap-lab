@@ -3,6 +3,24 @@
   "title": "Queue Concepts & BullMQ",
   "stageId": "s6-queues-async",
   "trackerTask": "Queue concepts (at-least-once, ordering, DLQ) + BullMQ",
+  "definition": "Asynchronous job buffer decoupling producers and background workers with reliable delivery guarantees.",
+  "keyPoints": [
+    {
+      "icon": "📬",
+      "title": "At-Least-Once Delivery",
+      "description": "Worker lock heartbeats and acknowledgements ensure tasks are never lost on worker crashes."
+    },
+    {
+      "icon": "🔁",
+      "title": "Retries & Backoff",
+      "description": "Exponential backoff delays and Dead Letter Queues (DLQ) isolate recurring poison errors."
+    },
+    {
+      "icon": "⏳",
+      "title": "Stalled Job Recovery",
+      "description": "Automatic watchdog detection reassigns orphaned tasks if a processing worker crashes silently."
+    }
+  ],
   "recap": "BullMQ Redis par banaya gaya Node.js job queue hai jo background task processing ko reliable banata hai. Isme exponential backoff retries, locked job heartbeat renewals, aur stalled job recovery built-in aate hain.",
   "concepts": [
     "At-least-once Delivery",
@@ -14,11 +32,32 @@
   ],
   "demos": [
     {
-      "id": "bullmq-pipeline",
-      "title": "BullMQ Job Lifecycle & Workers",
-      "summary": "Throughput, worker concurrency, backpressure, retries, and stalled job lock detection.",
+      "id": "queue-sync-vs-async",
+      "title": "Sync HTTP vs async queue",
+      "summary": "Comparing blocking synchronous execution against non-blocking asynchronous queue buffers.",
+      "difficulty": "easy",
+      "notesAnchor": "sync-vs-async"
+    },
+    {
+      "id": "bullmq-job-lifecycle",
+      "title": "Job lifecycle states",
+      "summary": "Jobs move atomically through Redis sets: waiting to active with a lock, then completed or failed.",
+      "difficulty": "easy",
+      "notesAnchor": "job-lifecycle"
+    },
+    {
+      "id": "bullmq-worker-locks",
+      "title": "Worker locks and stalled jobs",
+      "summary": "Active jobs require lock heartbeats; on worker crash the lock expires and watchdog triggers duplicate redelivery.",
+      "difficulty": "medium",
+      "notesAnchor": "stalled-jobs"
+    },
+    {
+      "id": "bullmq-backoff-dlq",
+      "title": "Backoff retries and DLQ",
+      "summary": "Exponential delay backoff isolates thundering herds; exhausted attempts route poison jobs to the DLQ.",
       "difficulty": "hard",
-      "notesAnchor": "bullmq-architecture"
+      "notesAnchor": "retries-backoff-dlq"
     }
   ],
   "notesUrl": "https://app.notion.com/p/3f5bcc23fb6581208eebc9eb79a5dde1",

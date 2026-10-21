@@ -48,6 +48,25 @@ if (!fs.existsSync(metaPath)) {
     title: title,
     stageId: stageSlug,
     trackerTask: title,
+    definition: `One-line mental model definition for ${title}.`,
+    keyPoints: [
+      {
+        icon: '⚡',
+        title: 'Core Mechanism',
+        description: `How ${title} processes state and guarantees under the hood.`
+      },
+      {
+        icon: '🛡️',
+        title: 'Failure Modes',
+        description: 'How the system handles crashes, retries, and data durability.'
+      },
+      {
+        icon: '⚙️',
+        title: 'Production Tradeoffs',
+        description: 'Architectural compromises and scaling considerations.'
+      }
+    ],
+    recap: `2-3 sentence Hinglish narrative summary for ${title}.`,
     concepts: ['Core Mechanics', 'Failure Scenarios', 'Production Considerations'],
     demos: [
       {
