@@ -174,7 +174,7 @@ export const RdbVsAofDemo: React.FC = () => {
       notesAnchor="persistence-2-aof-append-only-file"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[74.75rem] max-[380px]:min-h-[77rem] sm:min-h-[36rem]"
+      canvasClassName="min-h-[77.75rem] max-[380px]:min-h-[80rem] sm:min-h-[37.5rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
@@ -335,7 +335,7 @@ export const RdbVsAofDemo: React.FC = () => {
             </div>
             <p className="mt-1 text-[15px] text-theme-muted">volatile · crash par wipe</p>
 
-            <div className="mt-3 h-[8.5rem] space-y-1.5 overflow-y-auto pr-0.5">
+            <div className="mt-3 h-[10rem] space-y-1.5 overflow-y-auto pr-0.5">
               {crashed ? (
                 <p className="rounded-lg border border-semantic-error/40 bg-semantic-error-bg px-2.5 py-2 text-[15px] font-semibold text-semantic-error">
                   RAM wiped. Restart se recovery hogi.
@@ -380,7 +380,7 @@ export const RdbVsAofDemo: React.FC = () => {
               point-in-time · save ke baad ka data nahi
             </p>
 
-            <div className="mt-3 h-[8.5rem] space-y-1.5 overflow-y-auto pr-0.5">
+            <div className="mt-3 h-[10rem] space-y-1.5 overflow-y-auto pr-0.5">
               {rdbKeys.length === 0 ? (
                 <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
                   Snapshot abhi nahi hai.
@@ -424,60 +424,52 @@ export const RdbVsAofDemo: React.FC = () => {
               command log · fsynced writes replay
             </p>
 
-            <div className="mt-3 h-24 space-y-1.5 overflow-y-auto pr-0.5">
-              {!snapshot.aofEnabled ? (
-                <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
-                  AOF off hai. RDB-only mode me restart sirf snapshot load karega.
-                </p>
-              ) : aofDiskEntries.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
-                  Disk par koi command nahi.
-                </p>
-              ) : (
-                aofDiskEntries.map((entry) => (
-                  <div
-                    key={entry.id}
-                    data-highlight-id={`aof:${entry.key}`}
-                    className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5"
-                  >
-                    <code className="block break-all font-mono text-[12px] text-theme-text">
-                      {entry.command} {entry.key} {entry.value}
-                    </code>
-                    <span className="font-mono text-[11px] text-theme-muted">
-                      t{entry.tick} · fsynced
-                    </span>
-                  </div>
-                ))
-              )}
-            </div>
-
-            <div className="mt-2 h-10 overflow-y-auto">
-              {!snapshot.aofEnabled ? (
-                <p className="rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 py-2 text-[13px] text-theme-muted">
-                  Buffer inactive — AOF off hai.
-                </p>
-              ) : aofBufferEntries.length > 0 ? (
-                <div className="rounded-lg border border-semantic-inflight/40 bg-semantic-inflight-bg px-2.5 py-2">
-                  <p className="flex items-center gap-1.5 text-[13px] font-semibold text-semantic-inflight">
-                    <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                    Buffer: {aofBufferEntries.length} pending fsync
-                  </p>
-                  {aofBufferEntries.map((entry) => (
-                    <code
-                      key={entry.id}
-                      data-highlight-id={`aof-buffer:${entry.key}`}
-                      className="mt-1 block break-all font-mono text-[12px] text-theme-text"
-                    >
-                      {entry.command} {entry.key} {entry.value}
-                    </code>
-                  ))}
+            {!snapshot.aofEnabled ? (
+              <div className="mt-3 flex h-36 items-center justify-center rounded-lg border border-dashed border-theme-border px-3 py-2 text-center text-[15px] leading-relaxed text-theme-muted">
+                AOF off hai. RDB-only mode me restart sirf snapshot load karega.
+              </div>
+            ) : (
+              <>
+                <div className="mt-3 h-24 space-y-1.5 overflow-y-auto pr-0.5">
+                  {aofDiskEntries.length === 0 ? (
+                    <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
+                      Disk par koi command nahi.
+                    </p>
+                  ) : (
+                    aofDiskEntries.map((entry) => (
+                      <div
+                        key={entry.id}
+                        data-highlight-id={`aof:${entry.key}`}
+                        className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5"
+                      >
+                        <code className="block break-all font-mono text-[12px] text-theme-text">
+                          {entry.command} {entry.key} {entry.value}
+                        </code>
+                        <span className="font-mono text-[11px] text-theme-muted">
+                          t{entry.tick} · fsynced
+                        </span>
+                      </div>
+                    ))
+                  )}
                 </div>
-              ) : (
-                <p className="rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 py-2 text-[13px] text-theme-muted">
-                  Buffer empty — pending writes sab fsynced hain.
-                </p>
-              )}
-            </div>
+
+                <div className="mt-2 h-10 overflow-y-auto">
+                  {aofBufferEntries.length > 0 ? (
+                    <p
+                      data-highlight-id={`aof-buffer:${aofBufferEntries[aofBufferEntries.length - 1]?.key ?? ''}`}
+                      className="flex h-full items-center gap-1.5 rounded-lg border border-semantic-inflight/40 bg-semantic-inflight-bg px-2.5 text-[13px] font-semibold text-semantic-inflight"
+                    >
+                      <Clock className="h-3.5 w-3.5" aria-hidden="true" />
+                      Buffer: {aofBufferEntries.length} pending fsync
+                    </p>
+                  ) : (
+                    <p className="flex h-full items-center rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 text-[13px] text-theme-muted">
+                      Buffer empty — sab fsynced hain.
+                    </p>
+                  )}
+                </div>
+              </>
+            )}
           </article>
         </div>
 
