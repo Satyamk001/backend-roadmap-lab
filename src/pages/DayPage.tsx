@@ -180,7 +180,7 @@ export const DayPage: React.FC = () => {
                 >
                   <span>{idx + 1}. {d.title}</span>
                   <kbd
-                    className={`text-[10px] font-mono px-1 py-0.2 rounded border ${
+                    className={`text-[10px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
                       isActive
                         ? 'bg-black/15 text-stone-900 border-black/20'
                         : 'bg-theme-surface-alt text-theme-muted border-theme-border'
