@@ -1,0 +1,29 @@
+{
+  "dayNumber": 22,
+  "title": "Redis Data Structures & Persistence",
+  "stageId": "s4-caching-redis",
+  "trackerTask": "Redis data structures & persistence",
+  "recap": "Redis ek in-memory data store hai jo Strings, Hashes, Lists, Sets aur Sorted Sets jaise rich data structures provide karta hai. Persistence ke liye RDB snapshots periodic state save karte hain jabki AOF har write command ka append log rakhta hai.",
+  "concepts": [
+    "Strings",
+    "Hashes",
+    "Lists",
+    "Sets",
+    "Sorted Sets",
+    "RDB Snapshots",
+    "AOF Append Log"
+  ],
+  "demos": [
+    {
+      "id": "redis-structures-explorer",
+      "title": "Redis In-Memory Structures & TTL",
+      "summary": "Explore Redis commands, memory layouts, and eviction policies.",
+      "difficulty": "medium",
+      "notesAnchor": "redis-data-structures"
+    }
+  ],
+  "notesUrl": "https://app.notion.com/p/3f9bcc23fb65814ca41bed93a259d096",
+  "notionPageId": "3f9bcc23-fb65-814c-a41b-ed93a259d096",
+  "lastSynced": "2026-10-21T07:45:04.260Z",
+  "status": "ready"
+}

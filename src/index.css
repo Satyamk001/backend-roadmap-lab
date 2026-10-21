@@ -1,0 +1,137 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-bg: #FFFBEB;
+  --color-surface: #FFFFFF;
+  --color-surface-alt: #FEF3C7;
+  --color-border: #FDE68A;
+  --color-text: #1C1917;
+  --color-muted: #57534E;
+  --color-primary: #F59E0B;
+  --color-primary-hover: #D97706;
+  --color-primary-text: #1C1917;
+  --color-accent: #B45309;
+
+  /* Semantics */
+  --color-success: #059669;
+  --color-success-bg: #ECFDF5;
+  --color-error: #DC2626;
+  --color-error-bg: #FEF2F2;
+  --color-duplicate: #7C3AED;
+  --color-duplicate-bg: #F5F3FF;
+  --color-inflight: #D97706;
+  --color-inflight-bg: #FFFBEB;
+  --color-neutral: #57534E;
+  --color-neutral-bg: #F5F5F4;
+  --color-info: #0284C7;
+  --color-info-bg: #F0F9FF;
+
+  /* Entity palette */
+  --entity-1: #0284C7; /* Sky */
+  --entity-2: #059669; /* Emerald */
+  --entity-3: #7C3AED; /* Violet */
+  --entity-4: #E11D48; /* Rose */
+  --entity-5: #D97706; /* Amber */
+  --entity-6: #4F46E5; /* Indigo */
+}
+
+.dark {
+  --color-bg: #0F0D0A;
+  --color-surface: #1C1917;
+  --color-surface-alt: #292524;
+  --color-border: #44403C;
+  --color-text: #FAFAF9;
+  --color-muted: #A8A29E;
+  --color-primary: #FBBF24;
+  --color-primary-hover: #F59E0B;
+  --color-primary-text: #1C1917;
+  --color-accent: #FCD34D;
+
+  /* Semantics */
+  --color-success: #34D399;
+  --color-success-bg: #064E3B;
+  --color-error: #F87171;
+  --color-error-bg: #7F1D1D;
+  --color-duplicate: #A78BFA;
+  --color-duplicate-bg: #4C1D95;
+  --color-inflight: #FBBF24;
+  --color-inflight-bg: #451A03;
+  --color-neutral: #A8A29E;
+  --color-neutral-bg: #292524;
+  --color-info: #38BDF8;
+  --color-info-bg: #0C4A6E;
+
+  /* Entity palette */
+  --entity-1: #38BDF8;
+  --entity-2: #34D399;
+  --entity-3: #A78BFA;
+  --entity-4: #FB7185;
+  --entity-5: #FBBF24;
+  --entity-6: #818CF8;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  background-color: var(--color-bg);
+  color: var(--color-text);
+  font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11', 'tnum';
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Headings: Plus Jakarta Sans with balanced tracking */
+h1, h2, h3, h4 {
+  font-family: 'Plus Jakarta Sans', 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-wrap: balance;
+  letter-spacing: -0.025em;
+}
+
+p {
+  text-wrap: pretty;
+}
+
+/* Tabular figures for all numerical values */
+.font-mono, kbd, code {
+  font-feature-settings: 'tnum';
+  font-variant-numeric: tabular-nums;
+}
+
+/* Accessible focus ring for keyboard navigation */
+:focus-visible {
+  outline: 2px solid var(--color-primary);
+  outline-offset: 2px;
+}
+
+/* Custom scrollbars with amber accent */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: var(--color-bg);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 4px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-primary);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, ::before, ::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

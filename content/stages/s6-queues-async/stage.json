@@ -1,0 +1,7 @@
+{
+  "id": "s6-queues-async",
+  "title": "S6: Queues & Async Processing",
+  "order": 6,
+  "description": "Queue fundamentals, BullMQ on Redis, RabbitMQ AMQP routing, and Apache Kafka distributed log streaming.",
+  "notionPageId": "3f5bcc23-fb65-81ea-8528-f3bc31913470"
+}

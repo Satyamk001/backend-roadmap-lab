@@ -1,0 +1,27 @@
+{
+  "dayNumber": 37,
+  "title": "RabbitMQ: Exchanges, Routing, Acks",
+  "stageId": "s6-queues-async",
+  "trackerTask": "RabbitMQ: exchanges, routing, acks",
+  "recap": "RabbitMQ exchanges messages ko routing keys aur binding rules ke basis par queues me push karte hain. Consumer acknowledgments (ack/nack) message loss rokte hain, jabki prefetch slow consumers ko overload hone se bachata hai.",
+  "concepts": [
+    "Direct/Fanout/Topic Exchanges",
+    "Binding Keys & Wildcards (*, #)",
+    "Manual Ack/Nack",
+    "Prefetch (QoS)",
+    "DLX & TTL Routing"
+  ],
+  "demos": [
+    {
+      "id": "rabbitmq-exchange-routing",
+      "title": "Exchange Routing Playground",
+      "summary": "Direct, Fanout, and Topic routing with live binding evaluation and DLX queues.",
+      "difficulty": "medium",
+      "notesAnchor": "exchanges-routing"
+    }
+  ],
+  "notesUrl": "https://app.notion.com/p/3f5bcc23fb658135ad28c463aa2cd48b",
+  "notionPageId": "3f5bcc23-fb65-8135-ad28-c463aa2cd48b",
+  "lastSynced": "2026-10-21T07:45:04.261Z",
+  "status": "ready"
+}

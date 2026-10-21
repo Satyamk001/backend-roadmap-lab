@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='%23F59E0B'><path d='M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5'/></svg>" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#0F0D0A" media="(prefers-color-scheme: dark)" />
+    <meta name="theme-color" content="#FFFBEB" media="(prefers-color-scheme: light)" />
+    <title>Backend Roadmap Lab — Interactive Distributed Systems & Concurrency Demos</title>
+    <meta name="description" content="In-browser interactive visualizer for Node.js internals, BullMQ, RabbitMQ, Kafka, and Redis from backend roadmap study notes." />
+    <!-- Typography: Plus Jakarta Sans for Display, Inter for UI & JetBrains Mono for Systems Data -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Zero-flash theme initialization -->
+    <script>
+      (function() {
+        try {
+          var stored = localStorage.getItem('backend_lab_theme');
+          var isDark = false;
+          if (stored === 'dark') {
+            isDark = true;
+          } else if (stored === 'light') {
+            isDark = false;
+          } else {
+            // default system
+            isDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+          }
+          if (isDark) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        } catch (e) {}
+      })();
+    </script>
+  </head>
+  <body class="bg-theme-bg text-theme-text antialiased selection:bg-amber-500/30">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>

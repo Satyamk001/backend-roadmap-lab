@@ -1,0 +1,7 @@
+{
+  "id": "s1-nodejs-internals",
+  "title": "S1: Node.js Internals & Concurrency",
+  "order": 1,
+  "description": "Event loop phases, libuv thread pool, microtasks vs macrotasks, streams, and V8 memory.",
+  "notionPageId": "3f6bcc23-fb65-8139-97ef-f0da5e99763e"
+}

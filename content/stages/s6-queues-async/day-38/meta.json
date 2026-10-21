@@ -1,0 +1,64 @@
+{
+  "dayNumber": 38,
+  "title": "Kafka Fundamentals: Partitions, Consumer Groups, Offsets",
+  "stageId": "s6-queues-async",
+  "trackerTask": "Kafka fundamentals: partitions, consumer groups, offsets",
+  "recap": "Kafka ek distributed append-only commit log hai jo partitions me divided hota hai. Same key ke messages hamesha same partition me jaate hain taaki order maintain rahe. Consumer groups independent offsets ke saath parallelly messages consume karte hain.",
+  "concepts": [
+    "Append-only Commit Log",
+    "Murmur2 Hash Partitioning",
+    "Replication & ISR",
+    "Consumer Groups & Rebalancing",
+    "Committed Offsets",
+    "Lag & Retention",
+    "Poison Messages & DLQ"
+  ],
+  "demos": [
+    {
+      "id": "kafka-producer-partitions",
+      "title": "Producer, topic and partitions",
+      "summary": "Same key, same partition: key se partition decide hota hai aur order guaranteed rehta hai.",
+      "difficulty": "easy",
+      "notesAnchor": "topic-partition-offset"
+    },
+    {
+      "id": "kafka-consumers-groups",
+      "title": "Consumers and groups",
+      "summary": "One consumer per partition: consumer group me har partition ka ek hi owner hota hai.",
+      "difficulty": "medium",
+      "notesAnchor": "consumer-groups"
+    },
+    {
+      "id": "kafka-offsets-lag",
+      "title": "Offsets and lag",
+      "summary": "Committed offset progress bookmark hai; lag consumer ka backlog batata hai.",
+      "difficulty": "medium",
+      "notesAnchor": "offsets-commits"
+    },
+    {
+      "id": "kafka-rebalance",
+      "title": "Rebalance",
+      "summary": "Consumer join ya crash hone par partition ownership rebalance hoti hai.",
+      "difficulty": "hard",
+      "notesAnchor": "rebalancing-internals"
+    },
+    {
+      "id": "kafka-acks-replication",
+      "title": "Acks and replication",
+      "summary": "Leader broker writes handle karta hai; acks=all aur ISR data loss rokte hain.",
+      "difficulty": "hard",
+      "notesAnchor": "brokers-replication"
+    },
+    {
+      "id": "kafka-retries-dlq",
+      "title": "Retries and DLQ",
+      "summary": "Poison message partition block kar deta hai jab tak retry backoff aur DLQ na ho.",
+      "difficulty": "medium",
+      "notesAnchor": "error-handling-dlq"
+    }
+  ],
+  "notesUrl": "https://app.notion.com/p/3ffbcc23fb6581dd92f1d70d2a1739ca",
+  "notionPageId": "3ffbcc23-fb65-81dd-92f1-d70d2a1739ca",
+  "lastSynced": "2026-10-21T07:45:04.261Z",
+  "status": "ready"
+}

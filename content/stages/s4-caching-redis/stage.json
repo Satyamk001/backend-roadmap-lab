@@ -1,0 +1,7 @@
+{
+  "id": "s4-caching-redis",
+  "title": "S4: Redis & Caching Strategies",
+  "order": 4,
+  "description": "Redis data structures, persistence models, cache invalidation, and rate limiting.",
+  "notionPageId": "3f9bcc23-fb65-8125-a8d5-fae00933cc90"
+}

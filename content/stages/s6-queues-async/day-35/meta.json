@@ -1,0 +1,28 @@
+{
+  "dayNumber": 35,
+  "title": "Queue Concepts & BullMQ",
+  "stageId": "s6-queues-async",
+  "trackerTask": "Queue concepts (at-least-once, ordering, DLQ) + BullMQ",
+  "recap": "BullMQ Redis par banaya gaya Node.js job queue hai jo background task processing ko reliable banata hai. Isme exponential backoff retries, locked job heartbeat renewals, aur stalled job recovery built-in aate hain.",
+  "concepts": [
+    "At-least-once Delivery",
+    "Per-key Ordering",
+    "BullMQ Lifecycles",
+    "Exponential Backoff",
+    "DLQ",
+    "Stalled Jobs"
+  ],
+  "demos": [
+    {
+      "id": "bullmq-pipeline",
+      "title": "BullMQ Job Lifecycle & Workers",
+      "summary": "Throughput, worker concurrency, backpressure, retries, and stalled job lock detection.",
+      "difficulty": "hard",
+      "notesAnchor": "bullmq-architecture"
+    }
+  ],
+  "notesUrl": "https://app.notion.com/p/3f5bcc23fb6581208eebc9eb79a5dde1",
+  "notionPageId": "3f5bcc23-fb65-8120-8eeb-c9eb79a5dde1",
+  "lastSynced": "2026-10-21T07:45:04.261Z",
+  "status": "ready"
+}

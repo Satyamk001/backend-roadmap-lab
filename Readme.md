@@ -60,6 +60,7 @@ All tracking and notes are synced live with Notion:
 - **Rules Page:** [📜 Create Notes Pages for AI + Backend Roadmap Tracker Topics](https://app.notion.com/p/3f2bcc23fb65819facc1d4e8274a1560)
 
 ### Notion Database Schema
+
 - **Task** (`title`): Name and focus of the day.
 - **Day** (`number`): 1 to 60 (numeric for proper ascending sorting).
 - **Date** (`date`): Scheduled calendar date (Mon 12 Oct 2026 to Thu 10 Dec 2026).
@@ -94,6 +95,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S1: Node.js Internals & Concurrency (Days 1–7)
+
 - **Day 1 (Mon 12 Oct):** Event loop phases (timers, pending, poll, check, close), libuv thread pool, microtasks (`process.nextTick`, `queueMicrotask`, Promises) vs macrotasks. Deliverable: Execution order puzzle set & deep-dive diagram.
 - **Day 2 (Tue 13 Oct):** Streams & backpressure: Readable, Writable, Transform, `pipeline()`, Buffers, memory profiling. Deliverable: High-throughput stream script (<80MB heap).
 - **Day 3 (Wed 14 Oct):** Multi-threading & Multi-processing: `worker_threads`, `cluster` mode, `child_process.fork()`. Deliverable: CPU-bound task offloader with thread pool.
@@ -105,6 +107,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S2: TypeScript, API Design & NestJS/Fastify (Days 8–14)
+
 - **Day 8 (Mon 19 Oct):** TypeScript for Backend: Strict mode, generics, utility types, Zod/TypeBox validation pipelines. Deliverable: Strongly typed request-response schema harness.
 - **Day 9 (Tue 20 Oct):** REST API Design & Job Prep 1: HTTP status codes (idempotent methods, 4xx vs 5xx), URL design, cursor vs offset pagination, **Resume Rewrite for Node.js Backend roles**. Deliverable: Paginated API spec + updated resume draft.
 - **Day 10 (Wed 21 Oct):** Fastify internals: Plugins lifecycle, hooks (`onRequest`, `preHandler`), schema-based serialization with fast-json-stringify. Deliverable: High-throughput Fastify microservice.
@@ -116,6 +119,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S3: PostgreSQL, Data Modeling & MongoDB (Days 15–20)
+
 - **Day 15 (Mon 26 Oct):** PostgreSQL Architecture: MVCC, WAL (Write-Ahead Logging), ACID transactions, isolation levels (Read Committed, Repeatable Read, Serializable). Deliverable: Isolation anomaly demo script.
 - **Day 16 (Tue 27 Oct):** Indexing Strategies & Job Prep 2: B-Tree, GIN, Composite indexes, covering indexes, query planner, `EXPLAIN (ANALYZE, BUFFERS)`, **LinkedIn Profile Alignment & Job Alerts**. Deliverable: Slow query optimization before/after report.
 - **Day 17 (Wed 28 Oct):** ORMs & Query Builders: Prisma vs Drizzle vs Kysely, N+1 query problem, connection pooling (PgBouncer vs pg-pool). Deliverable: N+1 benchmark & fix using batched relations.
@@ -126,11 +130,13 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### Checkpoint 1 (Day 21 — Sun 01 Nov)
+
 - **Buffer & Catch-Up Day:** Review Stages 1–3, refactor portfolio code, review interview flashcards, prepare for active job hunting starting Week 4.
 
 ---
 
 ### S4: Redis & Caching Strategies (Days 22–27)
+
 - **Day 22 (Mon 02 Nov):** Redis Fundamentals & Job Hunt Kickoff: Data structures (Strings, Hashes, Sets, Sorted Sets, Bitmaps), in-memory single-threaded event loop, **Submit 5 Job Applications**. Deliverable: Redis CLI cheatsheet + Leaderboard service using Sorted Sets.
 - **Day 23 (Tue 03 Nov):** Caching Patterns: Cache-Aside, Write-Through, Write-Behind, TTL strategies, eviction policies (LRU, LFU). Deliverable: Generic caching middleware with cache-aside pattern.
 - **Day 24 (Wed 04 Nov):** Cache Invalidation & Stampede Defense: Thundering herd problem, Mutex locking, Probabilistic early expiration (XFetch), Cache Penetration (Bloom filters). Deliverable: Dogpiling prevention benchmark.
@@ -141,6 +147,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S5: Auth, Identity & Security (Days 28–34)
+
 - **Day 28 (Mon 08 Nov):** Authentication Primitives: Sessions vs JWTs, refresh token rotation, asymmetric keys (RS256 / JWKS) vs symmetric (HS256). Deliverable: Secure auth service with rotating refresh tokens in httpOnly cookies.
 - **Day 29 (Tue 09 Nov):** OAuth 2.0 & OIDC: Authorization Code Flow with PKCE, Google/GitHub login integration. Deliverable: Working OAuth2 social login endpoint.
 - **Day 30 (Wed 10 Nov):** Authorization & Access Control: RBAC (Role-Based), ABAC (Attribute-Based), multi-tenant tenancy isolation, Casbin. Deliverable: NestJS dynamic RBAC guard with resource-level checks.
@@ -152,6 +159,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S6: Queues & Async Processing (Days 35–41)
+
 - **Day 35 (Mon 15 Nov):** Message Brokers Mental Model: Synchronous vs Asynchronous, Job Queues vs Event Streams, Push vs Pull. Deliverable: Architecture comparison document.
 - **Day 36 (Tue 16 Nov):** BullMQ in Practice: Redis-backed queues, delayed jobs, retries with exponential backoff, worker concurrency. Deliverable: Multi-worker background email & PDF processing pipeline.
 - **Day 37 (Wed 17 Nov):** RabbitMQ: Exchanges (Direct, Topic, Fanout), Queues, Bindings, ACKs/NACKs, dead-letter exchanges (DLX). Deliverable: Topic exchange routing system with dead-letter queue rerouting.
@@ -163,11 +171,13 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### Checkpoint 2 (Day 42 — Sun 22 Nov)
+
 - **Buffer & Catch-Up Day:** Review Stages 4–6, submit 5 weekly job applications, refine Portfolio Projects 1 & 2.
 
 ---
 
 ### S7: Real-Time Systems (Days 43–46)
+
 - **Day 43 (Mon 23 Nov):** Real-Time Protocols: Server-Sent Events (SSE) vs WebSockets vs Long Polling, HTTP/2 streaming. Deliverable: SSE live notifications endpoint with reconnect support.
 - **Day 44 (Tue 24 Nov):** WebSockets Deep Dive: Socket.IO / `ws`, frame formats, heartbeat pings/pongs, connection lifecycle & memory footprint. Deliverable: Raw `ws` chat server with heartbeat timeout termination.
 - **Day 45 (Wed 25 Nov):** Scaling WebSockets Horizontally: Sticky sessions, Redis Pub/Sub adapter, broadcasting across multi-instance servers. Deliverable: Clustered WebSocket service running behind an Nginx reverse proxy.
@@ -176,6 +186,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S8: Testing & Observability (Days 47–50)
+
 - **Day 47 (Fri 27 Nov):** Automated Testing Strategy: Testing pyramid, Unit tests with Vitest/Jest, mocking modules vs dependency injection. Deliverable: Test suite with >80% coverage on core business logic.
 - **Day 48 (Sat 28 Nov):** Integration Testing & Testcontainers: Testing real database queries with ephemeral Postgres/Redis Docker containers, Supertest for HTTP APIs. Deliverable: End-to-end API test suite running against real DB containers.
 - **Day 49 (Sun 29 Nov):** Structured Logging & Metrics: JSON logging with Pino/Winston, correlation IDs / trace IDs across async calls (`AsyncLocalStorage`), Prometheus metrics exporter (RED method). Deliverable: Instrumented Node app exporting custom metrics to `/metrics`.
@@ -184,6 +195,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S9: Docker, CI/CD & AWS Fundamentals (Days 51–54)
+
 - **Day 51 (Tue 01 Dec):** Docker for Production: Multi-stage Dockerfiles, non-root user security, caching node_modules, distroless images (<100MB). Deliverable: Production-hardened Node.js Docker container.
 - **Day 52 (Wed 02 Dec):** Docker Compose & Local Orchestration: Multi-container setup (App, Postgres, Redis, RabbitMQ/BullMQ), health checks, volume persistence. Deliverable: One-click `docker-compose up` development environment.
 - **Day 53 (Thu 03 Dec):** CI/CD with GitHub Actions: Linting, typechecking, running unit/integration tests, building Docker image, pushing to container registry. Deliverable: Green GitHub Actions automated pipeline.
@@ -192,6 +204,7 @@ Stage 10 (Days 55–60)──► System Design & Final Interview Sprint
 ---
 
 ### S10: System Design & Final Interview Sprint (Days 55–60)
+
 - **Day 55 (Sat 05 Dec):** System Design Fundamentals (2 YOE Bar): Scalability, Availability vs Consistency, Caching layers, Load Balancing, DB sharding vs replication. Deliverable: 4-step system design interview template.
 - **Day 56 (Sun 06 Dec):** System Design 1: Design a Scalable URL Shortener (TinyURL) or Distributed Rate Limiter. Deliverable: Architecture diagram, schema design, capacity estimation, API design.
 - **Day 57 (Mon 07 Dec):** System Design 2: Design an E-Commerce Checkout / Flash Sale System (Concurrency, Inventory Locks, Payment idempotency). Deliverable: Step-by-step design document with failure recovery.
@@ -300,3 +313,80 @@ When I say **“START STAGE N”** or **“DAY X”**, execute this exact loop:
 5. **Production Concerns & Tradeoffs:** Edge cases, bottlenecks, memory.
 6. **Task / Questions for Me:** Action item for me to write or answer.
 7. **Next Action:** Clear next checkpoint.
+
+---
+
+## ⚡ BACKEND ROADMAP LAB (INTERACTIVE IN-BROWSER VISUALIZER)
+
+"Backend Roadmap Lab" is an interactive, in-browser simulation and visualizer web app running locally on Vite + React 18 + TypeScript that brings concepts from Notion study notes to life.
+
+### 🏗️ Architecture
+
+```mermaid
+graph TD
+    A[Notion Study Notes] -->|Notion MCP Sync| B[content/stages/day-XX/]
+    B --> C[meta.json & notes.md]
+    C --> D[Content Loader import.meta.glob]
+    D --> E[React Router & Navigation Tree]
+    F[Pure TS Simulation Engine] -->|State Snapshots & Events| G[Shared Demo Chrome UI Kit]
+    G --> H[In-Browser Interactive Visualizer]
+    H --> I[Controls: Play/Pause/Step/Reset]
+    H --> J[Event Log & ARIA Live]
+    H --> K[What Just Happened? Hinglish Box]
+    H --> L[Challenge Mode Pass/Fail]
+```
+
+### 🚀 Running Locally
+
+```bash
+# Install dependencies
+npm install
+
+# Start local dev server (default port 5173)
+npm run dev
+
+# Run engine unit tests
+npm test
+
+# Build static production bundle
+npm run build
+
+# Preview static build
+npm run preview
+```
+
+### ➕ How to Add a New Day or Demo
+
+To scaffold a new day with `meta.json`, `notes.md`, and starter demo stubs:
+
+```bash
+npm run new-day -- --stage s6-queues-async --day 39 --title "Outbox Pattern & Transactional Consistency"
+```
+
+The content-driven architecture automatically detects the new folder and updates the sidebar, search command palette, and routes with **zero code changes** needed in navigation!
+
+### 🔄 How to Re-Sync Notes from Notion via MCP
+
+1. In an agent session with Notion MCP access:
+   - Run `npm run sync-notes` to list all registered study days and their Notion page IDs.
+   - Use `API-retrieve-page-markdown` with the page's UUID.
+   - Overwrite `content/stages/<stage-slug>/day-XX/notes.md`.
+   - Update `lastSynced` timestamp in `meta.json`.
+2. The deployed site remains 100% static and performs **zero network calls to Notion** at runtime.
+
+### 🗺️ Demo to Notes Section Mapping
+
+| Stage | Day | Demo Name | Demo ID | Notes Reference Section | Difficulty |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **S6 Queues & Async** | Day 38 | Partition Log Visualizer | `kafka-partition-log` | `topic-partition-offset` (Log anatomy & offsets) | Easy |
+| **S6 Queues & Async** | Day 38 | Key-to-Partition Router | `kafka-key-router` | `producer-murmur2` (Murmur2 hashing & skew) | Medium |
+| **S6 Queues & Async** | Day 38 | Producer Acks & Replication | `kafka-producer-acks` | `brokers-replication` (ISR, High Watermark, acks) | Hard |
+| **S6 Queues & Async** | Day 38 | Consumer Group Assignment | `kafka-consumer-groups` | `consumer-groups` (Partition assignment & pub/sub) | Medium |
+| **S6 Queues & Async** | Day 38 | Rebalance Simulator | `kafka-rebalance-simulator` | `rebalancing-internals` (Eager vs Cooperative, timeouts) | Hard |
+| **S6 Queues & Async** | Day 38 | Offsets, Commits & Delivery | `kafka-offsets-commits` | `offsets-commits` (At-least-once vs at-most-once) | Hard |
+| **S6 Queues & Async** | Day 38 | Lag, Retention & Replay | `kafka-lag-retention` | `retention-replay` (Lag monitoring & offset reset) | Medium |
+| **S6 Queues & Async** | Day 38 | Poison Message & DLQ | `kafka-poison-dlq` | `error-handling-dlq` (Exponential backoff & DLQ) | Medium |
+| **S6 Queues & Async** | Day 37 | Exchange Routing Playground | `rabbitmq-exchange-routing` | `exchanges-routing` (Direct, Fanout, Topic routing) | Medium |
+| **S6 Queues & Async** | Day 35 | BullMQ Lifecycle & Workers | `bullmq-pipeline` | `bullmq-architecture` (Job states, stalled jobs, backoff) | Hard |
+| **S4 Caching & Redis** | Day 22 | Redis Structures Explorer | `redis-structures-explorer` | `redis-data-structures` (Commands, memory & TTL) | Medium |
+| **S1 Node.js Concurrency** | Day 1 | Event Loop Phase Runner | `event-loop-visualizer` | `event-loop-phases` (libuv phases & microtasks) | Medium |
