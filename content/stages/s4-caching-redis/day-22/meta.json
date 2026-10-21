@@ -3,23 +3,38 @@
   "title": "Redis Data Structures & Persistence",
   "stageId": "s4-caching-redis",
   "trackerTask": "Redis data structures & persistence",
-  "recap": "Redis ek in-memory data store hai jo Strings, Hashes, Lists, Sets aur Sorted Sets jaise rich data structures provide karta hai. Persistence ke liye RDB snapshots periodic state save karte hain jabki AOF har write command ka append log rakhta hai.",
+  "recap": "Redis RAM-based key-value store hai jisme Strings, Hashes, Lists, Sets aur Sorted Sets sub-millisecond operations dete hain. Memory limited hone ki wajah se TTL aur maxmemory eviction policies (noeviction vs allkeys-lru) tay karti hain ki memory bharne par data delete hoga ya write fail. Crash safety ke liye RDB periodic photos aur AOF continuous write-log milkar data recover karte hain.",
   "concepts": [
-    "Strings",
-    "Hashes",
-    "Lists",
-    "Sets",
-    "Sorted Sets",
-    "RDB Snapshots",
-    "AOF Append Log"
+    "Strings & Atomic Counters",
+    "Hashes & Session Stores",
+    "Lists (Deques) & Capped Feeds",
+    "Sets & Unique Members",
+    "Sorted Sets & Leaderboards",
+    "TTL & Eviction Policies",
+    "RDB Point-in-time Snapshots",
+    "AOF Append Log & fsync"
   ],
   "demos": [
     {
-      "id": "redis-structures-explorer",
-      "title": "Redis In-Memory Structures & TTL",
-      "summary": "Explore Redis commands, memory layouts, and eviction policies.",
-      "difficulty": "medium",
+      "id": "redis-data-structures",
+      "title": "In-memory data structures",
+      "summary": "Strings, Hashes for sessions, Lists, Sets, and Sorted Sets in volatile RAM.",
+      "difficulty": "easy",
       "notesAnchor": "redis-data-structures"
+    },
+    {
+      "id": "redis-ttl-eviction",
+      "title": "TTL and eviction policies",
+      "summary": "RAM limits (maxmemory), active/lazy TTL expiration, and eviction policies (noeviction, allkeys-lru, volatile-lru).",
+      "difficulty": "medium",
+      "notesAnchor": "memory-and-eviction"
+    },
+    {
+      "id": "redis-rdb-aof-persistence",
+      "title": "RDB and AOF persistence",
+      "summary": "Point-in-time snapshots (RDB fork/COW), write-ahead append log (AOF fsync policies), and crash recovery replay.",
+      "difficulty": "hard",
+      "notesAnchor": "rdb-aof-persistence"
     }
   ],
   "notesUrl": "https://app.notion.com/p/3f9bcc23fb65814ca41bed93a259d096",

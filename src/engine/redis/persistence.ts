@@ -302,9 +302,6 @@ export class RedisPersistenceEngine {
     this.serverStatus = 'crashed';
 
     // Volatile RAM is instantly wiped
-    const ramKeysBeforeCrash = Array.from(this.ramKeys.keys());
-    const unflushedAofEntries = [...this.aofBuffer];
-
     this.ramKeys.clear();
     this.aofBuffer = []; // volatile write buffer lost!
     this.bgsaveInProgress = false;

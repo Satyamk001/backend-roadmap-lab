@@ -16,7 +16,10 @@ export const demoRegistry: Record<string, React.LazyExoticComponent<React.Compon
   // Day 35: BullMQ
   'bullmq-pipeline': React.lazy(() => import('./s6-queues-async/day-35/BullMqPipelineDemo')),
 
-  // Day 22: Redis
+  // Day 22: Redis (in story order)
+  'redis-data-structures': React.lazy(() => import('./s4-caching-redis/day-22/RedisStructuresDemo')),
+  'redis-ttl-eviction': React.lazy(() => import('./s4-caching-redis/day-22/TtlEvictionDemo')),
+  'redis-rdb-aof-persistence': React.lazy(() => import('./s4-caching-redis/day-22/PersistenceDemo')),
   'redis-structures-explorer': React.lazy(() => import('./s4-caching-redis/day-22/RedisStructuresDemo')),
 
   // Day 1: Node.js Event Loop

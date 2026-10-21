@@ -3,18 +3,8 @@ import { useParams, Navigate } from 'react-router-dom';
 import { getStage, getDay } from '../lib/content';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { getDemoComponent } from '../demos/registry';
-import { BookOpen, ExternalLink, ChevronDown, ChevronUp } from 'lucide-react';
-
-function cleanNotionMarkdown(raw: string): string {
-  return raw
-    .replace(/<callout[^>]*>([\s\S]*?)<\/callout>/gi, '$1\n')
-    .replace(/<mention-page[^>]*\/>/gi, '')
-    .replace(/<mention-page[^>]*>([\s\S]*?)<\/mention-page>/gi, '$1')
-    .replace(/<database[^>]*>([\s\S]*?)<\/database>/gi, '')
-    .replace(/<empty-block\/>/gi, '')
-    .replace(/\n{3,}/g, '\n\n')
-    .trim();
-}
+import { NotionNotesRenderer } from '../components/notes/NotionNotesRenderer';
+import { BookOpen, ExternalLink, ChevronDown, ChevronUp, Maximize2, Minimize2 } from 'lucide-react';
 
 export const DayPage: React.FC = () => {
   const { stageId, dayId } = useParams();
@@ -26,6 +16,7 @@ export const DayPage: React.FC = () => {
   });
 
   const [showNotesDrawer, setShowNotesDrawer] = useState(false);
+  const [isNotesExpanded, setIsNotesExpanded] = useState(false);
 
   // Keyboard shortcuts: 1-6 for tabs, Space for primary action, R for reset
   React.useEffect(() => {
@@ -163,8 +154,8 @@ export const DayPage: React.FC = () => {
         )}
       </div>
 
-      {/* Collapsed "Read the notes" Drawer (Notion tags stripped and formatted cleanly) */}
-      <div className="border border-theme-border rounded-xl overflow-hidden bg-theme-surface">
+      {/* Collapsed "Read the notes" Drawer (Notion tags formatted cleanly) */}
+      <div className="border border-theme-border rounded-xl overflow-hidden bg-theme-surface shadow-xs">
         <button
           type="button"
           onClick={() => setShowNotesDrawer(!showNotesDrawer)}
@@ -176,6 +167,30 @@ export const DayPage: React.FC = () => {
           </div>
 
           <div className="flex items-center gap-3">
+            {showNotesDrawer && (
+              <button
+                type="button"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsNotesExpanded(!isNotesExpanded);
+                }}
+                className="hidden sm:flex items-center gap-1 text-xs text-theme-muted hover:text-theme-text p-1 rounded hover:bg-theme-surface transition-colors"
+                title={isNotesExpanded ? 'Collapse reader view' : 'Expand reader view'}
+              >
+                {isNotesExpanded ? (
+                  <>
+                    <Minimize2 className="w-3.5 h-3.5" />
+                    <span>Collapse height</span>
+                  </>
+                ) : (
+                  <>
+                    <Maximize2 className="w-3.5 h-3.5" />
+                    <span>Expand view</span>
+                  </>
+                )}
+              </button>
+            )}
+
             {day.notesUrl && (
               <a
                 href={day.notesUrl}
@@ -197,11 +212,13 @@ export const DayPage: React.FC = () => {
         </button>
 
         {showNotesDrawer && (
-          <div className="p-5 border-t border-theme-border text-sm leading-relaxed max-h-[500px] overflow-y-auto space-y-4">
+          <div
+            className={`p-4 sm:p-6 border-t border-theme-border text-sm leading-relaxed overflow-y-auto ${
+              isNotesExpanded ? 'max-h-[85vh]' : 'max-h-[550px]'
+            }`}
+          >
             {day.notesMarkdown ? (
-              <div className="font-sans whitespace-pre-wrap text-theme-text leading-relaxed select-text">
-                {cleanNotionMarkdown(day.notesMarkdown)}
-              </div>
+              <NotionNotesRenderer markdown={day.notesMarkdown} />
             ) : (
               <p className="text-theme-muted italic">No notes snapshot saved for this day.</p>
             )}

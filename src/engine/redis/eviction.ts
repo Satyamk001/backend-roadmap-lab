@@ -70,13 +70,34 @@ export class RedisEvictionEngine {
   }
 
   private seedInitialKeys(): void {
-    // Seed initial keys: some with TTL (volatile), some without (permanent)
-    this.addKeyDirect('sess:auth_u101', 180, 60); // 60s TTL
-    this.addKeyDirect('sess:auth_u102', 180, 45); // 45s TTL
-    this.addKeyDirect('cache:catalog_v1', 250);   // persistent (no TTL)
-    this.addKeyDirect('views:post_42', 120);      // persistent
-    this.whatJustHappened = 'Initial state: 2 volatile sessions (with TTL) aur 2 persistent cache keys loaded.';
+    // Seed initial keys that fit comfortably within configured maxmemory limit
+    const initialCandidates = [
+      { key: 'sess:auth_u101', size: 180, ttl: 60 },
+      { key: 'sess:auth_u102', size: 180, ttl: 45 },
+      { key: 'cache:catalog_v1', size: 250, ttl: undefined },
+      { key: 'views:post_42', size: 120, ttl: undefined },
+    ];
+
+    let current = 0;
+    for (const c of initialCandidates) {
+      if (current + c.size <= this.maxmemoryBytes * 0.75) {
+        this.addKeyDirect(c.key, c.size, c.ttl);
+        current += c.size;
+      }
+    }
+
+    this.whatJustHappened = 'Initial state: Sessions (with TTL) aur cache keys RAM me loaded.';
     this.whyItMatters = 'Sessions par sliding TTL lagana zaroori hai taaki inactive users ki RAM naturally free ho sake.';
+  }
+
+  public clear(): void {
+    this.keys.clear();
+    this.eventLog = [];
+    this.tickCount = 0;
+    this.evictedKeysCount = 0;
+    this.expiredKeysCount = 0;
+    this.rejectedWritesCount = 0;
+    this.opsCount = 0;
   }
 
   private addKeyDirect(key: string, sizeBytes: number, ttlSeconds?: number): boolean {
