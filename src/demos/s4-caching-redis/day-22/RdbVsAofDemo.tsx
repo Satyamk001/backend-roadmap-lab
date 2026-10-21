@@ -174,7 +174,7 @@ export const RdbVsAofDemo: React.FC = () => {
       notesAnchor="persistence-2-aof-append-only-file"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[76rem] max-[380px]:min-h-[78.5rem] sm:min-h-[40rem]"
+      canvasClassName="min-h-[74.75rem] max-[380px]:min-h-[77rem] sm:min-h-[36rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
