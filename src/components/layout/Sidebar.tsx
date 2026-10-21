@@ -70,7 +70,7 @@ const StageDayList: React.FC<StageDayListProps> = ({
               ref={isDayActive ? activeLinkRef : undefined}
               to={`/stage/${stageId}/day/${day.dayNumber}`}
               onClick={onNavigate}
-              className={`group relative flex items-start gap-2.5 py-2 pl-4 pr-2 rounded-lg text-[13px] transition-all duration-150 ${
+              className={`group relative flex items-start gap-2.5 py-2 pl-4 pr-2 rounded-lg text-sm transition-all duration-150 ${
                 isDayActive ? 'text-theme-text' : 'text-theme-muted hover:text-theme-text'
               }`}
               title={`Day ${day.dayNumber}: ${day.trackerTask || day.title}`}
@@ -159,59 +159,61 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         Stages &amp; Days
       </div>
 
-      <div className="space-y-1.5 overflow-y-auto flex-1">
-        {stages.map((stage) => {
-          const isStageActive = stage.id === stageId;
-          const isExpanded = expandedStages[stage.id] ?? isStageActive;
+      <div className="overflow-y-auto flex-1">
+        <div className="space-y-1.5">
+          {stages.map((stage) => {
+            const isStageActive = stage.id === stageId;
+            const isExpanded = expandedStages[stage.id] ?? isStageActive;
 
-          return (
-            <div key={stage.id} className="rounded-lg">
-              {/* Stage Header */}
-              <button
-                type="button"
-                onClick={() => toggleStage(stage.id)}
-                title={stage.title}
-                aria-expanded={isExpanded}
-                className={`w-full flex items-start justify-between gap-2 p-2 rounded-lg cursor-pointer transition-all duration-150 text-[13px] font-semibold text-left active:scale-[0.99] ${
-                  isStageActive
-                    ? 'bg-theme-surface-alt text-theme-text font-bold shadow-xs'
-                    : 'text-theme-text hover:bg-theme-surface-alt'
-                }`}
-              >
-                <div className="flex min-w-0 flex-1 items-start gap-2">
-                  <Layers className="w-4 h-4 mt-0.5 text-theme-accent flex-shrink-0" />
-                  <span className="min-w-0 whitespace-normal break-words leading-snug">{stage.title}</span>
-                </div>
-                {isExpanded ? (
-                  <ChevronDown className="w-3.5 h-3.5 mt-0.5 text-theme-muted flex-shrink-0" />
-                ) : (
-                  <ChevronRight className="w-3.5 h-3.5 mt-0.5 text-theme-muted flex-shrink-0" />
+            return (
+              <div key={stage.id} className="rounded-lg">
+                {/* Stage Header */}
+                <button
+                  type="button"
+                  onClick={() => toggleStage(stage.id)}
+                  title={stage.title}
+                  aria-expanded={isExpanded}
+                  className={`w-full flex items-start justify-between gap-2 p-2 rounded-lg cursor-pointer transition-all duration-150 text-sm font-semibold text-left active:scale-[0.99] ${
+                    isStageActive
+                      ? 'bg-theme-surface-alt text-theme-text font-bold shadow-xs'
+                      : 'text-theme-text hover:bg-theme-surface-alt'
+                  }`}
+                >
+                  <div className="flex min-w-0 flex-1 items-start gap-2">
+                    <Layers className="w-4 h-4 mt-0.5 text-theme-accent flex-shrink-0" />
+                    <span className="min-w-0 whitespace-normal break-words leading-snug">{stage.title}</span>
+                  </div>
+                  {isExpanded ? (
+                    <ChevronDown className="w-3.5 h-3.5 mt-0.5 text-theme-muted flex-shrink-0" />
+                  ) : (
+                    <ChevronRight className="w-3.5 h-3.5 mt-0.5 text-theme-muted flex-shrink-0" />
+                  )}
+                </button>
+
+                {/* Days inside Stage (Stage > Day ONLY, demos are on day page) */}
+                {isExpanded && stage.days && (
+                  <StageDayList
+                    stageId={stage.id}
+                    days={stage.days}
+                    isStageActive={isStageActive}
+                    activeDayId={dayId}
+                    expandedStages={expandedStages}
+                    onNavigate={onCloseMobile}
+                  />
                 )}
-              </button>
+              </div>
+            );
+          })}
+        </div>
 
-              {/* Days inside Stage (Stage > Day ONLY, demos are on day page) */}
-              {isExpanded && stage.days && (
-                <StageDayList
-                  stageId={stage.id}
-                  days={stage.days}
-                  isStageActive={isStageActive}
-                  activeDayId={dayId}
-                  expandedStages={expandedStages}
-                  onNavigate={onCloseMobile}
-                />
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-3 shrink-0 border-t border-theme-border px-2 pb-1 pt-3">
-        <p className="text-[11px] font-semibold text-theme-text">
-          {stages.length} {stages.length === 1 ? 'stage' : 'stages'} in the library
-        </p>
-        <p className="mt-1 text-[11px] leading-relaxed text-theme-muted">
-          Missing stage numbers aren&apos;t filtered out—they haven&apos;t been added yet.
-        </p>
+        <div className="mt-4 border-t border-theme-border px-2 pb-1 pt-3">
+          <p className="text-[13px] font-semibold text-theme-text">
+            {stages.length} {stages.length === 1 ? 'stage' : 'stages'} published
+          </p>
+          <p className="mt-1 text-xs leading-relaxed text-theme-muted">
+            Missing stage numbers aren&apos;t filtered out—they haven&apos;t been published yet.
+          </p>
+        </div>
       </div>
     </div>
   );
