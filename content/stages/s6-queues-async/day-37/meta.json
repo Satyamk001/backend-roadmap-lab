@@ -3,39 +3,75 @@
   "title": "RabbitMQ: Exchanges, Routing, Acks",
   "stageId": "s6-queues-async",
   "trackerTask": "RabbitMQ: exchanges, routing, acks",
-  "definition": "Flexible message broker using exchanges and routing keys to decouple message producers from specific queues.",
+  "definition": "Smart message broker that routes messages from producers through exchanges and bindings into queues, providing fine-grained consumer acknowledgments, QoS prefetch, and dead-letter fault isolation.",
   "keyPoints": [
     {
       "icon": "🔀",
-      "title": "Exchanges & Routing",
-      "description": "Direct, Fanout, and Topic wildcard (*, #) exchanges decouple publishers from consumers."
+      "title": "Exchanges & Topic Routing",
+      "description": "Direct, Fanout, and Topic wildcard patterns (*, #) decouple publishers from subscriber queues so new consumers join without changing producer code."
     },
     {
       "icon": "🛡️",
-      "title": "Acks & Requeue",
-      "description": "Manual acknowledgments (ack, nack, reject) prevent message loss during processing failures."
+      "title": "Consumer Acks & DLX",
+      "description": "Manual acknowledgments (ack/nack) prevent message loss during worker crashes, while dead letter exchanges isolate unprocessable poison messages."
     },
     {
-      "icon": "🔄",
-      "title": "Prefetch & QoS",
-      "description": "Limits in-flight unacknowledged messages per worker, preventing consumer starvation."
+      "icon": "⚖️",
+      "title": "Prefetch & Fair QoS",
+      "description": "Consumer prefetch limits unacknowledged in-flight messages, preventing slow workers from starvation while fast workers stay fully utilized."
     }
   ],
-  "recap": "RabbitMQ exchanges messages ko routing keys aur binding rules ke basis par queues me push karte hain. Consumer acknowledgments (ack/nack) message loss rokte hain, jabki prefetch slow consumers ko overload hone se bachata hai.",
+  "recap": "RabbitMQ me producer message seedha queue me nahi, exchange ko bhejta hai. Exchange type tay karta hai ki message kaise baantega: Direct exact match dekhta hai, Fanout bina key dekhe sabhi queues ko broadcast karta hai, aur Topic wildcards (*, #) se pattern match karta hai. Consumer processing ke baad manual ack dekar message loss rokta hai, jabki prefetch fast aur slow workers me fair dispatch banata hai aur DLX poison messages ko safely isolate karta hai.",
   "concepts": [
     "Direct/Fanout/Topic Exchanges",
     "Binding Keys & Wildcards (*, #)",
-    "Manual Ack/Nack",
-    "Prefetch (QoS)",
-    "DLX & TTL Routing"
+    "Pub/Sub vs Work Queues",
+    "Manual Ack/Nack & Redelivery",
+    "Prefetch & QoS Fair Dispatch",
+    "Dead Letter Exchange (DLX) & TTL"
   ],
   "demos": [
     {
-      "id": "rabbitmq-exchange-routing",
-      "title": "Exchange Routing Playground",
-      "summary": "Direct, Fanout, and Topic routing with live binding evaluation and DLX queues.",
+      "id": "rabbitmq-exchange-types",
+      "title": "Exchange types: Direct, fanout, and topic",
+      "summary": "Direct exact match, fanout broadcast, aur topic pattern matching ka live exchange type comparison.",
+      "difficulty": "easy",
+      "notesAnchor": "exchanges-and-queues"
+    },
+    {
+      "id": "rabbitmq-topic-wildcards",
+      "title": "Topic routing: * and # wildcards",
+      "summary": "* (single word) aur # (zero ya zyada words) wildcards se selective routing aur Alternate Exchange fallback.",
       "difficulty": "medium",
-      "notesAnchor": "exchanges-routing"
+      "notesAnchor": "message-routing-with-topics"
+    },
+    {
+      "id": "rabbitmq-pubsub-workqueue",
+      "title": "Pub/Sub vs work queues",
+      "summary": "Ek queue par competing consumers (work queue) vs har subscriber ki apni queue (pub/sub).",
+      "difficulty": "easy",
+      "notesAnchor": "pubsub-model"
+    },
+    {
+      "id": "rabbitmq-consumer-acks",
+      "title": "Consumer acks and redelivery",
+      "summary": "Manual ack vs auto-ack, worker crash par redelivered flag ke saath safe redelivery.",
+      "difficulty": "medium",
+      "notesAnchor": "message-acknowledgment"
+    },
+    {
+      "id": "rabbitmq-prefetch-qos",
+      "title": "Prefetch and fair dispatch",
+      "summary": "Round-robin worker starvation ko rokne ke liye prefetch (basic.qos) fair dispatch.",
+      "difficulty": "medium",
+      "notesAnchor": "scalability-load-balancing"
+    },
+    {
+      "id": "rabbitmq-dlx-retries",
+      "title": "Dead letter exchange (DLX) and retries",
+      "summary": "Poison messages ko isolate karne ke liye x-dead-letter-exchange aur delayed retry queue.",
+      "difficulty": "hard",
+      "notesAnchor": "dead-letter-exchanges-dlx-and-queues-dlq"
     }
   ],
   "notesUrl": "https://app.notion.com/p/3f5bcc23fb658135ad28c463aa2cd48b",

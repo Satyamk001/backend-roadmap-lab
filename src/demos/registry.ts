@@ -10,8 +10,13 @@ export const demoRegistry: Record<string, React.LazyExoticComponent<React.Compon
   'kafka-acks-replication': React.lazy(() => import('./s6-queues-async/day-38/AcksReplicationDemo')),
   'kafka-retries-dlq': React.lazy(() => import('./s6-queues-async/day-38/RetriesDlqDemo')),
 
-  // Day 37: RabbitMQ
-  'rabbitmq-exchange-routing': React.lazy(() => import('./s6-queues-async/day-37/RabbitMqExchangeDemo')),
+  // Day 37: RabbitMQ (in story order)
+  'rabbitmq-exchange-types': React.lazy(() => import('./s6-queues-async/day-37/ExchangeTypesDemo')),
+  'rabbitmq-topic-wildcards': React.lazy(() => import('./s6-queues-async/day-37/TopicWildcardsDemo')),
+  'rabbitmq-pubsub-workqueue': React.lazy(() => import('./s6-queues-async/day-37/PubSubWorkQueueDemo')),
+  'rabbitmq-consumer-acks': React.lazy(() => import('./s6-queues-async/day-37/ConsumerAcksDemo')),
+  'rabbitmq-prefetch-qos': React.lazy(() => import('./s6-queues-async/day-37/PrefetchQoSDemo')),
+  'rabbitmq-dlx-retries': React.lazy(() => import('./s6-queues-async/day-37/DlxRetriesDemo')),
 
   // Day 35: BullMQ (in story order: Beginner to Advanced)
   'queue-sync-vs-async': React.lazy(() => import('./s6-queues-async/day-35/SyncVsAsyncQueueDemo')),

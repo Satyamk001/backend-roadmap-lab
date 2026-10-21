@@ -87,21 +87,19 @@ export const JobLifecycleDemo: React.FC = () => {
       <div
         key={job.id}
         onClick={() => setSelectedJobId(job.id)}
-        className={`p-2.5 rounded-lg border text-xs font-mono transition-all duration-150 cursor-pointer ${
-          isSelected
+        className={`p-2.5 rounded-lg border text-xs font-mono transition-all duration-150 cursor-pointer ${isSelected
             ? 'border-theme-accent ring-1 ring-theme-accent shadow-xs'
             : 'border-theme-border hover:border-theme-border/80'
-        } ${
-          isActive
+          } ${isActive
             ? 'bg-amber-500/10 border-amber-500/30'
             : isCompleted
-            ? 'bg-emerald-500/10 border-emerald-500/20'
-            : isFailed
-            ? 'bg-rose-500/10 border-rose-500/20'
-            : isDelayed
-            ? 'bg-violet-500/10 border-violet-500/20'
-            : 'bg-theme-surface'
-        }`}
+              ? 'bg-emerald-500/10 border-emerald-500/20'
+              : isFailed
+                ? 'bg-rose-500/10 border-rose-500/20'
+                : isDelayed
+                  ? 'bg-violet-500/10 border-violet-500/20'
+                  : 'bg-theme-surface'
+          }`}
       >
         <div className="flex items-center justify-between gap-1 mb-1 font-sans">
           <span className="font-bold text-theme-text text-[11px] truncate">{job.name}</span>
@@ -148,9 +146,7 @@ export const JobLifecycleDemo: React.FC = () => {
       <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
         <div>
           <div className="flex items-center gap-2 mb-1">
-            <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-sky-500/10 text-sky-500 border border-sky-500/30">
-              LEVEL 2: CORE LIFECYCLE
-            </span>
+
             <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
               Job lifecycle states
             </h2>
@@ -280,11 +276,10 @@ export const JobLifecycleDemo: React.FC = () => {
                 className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-theme-surface border border-theme-border font-mono text-[11px]"
               >
                 <span
-                  className={`w-2 h-2 rounded-full ${
-                    worker.status === 'busy'
+                  className={`w-2 h-2 rounded-full ${worker.status === 'busy'
                       ? 'bg-amber-500 animate-pulse'
                       : 'bg-emerald-500'
-                  }`}
+                    }`}
                 />
                 <span className="text-theme-text font-sans font-medium">{worker.name}</span>
                 <span className="text-theme-muted font-mono">
@@ -431,9 +426,8 @@ export const JobLifecycleDemo: React.FC = () => {
             <span>More options (Auto-play, Challenges, Event log & State inspector)</span>
           </div>
           <ChevronDown
-            className={`w-3.5 h-3.5 text-theme-muted transition-transform ${
-              showMoreOptions ? 'rotate-180' : ''
-            }`}
+            className={`w-3.5 h-3.5 text-theme-muted transition-transform ${showMoreOptions ? 'rotate-180' : ''
+              }`}
           />
         </button>
 
@@ -472,11 +466,10 @@ export const JobLifecycleDemo: React.FC = () => {
               </span>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
                 <div
-                  className={`p-2.5 rounded-lg border ${
-                    challenge1Passed
+                  className={`p-2.5 rounded-lg border ${challenge1Passed
                       ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                       : 'border-theme-border bg-theme-surface text-theme-muted'
-                  }`}
+                    }`}
                 >
                   <div className="font-semibold flex items-center gap-1.5">
                     {challenge1Passed ? '✓ Challenge 1 Passed' : 'Challenge 1: Process 2 Jobs'}
@@ -487,11 +480,10 @@ export const JobLifecycleDemo: React.FC = () => {
                 </div>
 
                 <div
-                  className={`p-2.5 rounded-lg border ${
-                    challenge2Passed
+                  className={`p-2.5 rounded-lg border ${challenge2Passed
                       ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-700 dark:text-emerald-300'
                       : 'border-theme-border bg-theme-surface text-theme-muted'
-                  }`}
+                    }`}
                 >
                   <div className="font-semibold flex items-center gap-1.5">
                     {challenge2Passed ? '✓ Challenge 2 Passed' : 'Challenge 2: Trigger a Retry Backoff'}
@@ -520,10 +512,10 @@ export const JobLifecycleDemo: React.FC = () => {
                           ev.type === 'success'
                             ? 'text-emerald-600 dark:text-emerald-400'
                             : ev.type === 'error'
-                            ? 'text-rose-600 dark:text-rose-400'
-                            : ev.type === 'warning'
-                            ? 'text-amber-600 dark:text-amber-400'
-                            : 'text-theme-text'
+                              ? 'text-rose-600 dark:text-rose-400'
+                              : ev.type === 'warning'
+                                ? 'text-amber-600 dark:text-amber-400'
+                                : 'text-theme-text'
                         }
                       >
                         {ev.message}

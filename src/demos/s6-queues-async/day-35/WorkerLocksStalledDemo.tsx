@@ -85,9 +85,7 @@ export const WorkerLocksStalledDemo: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-amber-500/10 text-amber-500 border border-amber-500/30">
-                LEVEL 3: INTERMEDIATE RECOVERY
-              </span>
+
               <h2 className="text-xl font-bold text-theme-text">
                 Worker locks and stalled jobs
               </h2>
@@ -150,28 +148,26 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                 return (
                   <div
                     key={worker.id}
-                    className={`p-3 rounded-lg border transition-all text-xs ${
-                      isCrashed
+                    className={`p-3 rounded-lg border transition-all text-xs ${isCrashed
                         ? 'bg-rose-500/10 border-rose-500/30'
                         : isFrozen
-                        ? 'bg-sky-500/10 border-sky-500/30'
-                        : isProcessing
-                        ? 'bg-amber-500/10 border-amber-500/30 shadow-xs'
-                        : 'bg-theme-surface border-theme-border'
-                    }`}
+                          ? 'bg-sky-500/10 border-sky-500/30'
+                          : isProcessing
+                            ? 'bg-amber-500/10 border-amber-500/30 shadow-xs'
+                            : 'bg-theme-surface border-theme-border'
+                      }`}
                   >
                     <div className="flex items-center justify-between font-medium text-theme-text mb-1">
                       <span className="font-semibold">{worker.name}</span>
                       <span
-                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono uppercase font-bold ${
-                          isCrashed
+                        className={`text-[10px] px-1.5 py-0.5 rounded font-mono uppercase font-bold ${isCrashed
                             ? 'bg-rose-500/20 text-rose-500'
                             : isFrozen
-                            ? 'bg-sky-500/20 text-sky-500'
-                            : isProcessing
-                            ? 'bg-amber-500/20 text-amber-500'
-                            : 'bg-theme-surface-alt text-theme-muted'
-                        }`}
+                              ? 'bg-sky-500/20 text-sky-500'
+                              : isProcessing
+                                ? 'bg-amber-500/20 text-amber-500'
+                                : 'bg-theme-surface-alt text-theme-muted'
+                          }`}
                       >
                         {worker.status}
                       </span>
@@ -222,13 +218,12 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                   </div>
                   <div className="w-full h-2 bg-theme-surface-alt rounded-full overflow-hidden border border-theme-border">
                     <div
-                      className={`h-full transition-all duration-300 ${
-                        snap.activeJob.lockTtl <= 2
+                      className={`h-full transition-all duration-300 ${snap.activeJob.lockTtl <= 2
                           ? 'bg-rose-500'
                           : snap.activeJob.lockTtl <= 4
-                          ? 'bg-amber-500'
-                          : 'bg-emerald-500'
-                      }`}
+                            ? 'bg-amber-500'
+                            : 'bg-emerald-500'
+                        }`}
                       style={{
                         width: `${(snap.activeJob.lockTtl / snap.activeJob.maxLockTtl) * 100}%`,
                       }}
@@ -271,11 +266,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                 snap.waitingJobs.map((job) => (
                   <div
                     key={job.id}
-                    className={`p-2.5 rounded-md border text-xs ${
-                      job.stalledCount > 0
+                    className={`p-2.5 rounded-md border text-xs ${job.stalledCount > 0
                         ? 'border-violet-500/40 bg-violet-500/10'
                         : 'border-theme-border bg-theme-surface-alt'
-                    }`}
+                      }`}
                   >
                     <div className="flex items-center justify-between mb-1">
                       <span className="font-bold text-theme-text">{job.title}</span>
@@ -307,11 +301,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                 Idempotency Store (DB)
               </span>
               <span
-                className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${
-                  snap.idempotencyEnabled
+                className={`text-[10px] px-1.5 py-0.5 rounded font-mono font-bold ${snap.idempotencyEnabled
                     ? 'bg-emerald-500/10 text-emerald-500'
                     : 'bg-rose-500/10 text-rose-500'
-                }`}
+                  }`}
               >
                 {snap.idempotencyEnabled ? 'PROTECTION ON' : 'PROTECTION OFF'}
               </span>
@@ -321,11 +314,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
               <div className="flex justify-between items-center p-2 rounded bg-theme-surface-alt border border-theme-border">
                 <span className="text-theme-muted">Charges Executed:</span>
                 <span
-                  className={`font-mono font-bold text-sm ${
-                    snap.sideEffectExecutionCount > 1 && !snap.idempotencyEnabled
+                  className={`font-mono font-bold text-sm ${snap.sideEffectExecutionCount > 1 && !snap.idempotencyEnabled
                       ? 'text-rose-500'
                       : 'text-theme-text'
-                  }`}
+                    }`}
                 >
                   {snap.sideEffectExecutionCount} times
                 </span>
@@ -344,11 +336,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
 
               {snap.duplicateDetected && (
                 <div
-                  className={`p-2 rounded text-xs border ${
-                    snap.idempotencyEnabled
+                  className={`p-2 rounded text-xs border ${snap.idempotencyEnabled
                       ? 'bg-emerald-500/10 border-emerald-500/30 text-emerald-600 dark:text-emerald-400'
                       : 'bg-rose-500/10 border-rose-500/30 text-rose-600 dark:text-rose-400'
-                  }`}
+                    }`}
                 >
                   {snap.idempotencyEnabled
                     ? '🛡️ Redelivered job skipped safely via database unique key!'
@@ -440,9 +431,8 @@ export const WorkerLocksStalledDemo: React.FC = () => {
             )}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ${
-              showMoreOptions ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 transition-transform duration-200 ${showMoreOptions ? 'rotate-180' : ''
+              }`}
           />
         </button>
 
@@ -453,11 +443,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setIsPlaying(!isPlaying)}
-                  className={`px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 transition-colors ${
-                    isPlaying
+                  className={`px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 transition-colors ${isPlaying
                       ? 'bg-amber-500 text-white'
                       : 'border border-theme-border bg-theme-surface text-theme-text hover:bg-theme-surface-alt'
-                  }`}
+                    }`}
                 >
                   {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                   {isPlaying ? 'Pause Auto-Play' : 'Auto-Play'}
@@ -484,11 +473,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                     engine.setIdempotency(!snap.idempotencyEnabled);
                     sync();
                   }}
-                  className={`px-2.5 py-1 rounded font-mono font-bold text-[11px] border transition-colors ${
-                    snap.idempotencyEnabled
+                  className={`px-2.5 py-1 rounded font-mono font-bold text-[11px] border transition-colors ${snap.idempotencyEnabled
                       ? 'bg-emerald-500/10 border-emerald-500/40 text-emerald-500'
                       : 'bg-rose-500/10 border-rose-500/40 text-rose-500'
-                  }`}
+                    }`}
                 >
                   {snap.idempotencyEnabled ? 'ENABLED (SAFE)' : 'DISABLED (RISKY)'}
                 </button>
@@ -507,11 +495,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                     1. Crash Worker-1 while holding a lock, step clock until TTL hits 0 to trigger Watchdog stalled recovery.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge1Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge1Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge1Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -522,11 +509,10 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                     2. Let Standby Worker-2 re-execute the stalled job with Idempotency enabled and verify charge count stays 1.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge2Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge2Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge2Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -552,15 +538,14 @@ export const WorkerLocksStalledDemo: React.FC = () => {
                   snap.eventLog.map((ev) => (
                     <div
                       key={ev.id}
-                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${
-                        ev.type === 'error'
+                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${ev.type === 'error'
                           ? 'bg-rose-500/10 text-rose-500'
                           : ev.type === 'warning'
-                          ? 'bg-amber-500/10 text-amber-500'
-                          : ev.type === 'success'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'text-theme-muted'
-                      }`}
+                            ? 'bg-amber-500/10 text-amber-500'
+                            : ev.type === 'success'
+                              ? 'bg-emerald-500/10 text-emerald-500'
+                              : 'text-theme-muted'
+                        }`}
                     >
                       <span className="text-theme-muted shrink-0">[T+{ev.tick}]</span>
                       <span>{ev.message}</span>

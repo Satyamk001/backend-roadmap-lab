@@ -77,9 +77,6 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-emerald-500/10 text-emerald-500 border border-emerald-500/30">
-                LEVEL 1: BEGINNER FOUNDATION
-              </span>
               <h2 className="text-xl font-bold text-theme-text">
                 Sync HTTP vs async queue
               </h2>
@@ -130,11 +127,10 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
           <button
             onClick={() => runGuidedStep(1)}
-            className={`p-2 rounded-md border text-left text-xs transition-all ${
-              activeTabGuide === 1
+            className={`p-2 rounded-md border text-left text-xs transition-all ${activeTabGuide === 1
                 ? 'border-theme-primary bg-theme-surface shadow-xs ring-1 ring-theme-primary'
                 : 'border-theme-border bg-theme-surface hover:border-theme-border/80'
-            }`}
+              }`}
           >
             <div className="font-bold text-theme-text flex items-center gap-1">
               <span>1. Single Sync Call</span>
@@ -146,11 +142,10 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
 
           <button
             onClick={() => runGuidedStep(2)}
-            className={`p-2 rounded-md border text-left text-xs transition-all ${
-              activeTabGuide === 2
+            className={`p-2 rounded-md border text-left text-xs transition-all ${activeTabGuide === 2
                 ? 'border-rose-500 bg-theme-surface shadow-xs ring-1 ring-rose-500'
                 : 'border-theme-border bg-theme-surface hover:border-theme-border/80'
-            }`}
+              }`}
           >
             <div className="font-bold text-rose-500 flex items-center gap-1">
               <span>2. Traffic Spike (504 Crash)</span>
@@ -162,11 +157,10 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
 
           <button
             onClick={() => runGuidedStep(3)}
-            className={`p-2 rounded-md border text-left text-xs transition-all ${
-              activeTabGuide === 3
+            className={`p-2 rounded-md border text-left text-xs transition-all ${activeTabGuide === 3
                 ? 'border-emerald-500 bg-theme-surface shadow-xs ring-1 ring-emerald-500'
                 : 'border-theme-border bg-theme-surface hover:border-theme-border/80'
-            }`}
+              }`}
           >
             <div className="font-bold text-emerald-500 flex items-center gap-1">
               <span>3. Async Queue (12ms Fix)</span>
@@ -189,11 +183,10 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
                 User Experience & Latency
               </span>
               <span
-                className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${
-                  snap.mode === 'sync'
+                className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold ${snap.mode === 'sync'
                     ? 'bg-amber-500/10 text-amber-500'
                     : 'bg-emerald-500/10 text-emerald-500'
-                }`}
+                  }`}
               >
                 {snap.mode === 'sync' ? 'SYNC BLOCKING' : 'ASYNC DECOUPLED'}
               </span>
@@ -208,9 +201,8 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
                 </span>
               </div>
               <div
-                className={`text-2xl font-bold font-mono ${
-                  snap.mode === 'sync' ? 'text-amber-500' : 'text-emerald-500'
-                }`}
+                className={`text-2xl font-bold font-mono ${snap.mode === 'sync' ? 'text-amber-500' : 'text-emerald-500'
+                  }`}
               >
                 ~{snap.avgResponseTimeMs} ms
               </div>
@@ -237,13 +229,12 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
                   snap.activeRequests.map((req) => (
                     <div
                       key={req.id}
-                      className={`p-2 rounded border text-xs font-mono flex items-center justify-between ${
-                        req.status === 'timeout'
+                      className={`p-2 rounded border text-xs font-mono flex items-center justify-between ${req.status === 'timeout'
                           ? 'border-rose-500/40 bg-rose-500/10 text-rose-500'
                           : req.status === 'processing'
-                          ? 'border-amber-500/40 bg-amber-500/10 text-amber-500 animate-pulse'
-                          : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
-                      }`}
+                            ? 'border-amber-500/40 bg-amber-500/10 text-amber-500 animate-pulse'
+                            : 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400'
+                        }`}
                     >
                       <div className="truncate">
                         <span className="font-bold">[{req.httpStatus}]</span> {req.label.slice(0, 18)}...
@@ -270,11 +261,10 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
                 API Server (Thread Pool)
               </span>
               <span
-                className={`text-[11px] font-mono px-2 py-0.5 rounded font-bold ${
-                  snap.httpThreadsUsed >= snap.maxHttpThreads
+                className={`text-[11px] font-mono px-2 py-0.5 rounded font-bold ${snap.httpThreadsUsed >= snap.maxHttpThreads
                     ? 'bg-rose-500/10 text-rose-500'
                     : 'bg-theme-surface-alt text-theme-muted'
-                }`}
+                  }`}
               >
                 Threads: {snap.httpThreadsUsed}/{snap.maxHttpThreads}
               </span>
@@ -284,13 +274,12 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
             <div className="space-y-1 mb-4">
               <div className="w-full h-2.5 bg-theme-surface-alt rounded-full overflow-hidden border border-theme-border">
                 <div
-                  className={`h-full transition-all duration-300 ${
-                    snap.httpThreadsUsed >= snap.maxHttpThreads
+                  className={`h-full transition-all duration-300 ${snap.httpThreadsUsed >= snap.maxHttpThreads
                       ? 'bg-rose-500'
                       : snap.httpThreadsUsed > 1
-                      ? 'bg-amber-500'
-                      : 'bg-emerald-500'
-                  }`}
+                        ? 'bg-amber-500'
+                        : 'bg-emerald-500'
+                    }`}
                   style={{
                     width: `${(snap.httpThreadsUsed / snap.maxHttpThreads) * 100}%`,
                   }}
@@ -311,7 +300,7 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
                     <span>Notion Anti-Pattern: Sync in Request</span>
                   </div>
                   <pre className="p-2 rounded bg-theme-surface border border-theme-border text-[10px] font-mono text-theme-muted overflow-x-auto leading-relaxed">
-{`// Anti-pattern (Notes 1️⃣)
+                    {`// Anti-pattern (Notes 1️⃣)
 app.post("/signup", async (req, res) => {
   // SMTP slow → thread blocked for 3s
   await sendWelcomeEmail(req.body.email);
@@ -329,7 +318,7 @@ app.post("/signup", async (req, res) => {
                     <span>Notion Solution: Enqueue + 202 Accepted</span>
                   </div>
                   <pre className="p-2 rounded bg-theme-surface border border-theme-border text-[10px] font-mono text-emerald-600 dark:text-emerald-400 overflow-x-auto leading-relaxed">
-{`// Better (Notes 1️⃣)
+                    {`// Better (Notes 1️⃣)
 app.post("/signup", async (req, res) => {
   await emailQueue.add("welcome", { to: req.body.email });
   res.status(202).json({ queued: true }); // ~12ms!
@@ -371,18 +360,16 @@ app.post("/signup", async (req, res) => {
                   return (
                     <div
                       key={worker.id}
-                      className={`p-3 rounded-lg border text-xs transition-all ${
-                        isBusy
+                      className={`p-3 rounded-lg border text-xs transition-all ${isBusy
                           ? 'border-emerald-500/40 bg-emerald-500/10'
                           : 'border-theme-border bg-theme-surface-alt'
-                      }`}
+                        }`}
                     >
                       <div className="flex items-center justify-between font-bold text-theme-text mb-1">
                         <span>{worker.name}</span>
                         <span
-                          className={`text-[10px] px-1.5 py-0.2 rounded font-mono uppercase ${
-                            isBusy ? 'bg-emerald-500/20 text-emerald-500' : 'bg-theme-surface text-theme-muted'
-                          }`}
+                          className={`text-[10px] px-1.5 py-0.2 rounded font-mono uppercase ${isBusy ? 'bg-emerald-500/20 text-emerald-500' : 'bg-theme-surface text-theme-muted'
+                            }`}
                         >
                           {worker.status}
                         </span>
@@ -443,11 +430,10 @@ app.post("/signup", async (req, res) => {
             engine.setMode(nextMode);
             sync();
           }}
-          className={`px-3 py-2 rounded-lg border font-medium text-xs flex items-center gap-1.5 transition-colors ${
-            snap.mode === 'sync'
+          className={`px-3 py-2 rounded-lg border font-medium text-xs flex items-center gap-1.5 transition-colors ${snap.mode === 'sync'
               ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
               : 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-          }`}
+            }`}
         >
           <ArrowRight className="w-3.5 h-3.5" />
           Switch to {snap.mode === 'sync' ? 'Async Queue' : 'Sync HTTP'}
@@ -491,9 +477,8 @@ app.post("/signup", async (req, res) => {
             )}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ${
-              showMoreOptions ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 transition-transform duration-200 ${showMoreOptions ? 'rotate-180' : ''
+              }`}
           />
         </button>
 
@@ -511,11 +496,10 @@ app.post("/signup", async (req, res) => {
                     1. In Sync mode, send 4 or more requests simultaneously to exhaust the thread pool and trigger an HTTP 504 Gateway Timeout.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge1Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge1Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge1Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -526,11 +510,10 @@ app.post("/signup", async (req, res) => {
                     2. Switch to Async Queue mode, trigger a 5-request spike, and step the clock until 3 background jobs complete with 0 timeouts.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge2Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge2Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge2Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -556,15 +539,14 @@ app.post("/signup", async (req, res) => {
                   snap.eventLog.map((ev) => (
                     <div
                       key={ev.id}
-                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${
-                        ev.type === 'error'
+                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${ev.type === 'error'
                           ? 'bg-rose-500/10 text-rose-500'
                           : ev.type === 'warning'
-                          ? 'bg-amber-500/10 text-amber-500'
-                          : ev.type === 'success'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'text-theme-muted'
-                      }`}
+                            ? 'bg-amber-500/10 text-amber-500'
+                            : ev.type === 'success'
+                              ? 'bg-emerald-500/10 text-emerald-500'
+                              : 'text-theme-muted'
+                        }`}
                     >
                       <span className="text-theme-muted shrink-0">[T+{ev.tick}]</span>
                       <span>{ev.message}</span>

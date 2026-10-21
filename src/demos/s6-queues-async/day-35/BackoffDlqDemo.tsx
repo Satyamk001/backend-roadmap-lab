@@ -90,9 +90,7 @@ export const BackoffDlqDemo: React.FC = () => {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
           <div>
             <div className="flex items-center gap-2 mb-1">
-              <span className="px-2 py-0.5 rounded text-[11px] font-mono font-bold bg-violet-500/10 text-violet-500 border border-violet-500/30">
-                LEVEL 4: ADVANCED DLQ
-              </span>
+
               <h2 className="text-xl font-bold text-theme-text">
                 Backoff retries and DLQ
               </h2>
@@ -452,9 +450,8 @@ export const BackoffDlqDemo: React.FC = () => {
             )}
           </span>
           <ChevronDown
-            className={`w-4 h-4 transition-transform duration-200 ${
-              showMoreOptions ? 'rotate-180' : ''
-            }`}
+            className={`w-4 h-4 transition-transform duration-200 ${showMoreOptions ? 'rotate-180' : ''
+              }`}
           />
         </button>
 
@@ -465,11 +462,10 @@ export const BackoffDlqDemo: React.FC = () => {
               <span className="text-theme-muted">Autonomous Simulation Runner:</span>
               <button
                 onClick={() => setIsPlaying(!isPlaying)}
-                className={`px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 transition-colors ${
-                  isPlaying
+                className={`px-3 py-1.5 rounded-md font-medium flex items-center gap-1.5 transition-colors ${isPlaying
                     ? 'bg-amber-500 text-white'
                     : 'border border-theme-border bg-theme-surface text-theme-text hover:bg-theme-surface-alt'
-                }`}
+                  }`}
               >
                 {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
                 {isPlaying ? 'Pause Auto-Play' : 'Auto-Play Simulation'}
@@ -488,11 +484,10 @@ export const BackoffDlqDemo: React.FC = () => {
                     1. Fail a job 3 consecutive times with exponential backoff until all retries exhaust and it enters DLQ.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge1Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge1Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge1Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -503,11 +498,10 @@ export const BackoffDlqDemo: React.FC = () => {
                     2. Inspect the failed job stack trace in DLQ and click "Replay Job" to re-enqueue it.
                   </span>
                   <span
-                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${
-                      challenge2Passed
+                    className={`text-[10px] font-mono px-2 py-0.5 rounded font-bold uppercase ${challenge2Passed
                         ? 'bg-emerald-500/10 text-emerald-500'
                         : 'bg-stone-500/10 text-theme-muted'
-                    }`}
+                      }`}
                   >
                     {challenge2Passed ? 'PASSED' : 'TODO'}
                   </span>
@@ -533,15 +527,14 @@ export const BackoffDlqDemo: React.FC = () => {
                   snap.eventLog.map((ev) => (
                     <div
                       key={ev.id}
-                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${
-                        ev.type === 'error'
+                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${ev.type === 'error'
                           ? 'bg-rose-500/10 text-rose-500'
                           : ev.type === 'warning'
-                          ? 'bg-amber-500/10 text-amber-500'
-                          : ev.type === 'success'
-                          ? 'bg-emerald-500/10 text-emerald-500'
-                          : 'text-theme-muted'
-                      }`}
+                            ? 'bg-amber-500/10 text-amber-500'
+                            : ev.type === 'success'
+                              ? 'bg-emerald-500/10 text-emerald-500'
+                              : 'text-theme-muted'
+                        }`}
                     >
                       <span className="text-theme-muted shrink-0">[T+{ev.tick}]</span>
                       <span>{ev.message}</span>
