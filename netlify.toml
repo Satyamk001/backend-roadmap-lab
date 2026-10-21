@@ -1,6 +1,9 @@
 [build]
   command = "npm run build"
-  publish = ".next"
+  publish = "dist"
 
-[[plugins]]
-  package = "@netlify/plugin-vite"
+# Client-side routing (BrowserRouter): serve index.html for every path.
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200
