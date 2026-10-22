@@ -100,6 +100,7 @@ export const MicrotasksMacrotasksDemo: React.FC = () => {
         snapshot={snapshot}
         code={microtasksMacrotasksTrace.code}
         activeLine={snapshot.line}
+        visibleLanes={['queues', 'phases', 'stack', 'console']}
       />
     </NodeDemoShell>
   );

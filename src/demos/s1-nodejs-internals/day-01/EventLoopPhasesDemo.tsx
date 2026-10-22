@@ -100,6 +100,7 @@ export const EventLoopPhasesDemo: React.FC = () => {
         snapshot={snapshot}
         code={eventLoopPhasesTrace.code}
         activeLine={snapshot.line}
+        visibleLanes={['phases', 'stack', 'console']}
       />
     </NodeDemoShell>
   );

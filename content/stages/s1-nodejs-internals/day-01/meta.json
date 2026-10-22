@@ -3,25 +3,25 @@
   "title": "Event Loop Phases, libuv, Microtasks vs Macrotasks",
   "stageId": "s1-nodejs-internals",
   "trackerTask": "Event loop phases, libuv, microtasks vs macrotasks",
-  "definition": "Single-threaded non-blocking runtime powered by libuv event loop and priority microtask queues.",
+  "definition": "Node.js single JS thread par non-blocking I/O chalata hai libuv event loop aur priority queues ke zariye.",
   "keyPoints": [
     {
       "icon": "🔄",
-      "title": "Event Loop Phases",
-      "description": "6 distinct phases (timers, pending, poll, check, close) executing callbacks in order."
+      "title": "6 Fixed Phases",
+      "description": "Timers, pending, idle/prepare, poll, check aur close ek fixed round me execute hote hain."
     },
     {
       "icon": "⚡",
       "title": "Microtasks First",
-      "description": "process.nextTick and Promise drain immediately before the next macrotask runs."
+      "description": "Har macrotask ke baad pehle process.nextTick aur Promise queues poori drain hoti hain."
     },
     {
       "icon": "🧵",
-      "title": "libuv Offload",
-      "description": "Delegates OS async (network I/O) and thread pool (crypto, fs) off the single JS thread."
+      "title": "libuv Worker Offload",
+      "description": "Network sockets kernel epoll ko jaate hain; files aur crypto libuv thread pool sambhalta hai."
     }
   ],
-  "recap": "Node.js ka event loop single thread par non-blocking I/O chalata hai libuv ke 6 phases (timers, pending, poll, check, close) ke zariye. Microtasks (process.nextTick aur Promises) har macrotask aur phase transition ke beech turant drain hote hain.",
+  "recap": "Node.js ka event loop single thread par non-blocking I/O chalata hai libuv ke 6 phases (timers, pending, idle/prepare, poll, check, close) ke zariye. Microtasks (process.nextTick aur Promises) har macrotask aur phase transition ke beech turant drain hote hain.",
   "concepts": [
     "Event Loop Phases",
     "libuv Thread Pool",

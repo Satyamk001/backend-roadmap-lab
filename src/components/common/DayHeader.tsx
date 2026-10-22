@@ -56,11 +56,11 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
 
       {/* 3 Scannable Key Takeaway Cards */}
       {keyPoints.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-1.5 sm:gap-2">
           {keyPoints.map((point, idx) => (
             <div
               key={idx}
-              className="px-2.5 py-2 sm:px-3 sm:py-2 rounded-lg border border-theme-border bg-theme-surface shadow-2xs transition-all duration-150 hover:border-theme-border/80"
+              className="px-2.5 py-1.5 sm:px-3 sm:py-2 rounded-lg border border-theme-border bg-theme-surface shadow-2xs transition-all duration-150 hover:border-theme-border/80"
             >
               <div className="flex items-center gap-1.5">
                 <span className="text-sm select-none leading-none" aria-hidden="true">
@@ -70,7 +70,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
                   {point.title}
                 </h3>
               </div>
-              <p className="mt-1 text-[12px] sm:text-[12.5px] text-theme-muted leading-snug">
+              <p className="mt-0.5 sm:mt-1 text-[12.5px] sm:text-[13px] text-theme-muted leading-tight sm:leading-snug">
                 {point.description}
               </p>
             </div>

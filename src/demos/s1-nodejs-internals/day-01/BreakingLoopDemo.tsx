@@ -69,7 +69,7 @@ export const BreakingLoopDemo: React.FC = () => {
 
   const failureModeControls = (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-semantic-error">
+      <div className="flex items-center gap-1.5 text-[13px] font-bold text-semantic-error">
         <AlertTriangle className="h-3.5 w-3.5" />
         <span>Failure Modes</span>
       </div>
@@ -78,9 +78,9 @@ export const BreakingLoopDemo: React.FC = () => {
         <button
           type="button"
           onClick={() => handleSelectMode('sync-block')}
-          className={`rounded border p-1.5 text-left font-mono text-[11px] transition-colors ${
+          className={`rounded-lg border px-2.5 py-1.5 text-left text-[12.5px] sm:text-[13px] font-medium transition-colors ${
             selectedKey === 'sync-block'
-              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold'
+              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold shadow-2xs'
               : 'border-theme-border bg-theme-bg text-theme-muted hover:bg-theme-surface-alt'
           }`}
         >
@@ -89,9 +89,9 @@ export const BreakingLoopDemo: React.FC = () => {
         <button
           type="button"
           onClick={() => handleSelectMode('tick-starve')}
-          className={`rounded border p-1.5 text-left font-mono text-[11px] transition-colors ${
+          className={`rounded-lg border px-2.5 py-1.5 text-left text-[12.5px] sm:text-[13px] font-medium transition-colors ${
             selectedKey === 'tick-starve'
-              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold'
+              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold shadow-2xs'
               : 'border-theme-border bg-theme-bg text-theme-muted hover:bg-theme-surface-alt'
           }`}
         >
@@ -100,9 +100,9 @@ export const BreakingLoopDemo: React.FC = () => {
         <button
           type="button"
           onClick={() => handleSelectMode('pool-saturate')}
-          className={`rounded border p-1.5 text-left font-mono text-[11px] transition-colors ${
+          className={`rounded-lg border px-2.5 py-1.5 text-left text-[12.5px] sm:text-[13px] font-medium transition-colors ${
             selectedKey === 'pool-saturate'
-              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold'
+              ? 'border-semantic-error bg-semantic-error-bg text-semantic-error font-bold shadow-2xs'
               : 'border-theme-border bg-theme-bg text-theme-muted hover:bg-theme-surface-alt'
           }`}
         >
@@ -110,7 +110,7 @@ export const BreakingLoopDemo: React.FC = () => {
         </button>
       </div>
 
-      <div className="rounded-lg border border-theme-border bg-theme-surface-alt/40 p-2 text-[11.5px] text-theme-muted flex items-start gap-1.5">
+      <div className="rounded-lg border border-theme-border bg-theme-surface-alt/40 p-2.5 text-[12.5px] sm:text-[13px] text-theme-muted flex items-start gap-2">
         <ShieldCheck className="h-4 w-4 text-theme-accent flex-shrink-0 mt-0.5" />
         <div>
           <span className="font-semibold text-theme-text">Production Remedy: </span>
@@ -172,7 +172,7 @@ export const BreakingLoopDemo: React.FC = () => {
           <select
             value={selectedKey}
             onChange={(e) => handleSelectMode(e.target.value)}
-            className="rounded-lg border border-theme-border bg-theme-surface px-2 py-1 text-[12px] font-semibold text-theme-text shadow-2xs focus:outline-none focus:ring-2 focus:ring-theme-primary select-none"
+            className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1 text-[13px] font-semibold text-theme-text shadow-2xs focus:outline-none focus:ring-2 focus:ring-theme-primary select-none"
           >
             <option value="sync-block">Sync Loop Freeze</option>
             <option value="tick-starve">nextTick Starvation</option>
@@ -186,6 +186,7 @@ export const BreakingLoopDemo: React.FC = () => {
         code={PRESETS[selectedKey].code}
         activeLine={snapshot.line}
         interactiveControls={failureModeControls}
+        visibleLanes={['stack', 'console', 'queues', 'libuv']}
       />
     </NodeDemoShell>
   );

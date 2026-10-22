@@ -100,7 +100,7 @@ export const PredictOutputDemo: React.FC = () => {
 
   const predictionPanel = (
     <div className="space-y-2">
-      <div className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-wider text-theme-muted">
+      <div className="flex items-center gap-1.5 text-[13px] font-bold text-theme-muted">
         <HelpCircle className="h-3.5 w-3.5 text-theme-accent" />
         <span>Predict Output Order</span>
       </div>
@@ -117,26 +117,26 @@ export const PredictOutputDemo: React.FC = () => {
             ? 'e.g. immediate, timeout'
             : 'Type your predicted output tokens...'
         }
-        className="w-full rounded-lg border border-theme-border bg-theme-bg px-2.5 py-1.5 font-mono text-[12px] text-theme-text placeholder:text-theme-muted/50 focus:outline-none focus:ring-2 focus:ring-theme-primary"
+        className="w-full rounded-lg border border-theme-border bg-theme-bg px-2.5 py-1.5 font-mono text-[13px] text-theme-text placeholder:text-theme-muted/50 focus:outline-none focus:ring-2 focus:ring-theme-primary"
       />
 
       <div className="flex items-center gap-2">
         <button
           type="button"
           onClick={handleCheckPrediction}
-          className="rounded-md bg-theme-surface border border-theme-border hover:bg-theme-surface-alt px-2 py-1 text-[11.5px] font-semibold text-theme-text transition-colors"
+          className="rounded-md bg-theme-surface border border-theme-border hover:bg-theme-surface-alt px-2.5 py-1 text-[13px] font-semibold text-theme-text transition-colors"
         >
           Verify Prediction
         </button>
 
         {checkedResult === 'correct' && (
-          <span className="flex items-center gap-1 text-[11.5px] font-bold text-semantic-success">
+          <span className="flex items-center gap-1 text-[13px] font-bold text-semantic-success">
             <Check className="h-3.5 w-3.5" />
             <span>Bilkul Sahi! Matches trace.</span>
           </span>
         )}
         {checkedResult === 'incorrect' && (
-          <span className="flex items-center gap-1 text-[11.5px] font-bold text-semantic-error">
+          <span className="flex items-center gap-1 text-[13px] font-bold text-semantic-error">
             <X className="h-3.5 w-3.5" />
             <span>Try again or step through to see why!</span>
           </span>
@@ -209,7 +209,7 @@ export const PredictOutputDemo: React.FC = () => {
           <select
             value={selectedPresetKey}
             onChange={(e) => handleSelectPreset(e.target.value)}
-            className="rounded-lg border border-theme-border bg-theme-surface px-2 py-1 text-[12px] font-semibold text-theme-text shadow-2xs focus:outline-none focus:ring-2 focus:ring-theme-primary select-none"
+            className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1 text-[13px] font-semibold text-theme-text shadow-2xs focus:outline-none focus:ring-2 focus:ring-theme-primary select-none"
           >
             <option value="io-immediate">I/O: Immediate 1st</option>
             <option value="main-timeout">Main: Non-deterministic</option>
@@ -224,6 +224,7 @@ export const PredictOutputDemo: React.FC = () => {
         code={PRESETS[selectedPresetKey].code}
         activeLine={snapshot.line}
         interactiveControls={predictionPanel}
+        visibleLanes={['console', 'queues', 'phases']}
       />
     </NodeDemoShell>
   );

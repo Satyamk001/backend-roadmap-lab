@@ -122,7 +122,7 @@ export const DemoActionButton: React.FC<
 
 export const NodeDemoShell: React.FC<NodeDemoShellProps> = ({
   title,
-  summary: _summary,
+  summary,
   difficulty,
   notesAnchor,
   whatJustHappened,
@@ -140,7 +140,10 @@ export const NodeDemoShell: React.FC<NodeDemoShellProps> = ({
 }) => {
   const { openNotes } = useNotes();
   const rootRef = useRef<HTMLDivElement>(null);
-  const [showLog, setShowLog] = useState<boolean>(true);
+  // Default to collapsed event log on mobile so the canvas starts above the fold
+  const [showLog, setShowLog] = useState<boolean>(() =>
+    typeof window !== 'undefined' && window.innerWidth >= 1024
+  );
   const [layoutMode, setLayoutMode] = useState<'split' | 'stacked'>(() =>
     typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'split' : 'stacked'
   );
@@ -180,36 +183,36 @@ export const NodeDemoShell: React.FC<NodeDemoShellProps> = ({
       {/* Unified Compact Command & Status Deck */}
       <div className="rounded-xl border border-theme-border bg-theme-surface p-2.5 sm:p-3 shadow-xs space-y-2">
         {/* Top line: Status line + Controls & Badges */}
-        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-start sm:justify-between">
           {/* Status Live Narrative with pulsing dot */}
           <div
             role="status"
             aria-live="polite"
             aria-atomic="true"
-            className="flex items-center gap-2 min-w-0 flex-1"
+            className="flex items-start gap-2.5 min-w-0 flex-1 pt-0.5"
           >
-            <span className="relative flex h-2 w-2 flex-shrink-0" aria-hidden="true">
+            <span className="relative flex h-2.5 w-2.5 flex-shrink-0 mt-1" aria-hidden="true">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
-              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+              <span className="relative inline-flex h-2.5 w-2.5 rounded-full bg-emerald-500" />
             </span>
-            <div className="min-w-0 text-[13.5px] sm:text-[14.5px] font-semibold leading-snug text-theme-text truncate">
+            <div className="min-w-0 text-[15px] sm:text-[16px] font-semibold leading-snug text-theme-text break-words">
               {renderLiveNarrative(whatJustHappened)}
             </div>
           </div>
 
           {/* Right badges & controls */}
           <div className="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-auto">
-            <span className="inline-flex items-center rounded-md border border-theme-border bg-theme-surface-alt px-1.5 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-wider text-theme-muted">
+            <span className="inline-flex items-center rounded-md border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[12.5px] sm:text-[13px] font-semibold text-theme-muted">
               {difficultyLabel[difficulty]}
             </span>
 
             <button
               type="button"
               onClick={() => openNotes(notesAnchor)}
-              className="inline-flex items-center gap-1 rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 text-[11.5px] sm:text-[12px] font-semibold text-theme-accent transition-all duration-150 hover:bg-theme-surface-alt active:scale-[0.98]"
+              className="inline-flex items-center gap-1 rounded-md border border-theme-border bg-theme-surface px-2.5 py-0.5 text-[12.5px] sm:text-[13px] font-semibold text-theme-accent transition-all duration-150 hover:bg-theme-surface-alt active:scale-[0.98]"
               title="Open Notion notes snapshot"
             >
-              <BookOpen className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+              <BookOpen className="h-3.5 w-3.5 flex-shrink-0" aria-hidden="true" />
               <span>Notes</span>
             </button>
 
@@ -247,11 +250,11 @@ export const NodeDemoShell: React.FC<NodeDemoShellProps> = ({
 
         {/* Sub-line: Why it matters */}
         {whyItMatters && (
-          <div className="flex items-start gap-1.5 text-[12px] sm:text-[12.5px] leading-tight text-theme-muted border-t border-theme-border/50 pt-1.5">
+          <div className="flex items-start gap-1.5 text-[14px] sm:text-[15px] leading-snug text-theme-muted border-t border-theme-border/50 pt-1.5">
             <span className="font-mono text-theme-accent select-none font-bold" aria-hidden="true">
               ↳
             </span>
-            <div className="min-w-0">{renderLiveNarrative(whyItMatters)}</div>
+            <div className="min-w-0 break-words">{renderLiveNarrative(whyItMatters)}</div>
           </div>
         )}
 
@@ -260,9 +263,17 @@ export const NodeDemoShell: React.FC<NodeDemoShellProps> = ({
           <div
             role="group"
             aria-label="Simulation actions"
-            className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-theme-border/50"
+            className="flex flex-wrap items-center gap-1.5 pt-1.5 border-t border-theme-border/50"
           >
             {actions}
+          </div>
+        )}
+
+        {/* Active Demo Goal / Learner Objective */}
+        {summary && (
+          <div className="text-[13.5px] sm:text-[14px] leading-snug text-theme-muted border-t border-theme-border/40 pt-1.5">
+            <span className="font-semibold text-theme-text">Objective: </span>
+            <span>{summary}</span>
           </div>
         )}
       </div>

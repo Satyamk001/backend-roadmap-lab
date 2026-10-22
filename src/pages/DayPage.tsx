@@ -107,6 +107,27 @@ export const DayPage: React.FC = () => {
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
       const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
+      // Arrow navigation when focused on a tab
+      if (document.activeElement?.getAttribute('role') === 'tab' && day?.demos) {
+        const currentIndex = day.demos.findIndex((d) => d.id === activeDemoId);
+        if (e.key === 'ArrowRight' && currentIndex < day.demos.length - 1) {
+          e.preventDefault();
+          const nextDemo = day.demos[currentIndex + 1];
+          setActiveDemoId(nextDemo.id);
+          const nextBtn = document.getElementById(`demo-tab-${nextDemo.id}`);
+          nextBtn?.focus();
+          return;
+        }
+        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+          e.preventDefault();
+          const prevDemo = day.demos[currentIndex - 1];
+          setActiveDemoId(prevDemo.id);
+          const prevBtn = document.getElementById(`demo-tab-${prevDemo.id}`);
+          prevBtn?.focus();
+          return;
+        }
+      }
+
       // 1 to 9: Switch tabs if not typing in input
       if (!isInput && e.key >= '1' && e.key <= '9') {
         const index = parseInt(e.key, 10) - 1;
@@ -134,7 +155,7 @@ export const DayPage: React.FC = () => {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [day?.demos]);
+  }, [day?.demos, activeDemoId]);
 
   if (!stage || !day) {
     return <Navigate to="/" replace />;
@@ -145,7 +166,7 @@ export const DayPage: React.FC = () => {
   const DemoComponent = currentDemo ? getDemoComponent(currentDemo.id) : null;
 
   return (
-    <div className="w-full max-w-6xl mx-auto py-1 sm:py-2 space-y-3 sm:space-y-3.5 text-theme-text">
+    <div className="w-full max-w-6xl mx-auto py-1 sm:py-2 space-y-2.5 sm:space-y-3.5 text-theme-text">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -159,41 +180,55 @@ export const DayPage: React.FC = () => {
 
       {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
       {day.demos && day.demos.length > 1 && (
-        <div className="space-y-1.5">
-          <div
-            ref={tabBarRef}
-            className="flex items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1.5 select-none no-scrollbar"
-          >
-            {day.demos.map((d, idx) => {
-              const isActive = (currentDemo?.id || '') === d.id;
-              return (
-                <button
-                  key={d.id}
-                  data-demo-tab={d.id}
-                  type="button"
-                  onClick={() => setActiveDemoId(d.id)}
-                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-[13.5px] sm:text-[14px] font-semibold transition-all duration-150 active:scale-[0.98] ${
-                    isActive
-                      ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
-                      : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
-                  }`}
-                >
-                  <span>{idx + 1}. {d.title}</span>
-                  <kbd
-                    className={`text-[9.5px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
+        <div className="space-y-1 sm:space-y-1.5">
+          <div className="relative">
+            <div
+              ref={tabBarRef}
+              role="tablist"
+              aria-label="Story-ordered interactive demos"
+              className="flex items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1.5 select-none no-scrollbar scroll-smooth"
+            >
+              {day.demos.map((d, idx) => {
+                const isActive = (currentDemo?.id || '') === d.id;
+                return (
+                  <button
+                    key={d.id}
+                    id={`demo-tab-${d.id}`}
+                    role="tab"
+                    aria-selected={isActive}
+                    aria-controls={`demo-panel-${d.id}`}
+                    tabIndex={isActive ? 0 : -1}
+                    data-demo-tab={d.id}
+                    type="button"
+                    onClick={() => setActiveDemoId(d.id)}
+                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-[13.5px] sm:text-[14px] font-semibold transition-all duration-150 active:scale-[0.98] ${
                       isActive
-                        ? 'bg-black/15 text-stone-900 border-black/20'
-                        : 'bg-theme-surface-alt text-theme-muted border-theme-border'
+                        ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
+                        : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
                     }`}
                   >
-                    {idx + 1}
-                  </kbd>
-                </button>
-              );
-            })}
+                    <span>{idx + 1}. {d.title}</span>
+                    <kbd
+                      className={`text-[10px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
+                        isActive
+                          ? 'bg-black/15 text-stone-900 border-black/20'
+                          : 'bg-theme-surface-alt text-theme-muted border-theme-border'
+                      }`}
+                    >
+                      {idx + 1}
+                    </kbd>
+                  </button>
+                );
+              })}
+            </div>
+            {/* Visual fade cue on narrow viewports indicating more tabs follow */}
+            <div
+              aria-hidden="true"
+              className="pointer-events-none absolute right-0 top-0 bottom-1.5 w-6 bg-gradient-to-l from-theme-bg to-transparent sm:hidden"
+            />
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] text-theme-muted select-none">
+          <div className="hidden sm:flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] text-theme-muted select-none">
             <div className="flex flex-wrap items-center gap-3">
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
@@ -201,7 +236,7 @@ export const DayPage: React.FC = () => {
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">Space</kbd>
-                <span>Step / Produce</span>
+                <span>Step</span>
               </span>
               <span className="flex items-center gap-1">
                 <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">R</kbd>
@@ -213,7 +248,12 @@ export const DayPage: React.FC = () => {
       )}
 
       {/* Main Single-Column Demo Stage */}
-      <div className="w-full">
+      <div
+        id={`demo-panel-${activeDemoId}`}
+        role="tabpanel"
+        aria-labelledby={`demo-tab-${activeDemoId}`}
+        className="w-full"
+      >
         {DemoComponent ? (
           <Suspense
             fallback={

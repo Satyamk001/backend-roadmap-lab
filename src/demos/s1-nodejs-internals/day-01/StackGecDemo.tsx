@@ -104,6 +104,7 @@ export const StackGecDemo: React.FC = () => {
         snapshot={snapshot}
         code={stackGecTrace.code}
         activeLine={snapshot.line}
+        visibleLanes={['stack', 'console']}
       />
     </NodeDemoShell>
   );

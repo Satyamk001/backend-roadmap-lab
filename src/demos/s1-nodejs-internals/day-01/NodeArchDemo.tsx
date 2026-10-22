@@ -68,38 +68,38 @@ export const NodeArchDemo: React.FC = () => {
         <button
           type="button"
           onClick={() => handleQuickRoute('fs')}
-          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2 py-1 text-[11.5px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2.5 py-1.5 text-[13px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
         >
-          <HardDrive className="h-3 w-3 text-theme-accent" />
+          <HardDrive className="h-3.5 w-3.5 text-theme-accent" />
           <span>fs.readFile</span>
         </button>
         <button
           type="button"
           onClick={() => handleQuickRoute('crypto')}
-          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2 py-1 text-[11.5px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2.5 py-1.5 text-[13px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
         >
-          <Zap className="h-3 w-3 text-semantic-inflight" />
+          <Zap className="h-3.5 w-3.5 text-semantic-inflight" />
           <span>crypto.pbkdf2</span>
         </button>
         <button
           type="button"
           onClick={() => handleQuickRoute('dns')}
-          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2 py-1 text-[11.5px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
+          className="flex items-center gap-1.5 rounded-lg border border-theme-border bg-theme-bg px-2.5 py-1.5 text-[13px] font-mono text-theme-text hover:bg-theme-surface-alt transition-colors"
         >
-          <HardDrive className="h-3 w-3 text-theme-muted" />
+          <HardDrive className="h-3.5 w-3.5 text-theme-muted" />
           <span>dns.lookup</span>
         </button>
         <button
           type="button"
           onClick={() => handleQuickRoute('socket')}
-          className="flex items-center gap-1.5 rounded-lg border border-semantic-info/50 bg-semantic-info-bg px-2 py-1 text-[11.5px] font-mono text-semantic-info hover:brightness-105 transition-colors font-bold"
+          className="flex items-center gap-1.5 rounded-lg border border-semantic-info/50 bg-semantic-info-bg px-2.5 py-1.5 text-[13px] font-mono text-semantic-info hover:brightness-105 transition-colors font-bold"
         >
-          <Globe className="h-3 w-3" />
+          <Globe className="h-3.5 w-3.5" />
           <span>net.connect (Kernel)</span>
         </button>
       </div>
-      <p className="text-[11px] text-theme-muted leading-tight pt-1">
-        Notice: Network socket never touches thread pool (routes to epoll/kqueue).
+      <p className="text-[12.5px] text-theme-muted leading-tight pt-1">
+        Notice: Network socket never touches thread pool (routes directly to epoll/kqueue).
       </p>
     </div>
   );
@@ -159,6 +159,7 @@ export const NodeArchDemo: React.FC = () => {
         code={architecture8TasksTrace.code}
         activeLine={snapshot.line}
         interactiveControls={operationButtons}
+        visibleLanes={['libuv', 'stack', 'console']}
       />
     </NodeDemoShell>
   );
