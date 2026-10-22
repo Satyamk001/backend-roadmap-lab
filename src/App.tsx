@@ -29,7 +29,7 @@ export function App() {
   const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
 
   return (
-    <BrowserRouter>
+    <BrowserRouter basename={import.meta.env.BASE_URL}>
       <ScrollToTop />
       <div className="app-canvas min-h-screen text-theme-text flex flex-col font-sans transition-colors duration-150">
         {/* Accessible Skip to Content Link */}
