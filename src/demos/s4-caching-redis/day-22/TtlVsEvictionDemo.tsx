@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Check, Clock, Info, Plus, Trash2 } from 'lucide-react';
 import {
   EvictionKeyItem,
@@ -43,10 +43,45 @@ export const TtlVsEvictionDemo: React.FC = () => {
   const engine = useMemo(createEngine, []);
   const [snapshot, setSnapshot] = useState(() => engine.getSnapshot());
   const addIndexRef = useRef(0);
+  const [departingKeys, setDepartingKeys] = useState<EvictionKeyItem[]>([]);
+  const [isOomShaking, setIsOomShaking] = useState(false);
+  const prevKeysRef = useRef<Map<string, EvictionKeyItem>>(
+    new Map(engine.getSnapshot().keys.map((k) => [k.key, k]))
+  );
+  const prevRejectedRef = useRef(engine.getSnapshot().stats.rejectedWritesCount);
 
   const sync = useCallback(() => {
     setSnapshot(engine.getSnapshot());
   }, [engine]);
+
+  useEffect(() => {
+    if (snapshot.stats.rejectedWritesCount > prevRejectedRef.current) {
+      setIsOomShaking(true);
+      const timer = setTimeout(() => setIsOomShaking(false), 350);
+      prevRejectedRef.current = snapshot.stats.rejectedWritesCount;
+      return () => clearTimeout(timer);
+    }
+    prevRejectedRef.current = snapshot.stats.rejectedWritesCount;
+  }, [snapshot.stats.rejectedWritesCount]);
+
+  useEffect(() => {
+    const currentKeySet = new Set(snapshot.keys.map((k) => k.key));
+    const newlyDeparted: EvictionKeyItem[] = [];
+    for (const [key, item] of prevKeysRef.current.entries()) {
+      if (!currentKeySet.has(key)) {
+        newlyDeparted.push(item);
+      }
+    }
+    prevKeysRef.current = new Map(snapshot.keys.map((k) => [k.key, k]));
+
+    if (newlyDeparted.length > 0) {
+      setDepartingKeys(newlyDeparted);
+      const timer = setTimeout(() => {
+        setDepartingKeys([]);
+      }, 350);
+      return () => clearTimeout(timer);
+    }
+  }, [snapshot.keys]);
 
   const handleAdvance = useCallback(() => {
     engine.advanceTime(25);
@@ -86,6 +121,8 @@ export const TtlVsEvictionDemo: React.FC = () => {
       whyItMatters: INTRO_WHY,
     });
     addIndexRef.current = 0;
+    setDepartingKeys([]);
+    setIsOomShaking(false);
     sync();
   }, [engine, sync]);
 
@@ -188,7 +225,11 @@ export const TtlVsEvictionDemo: React.FC = () => {
       }
     >
       <div className="space-y-4">
-        <div className="rounded-xl border border-theme-border bg-theme-bg p-4">
+        <div
+          className={`rounded-xl border bg-theme-bg p-4 transition-all duration-300 ${
+            isOomShaking ? 'demo-oom-shake border-semantic-error' : 'border-theme-border'
+          }`}
+        >
           <div className="flex flex-wrap items-center justify-between gap-2">
             <div>
               <p className="text-[17px] font-bold tracking-tight text-theme-text sm:text-[18px]">
@@ -213,7 +254,9 @@ export const TtlVsEvictionDemo: React.FC = () => {
             className="mt-3 h-2.5 overflow-hidden rounded-full bg-theme-surface-alt"
           >
             <div
-              className="h-full rounded-full bg-semantic-info transition-[width] duration-300"
+              className={`h-full rounded-full transition-all duration-300 ${
+                usedPercent >= 100 ? 'bg-semantic-error' : 'bg-semantic-info'
+              }`}
               style={{ width: `${usedPercent}%` }}
             />
           </div>
@@ -248,43 +291,85 @@ export const TtlVsEvictionDemo: React.FC = () => {
               })}
             </div>
           </div>
+
+          <p className="mt-2 text-[13px] font-mono text-theme-muted">
+            {snapshot.policy === 'allkeys-lru'
+              ? 'allkeys-lru: Sabse purani accessed key evict hogi — TTL ka role nahi'
+              : 'noeviction: Naya write OOM error se reject hoga, koi key delete nahi hogi'}
+          </p>
         </div>
 
         <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          {snapshot.keys.length === 0 ? (
+          {snapshot.keys.length === 0 && departingKeys.length === 0 ? (
             <p className="rounded-lg border border-dashed border-theme-border bg-theme-bg px-3 py-4 text-[15px] text-theme-muted sm:col-span-2">
               Saari keys chali gayin. Reset scenario se wapas load karo.
             </p>
           ) : (
-            snapshot.keys.map((item) => {
-              const remaining = ttlRemaining(item, snapshot.tick);
-              return (
+            <>
+              {snapshot.keys.map((item) => {
+                const remaining = ttlRemaining(item, snapshot.tick);
+                const isCandidate =
+                  snapshot.policy !== 'noeviction' &&
+                  snapshot.evictionCandidateKey === item.key;
+                return (
+                  <article
+                    key={item.key}
+                    data-highlight-id={`key:${item.key}`}
+                    className={`rounded-lg border bg-theme-bg p-3 transition-colors ${
+                      isCandidate
+                        ? 'demo-lru-candidate border-semantic-error/60'
+                        : 'border-theme-border'
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-start justify-between gap-2">
+                      <div className="flex flex-wrap items-center gap-2">
+                        <code className="break-all font-mono text-[13px] font-semibold text-theme-text">
+                          {item.key}
+                        </code>
+                        {isCandidate && (
+                          <span className="inline-flex items-center gap-1 rounded-full border border-semantic-error/40 bg-semantic-error-bg px-2 py-0.5 text-[11px] font-semibold text-semantic-error">
+                            <Trash2 className="h-3 w-3" aria-hidden="true" />
+                            <span>LRU next</span>
+                          </span>
+                        )}
+                      </div>
+                      <span
+                        className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-semibold ${
+                          remaining !== null
+                            ? 'border-semantic-info/40 bg-semantic-info-bg text-semantic-info'
+                            : 'border-theme-border bg-theme-surface text-theme-muted'
+                        }`}
+                      >
+                        <Clock className="h-3 w-3" aria-hidden="true" />
+                        {remaining !== null ? `${remaining}s TTL` : 'no TTL'}
+                      </span>
+                    </div>
+                    <p className="mt-1 font-mono text-[12px] text-theme-muted">
+                      {item.sizeBytes} B · last access t{item.lastAccessedTick}
+                    </p>
+                  </article>
+                );
+              })}
+              {departingKeys.map((item) => (
                 <article
-                  key={item.key}
-                  data-highlight-id={`key:${item.key}`}
-                  className="rounded-lg border border-theme-border bg-theme-bg p-3"
+                  key={`departing:${item.key}`}
+                  className="demo-evict-out rounded-lg border border-semantic-error/60 bg-semantic-error-bg/20 p-3"
                 >
                   <div className="flex flex-wrap items-start justify-between gap-2">
-                    <code className="break-all font-mono text-[13px] font-semibold text-theme-text">
+                    <code className="break-all font-mono text-[13px] font-semibold text-semantic-error line-through">
                       {item.key}
                     </code>
-                    <span
-                      className={`inline-flex items-center gap-1 rounded-full border px-2 py-0.5 text-[12px] font-semibold ${
-                        remaining !== null
-                          ? 'border-semantic-info/40 bg-semantic-info-bg text-semantic-info'
-                          : 'border-theme-border bg-theme-surface text-theme-muted'
-                      }`}
-                    >
-                      <Clock className="h-3 w-3" aria-hidden="true" />
-                      {remaining !== null ? `${remaining}s TTL` : 'no TTL'}
+                    <span className="inline-flex items-center gap-1 rounded-full border border-semantic-error/40 bg-semantic-error-bg px-2 py-0.5 text-[11px] font-semibold text-semantic-error">
+                      <Trash2 className="h-3 w-3" aria-hidden="true" />
+                      <span>evicting</span>
                     </span>
                   </div>
-                  <p className="mt-1 font-mono text-[12px] text-theme-muted">
+                  <p className="mt-1 font-mono text-[12px] text-theme-muted line-through">
                     {item.sizeBytes} B · last access t{item.lastAccessedTick}
                   </p>
                 </article>
-              );
-            })
+              ))}
+            </>
           )}
         </div>
 

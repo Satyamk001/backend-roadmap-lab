@@ -6,7 +6,6 @@ import {
   ChevronUp,
   Circle,
   Code,
-  Info,
   RotateCcw,
   Target,
   Terminal,
@@ -66,6 +65,64 @@ const logTypeStyles: Record<DemoLogType, string> = {
   info: 'text-semantic-info',
 };
 
+/**
+ * Renders simulation narrative text with terminal-style code pills for Redis keys,
+ * commands, values, and quoted/backticked tokens.
+ */
+function renderLiveNarrative(text: string): React.ReactNode {
+  if (!text) return null;
+  const regex =
+    /(`[^`]+`|'[^']+'|"[^"]+"|\b[a-zA-Z0-9_-]+:[a-zA-Z0-9_-]+\b|\b(?:INCRBY|INCR|DECR|HGETALL|HSET|HGET|LPUSH|RPUSH|LPOP|RPOP|SMEMBERS|SISMEMBER|SADD|ZRANGE|ZREVRANGE|ZADD|BGREWRITEAOF|BGSAVE|SAVE|EXPIRE|TTL|RDB|AOF)\b|#[0-9]+|\+[0-9]+|\b[0-9]+(?:s|ms)\b|\b(?:value|score)\s+[0-9]+\b|\b[0-9]+\s*→\s*[0-9]+\b)/g;
+
+  const parts: React.ReactNode[] = [];
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = regex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      parts.push(text.slice(lastIndex, match.index));
+    }
+
+    const raw = match[0];
+    if (raw.startsWith('value ') || raw.startsWith('score ')) {
+      const prefix = raw.startsWith('value ') ? 'value ' : 'score ';
+      const num = raw.slice(prefix.length);
+      parts.push(prefix);
+      parts.push(
+        <code
+          key={match.index}
+          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[13px] font-semibold text-theme-accent shadow-2xs"
+        >
+          {num}
+        </code>
+      );
+    } else {
+      const displayToken =
+        (raw.startsWith('`') && raw.endsWith('`')) ||
+        (raw.startsWith("'") && raw.endsWith("'")) ||
+        (raw.startsWith('"') && raw.endsWith('"'))
+          ? raw.slice(1, -1)
+          : raw;
+
+      parts.push(
+        <code
+          key={match.index}
+          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[13px] font-semibold text-theme-accent shadow-2xs"
+        >
+          {displayToken}
+        </code>
+      );
+    }
+    lastIndex = regex.lastIndex;
+  }
+
+  if (lastIndex < text.length) {
+    parts.push(text.slice(lastIndex));
+  }
+
+  return parts;
+}
+
 export const DemoActionButton: React.FC<
   React.ButtonHTMLAttributes<HTMLButtonElement> & {
     variant?: 'primary' | 'secondary' | 'danger' | 'ghost';
@@ -73,18 +130,19 @@ export const DemoActionButton: React.FC<
 > = ({ variant = 'secondary', className = '', children, type = 'button', ...props }) => {
   const variantClasses = {
     primary:
-      'bg-theme-primary text-theme-primary-text hover:bg-theme-primary-hover shadow-sm',
+      'bg-theme-primary text-theme-primary-text font-semibold hover:brightness-105 active:scale-[0.98] shadow-xs border border-transparent',
     secondary:
-      'bg-theme-surface-alt text-theme-text border border-theme-border hover:bg-theme-border/60',
+      'bg-theme-surface text-theme-text border border-theme-border hover:bg-theme-surface-alt hover:border-theme-border/80 active:scale-[0.98] shadow-2xs font-medium',
     danger:
-      'bg-theme-surface text-semantic-error border border-semantic-error/40 hover:bg-semantic-error-bg',
-    ghost: 'text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt',
+      'bg-theme-surface text-semantic-error border border-semantic-error/40 hover:bg-semantic-error-bg active:scale-[0.98] font-medium',
+    ghost:
+      'text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt font-medium',
   }[variant];
 
   return (
     <button
       type={type}
-      className={`inline-flex min-h-9 items-center justify-center gap-1.5 rounded-lg px-3.5 py-2 text-[15px] font-semibold transition-colors disabled:cursor-not-allowed disabled:opacity-50 active:translate-y-px ${variantClasses} ${className}`}
+      className={`inline-flex min-h-[2.35rem] items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-[14px] sm:text-[14.5px] transition-all disabled:cursor-not-allowed disabled:opacity-50 select-none ${variantClasses} ${className}`}
       {...props}
     >
       {children}
@@ -144,42 +202,62 @@ export const DemoShell: React.FC<DemoShellProps> = ({
   const visibleLogs = logs.slice(0, 100);
 
   return (
-    <div ref={rootRef} className="w-full space-y-4 text-theme-text">
+    <div ref={rootRef} className="w-full space-y-3.5 text-theme-text">
       {/* The demo title already lives in the active tab; keep it for screen
           readers without repeating it visually. */}
       <h2 className="sr-only">{title}</h2>
 
-      <header className="flex flex-col gap-3 border-b border-theme-border pb-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex min-w-0 flex-1 flex-col gap-1.5 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2.5">
-          <span className="w-fit rounded-full border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[13px] font-semibold text-theme-muted">
+      <header className="flex flex-col gap-2.5 border-b border-theme-border pb-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
+        <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
+          <span className="w-fit rounded-full border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[12.5px] font-semibold text-theme-muted">
             {difficultyLabel[difficulty]}
           </span>
-          <p className="min-w-0 flex-1 text-[16px] leading-relaxed text-theme-muted">{summary}</p>
+          <p className="min-w-0 flex-1 text-[14.5px] sm:text-[15px] leading-relaxed text-theme-muted">
+            {summary}
+          </p>
         </div>
 
         <button
           type="button"
           onClick={() => openNotes(notesAnchor)}
-          className="inline-flex min-h-9 w-full items-center justify-center gap-1.5 rounded-lg border border-theme-border bg-theme-surface px-3 py-2 text-[15px] font-semibold text-theme-accent transition-colors hover:bg-theme-surface-alt sm:w-auto sm:justify-start"
+          className="inline-flex min-h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-theme-border bg-theme-surface px-3 py-1.5 text-[13.5px] sm:text-[14px] font-semibold text-theme-accent transition-colors hover:bg-theme-surface-alt sm:w-auto sm:justify-start"
         >
           <BookOpen className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
           <span>Read this in notes</span>
         </button>
       </header>
 
+      {/* Live State Monitor */}
       <section
         role="status"
         aria-live="polite"
         aria-atomic="true"
-        className="min-h-[12.5rem] rounded-xl border border-theme-border border-l-4 border-l-theme-primary bg-theme-surface px-4 py-3.5 max-[380px]:min-h-[14rem] sm:min-h-[5.5rem]"
+        className="rounded-xl border border-theme-border bg-theme-surface-alt/40 p-3 sm:p-3.5 shadow-2xs"
       >
-        <div className="flex items-start gap-3">
-          <Info className="mt-0.5 h-4 w-4 flex-shrink-0 text-theme-accent" aria-hidden="true" />
-          <div className="min-w-0">
-            <p className="text-[16px] font-semibold leading-snug text-theme-text sm:text-[17px]">
-              {whatJustHappened}
-            </p>
-            <p className="mt-1 text-[15px] leading-relaxed text-theme-muted">{whyItMatters}</p>
+        <div className="flex items-center justify-between gap-2 border-b border-theme-border/60 pb-2 mb-2">
+          <div className="flex items-center gap-2">
+            <span className="relative flex h-2 w-2">
+              <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
+              <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
+            </span>
+            <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-theme-muted">
+              Live State Monitor
+            </span>
+          </div>
+          <span className="font-mono text-[11px] text-theme-muted">
+            redis-cli · live
+          </span>
+        </div>
+
+        <div className="space-y-1">
+          <p className="text-[15px] sm:text-[15.5px] font-semibold leading-snug text-theme-text">
+            {renderLiveNarrative(whatJustHappened)}
+          </p>
+          <div className="flex items-start gap-1.5 text-[13.5px] sm:text-[14px] leading-relaxed text-theme-muted">
+            <span className="font-mono text-theme-accent select-none font-bold pt-0.5" aria-hidden="true">
+              ↳
+            </span>
+            <div className="min-w-0">{renderLiveNarrative(whyItMatters)}</div>
           </div>
         </div>
       </section>
@@ -188,7 +266,7 @@ export const DemoShell: React.FC<DemoShellProps> = ({
         <div
           role="group"
           aria-label="Simulation actions"
-          className="flex flex-wrap items-center gap-2"
+          className="flex flex-wrap items-center gap-2 py-0.5"
         >
           {actions}
         </div>

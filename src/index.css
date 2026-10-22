@@ -238,6 +238,49 @@ p {
   outline-offset: 2px;
 }
 
+/* Write confirmation: brief green ring pulse */
+@keyframes demo-write-flash {
+  0%   { box-shadow: 0 0 0 0 var(--color-success); }
+  40%  { box-shadow: 0 0 0 4px color-mix(in srgb, var(--color-success) 40%, transparent); }
+  100% { box-shadow: 0 0 0 0 transparent; }
+}
+.demo-write-flash {
+  animation: demo-write-flash 500ms ease-out;
+}
+
+/* Eviction departure: red border + strikethrough + fade */
+@keyframes demo-evict-out {
+  0%   { opacity: 1; border-color: var(--color-error); transform: scale(1); }
+  50%  { opacity: 0.6; text-decoration: line-through; }
+  100% { opacity: 0; transform: scale(0.95) translateY(4px); }
+}
+.demo-evict-out {
+  animation: demo-evict-out 350ms ease-in forwards;
+  pointer-events: none;
+}
+
+/* OOM rejection: quick horizontal shake on the RAM container */
+@keyframes demo-oom-shake {
+  0%, 100% { transform: translateX(0); }
+  20%      { transform: translateX(-3px); }
+  40%      { transform: translateX(3px); }
+  60%      { transform: translateX(-2px); }
+  80%      { transform: translateX(2px); }
+}
+.demo-oom-shake {
+  animation: demo-oom-shake 300ms ease-out;
+}
+
+/* LRU eviction candidate: pulsing dashed red border */
+@keyframes demo-lru-candidate-pulse {
+  0%, 100% { border-color: color-mix(in srgb, var(--color-error) 30%, transparent); }
+  50%      { border-color: var(--color-error); }
+}
+.demo-lru-candidate {
+  animation: demo-lru-candidate-pulse 1.6s ease-in-out infinite;
+  border-style: dashed !important;
+}
+
 /* Sidebar timeline: one thin rail per expanded stage, with a single
    measured amber node marking the active day. The active row tint is
    inset so the rail stays continuous beside it. */

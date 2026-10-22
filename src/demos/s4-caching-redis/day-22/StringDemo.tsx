@@ -28,6 +28,8 @@ export const StringDemo: React.FC = () => {
   const engine = useMemo(createEngine, []);
   const [snapshot, setSnapshot] = useState(() => engine.getSnapshot());
   const [cacheWrites, setCacheWrites] = useState(0);
+  const [cacheFlash, setCacheFlash] = useState(false);
+  const [viewsFlash, setViewsFlash] = useState(false);
 
   const sync = useCallback(() => {
     setSnapshot(engine.getSnapshot());
@@ -35,12 +37,16 @@ export const StringDemo: React.FC = () => {
 
   const handleIncrement = useCallback(() => {
     engine.incr('views:home', 1);
+    setViewsFlash(true);
+    setTimeout(() => setViewsFlash(false), 500);
     sync();
   }, [engine, sync]);
 
   const handleSaveCache = useCallback(() => {
     engine.set('cache:home', INITIAL_CACHE);
     setCacheWrites((count) => count + 1);
+    setCacheFlash(true);
+    setTimeout(() => setCacheFlash(false), 500);
     sync();
   }, [engine, sync]);
 
@@ -50,6 +56,8 @@ export const StringDemo: React.FC = () => {
     engine.set('cache:home', INITIAL_CACHE);
     engine.setNarrative(INTRO_WHAT, INTRO_WHY);
     setCacheWrites(0);
+    setCacheFlash(false);
+    setViewsFlash(false);
     sync();
   }, [engine, sync]);
 
@@ -137,7 +145,9 @@ export const StringDemo: React.FC = () => {
         <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           <article
             data-highlight-id="key:views:home"
-            className="rounded-xl border border-theme-border bg-theme-bg p-4"
+            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 ${
+              viewsFlash ? 'demo-write-flash ring-2 ring-semantic-success' : ''
+            }`}
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -185,7 +195,9 @@ export const StringDemo: React.FC = () => {
 
           <article
             data-highlight-id="key:cache:home"
-            className="rounded-xl border border-theme-border bg-theme-bg p-4"
+            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 ${
+              cacheFlash ? 'demo-write-flash ring-2 ring-semantic-success' : ''
+            }`}
           >
             <div className="flex flex-wrap items-start justify-between gap-2">
               <div className="flex items-center gap-2">
@@ -204,9 +216,16 @@ export const StringDemo: React.FC = () => {
               <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all rounded-lg border border-theme-border bg-theme-surface px-3 py-2 font-mono text-[13px] leading-relaxed text-theme-text">
                 {cacheValue ?? 'Key nahi mili.'}
               </pre>
-              <p className="mt-1 font-mono text-[13px] text-theme-muted">
-                encoding {cacheEntry?.encoding ?? '—'} · {cacheEntry?.bytes ?? '—'} B
-              </p>
+              <div className="mt-1 flex flex-wrap items-center justify-between gap-1 font-mono text-[13px] text-theme-muted">
+                <span>
+                  encoding {cacheEntry?.encoding ?? '—'} · {cacheEntry?.bytes ?? '—'} B
+                </span>
+                {cacheWrites > 0 && (
+                  <span className="text-[12px] font-semibold text-semantic-success">
+                    writes: {cacheWrites}
+                  </span>
+                )}
+              </div>
             </div>
 
             <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-theme-border bg-theme-surface-alt/60 px-3 py-2 font-mono text-[13px] text-theme-text">

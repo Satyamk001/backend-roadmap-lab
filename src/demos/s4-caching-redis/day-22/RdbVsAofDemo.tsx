@@ -222,8 +222,12 @@ export const RdbVsAofDemo: React.FC = () => {
       actions={
         <>
           {crashed ? (
-            <DemoActionButton variant="primary" onClick={handleRestart}>
-              <Power className="h-4 w-4" aria-hidden="true" />
+            <DemoActionButton
+              variant="secondary"
+              className="border-semantic-success/60 text-semantic-success hover:bg-semantic-success-bg font-semibold"
+              onClick={handleRestart}
+            >
+              <Power className="h-4 w-4 text-semantic-success" aria-hidden="true" />
               <span>Restart server</span>
             </DemoActionButton>
           ) : (
@@ -237,7 +241,7 @@ export const RdbVsAofDemo: React.FC = () => {
             <span>Save RDB snapshot</span>
           </DemoActionButton>
           <DemoActionButton variant="danger" onClick={handleCrash} disabled={crashed}>
-            <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+            <AlertTriangle className="h-4 w-4 text-semantic-error" aria-hidden="true" />
             <span>Crash server</span>
           </DemoActionButton>
         </>

@@ -38,6 +38,7 @@ export interface EvictionSnapshot {
   maxmemoryBytes: number;
   usedMemoryBytes: number;
   memoryUsagePercent: number;
+  evictionCandidateKey: string | null;
   keys: EvictionKeyItem[];
   stats: {
     evictedKeysCount: number;
@@ -122,6 +123,7 @@ export class RedisEvictionEngine {
 
     // Sort keys by lastAccessedTick DESC for easy visualization
     const keyList = Array.from(this.keys.values()).map((k) => ({ ...k }));
+    const victim = this.policy === 'noeviction' ? null : this.findEvictionVictim();
 
     return {
       tick: this.tickCount,
@@ -129,6 +131,7 @@ export class RedisEvictionEngine {
       maxmemoryBytes: this.maxmemoryBytes,
       usedMemoryBytes: usedBytes,
       memoryUsagePercent: percent,
+      evictionCandidateKey: victim ? victim.key : null,
       keys: keyList,
       stats: {
         evictedKeysCount: this.evictedKeysCount,

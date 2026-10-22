@@ -236,6 +236,27 @@ describe('Redis Eviction & TTL Engine', () => {
 
     expect(first.getSnapshot()).toEqual(second.getSnapshot());
   });
+
+  it('identifies evictionCandidateKey under allkeys-lru and clears under noeviction', () => {
+    const engine = new RedisEvictionEngine('allkeys-lru', 1000);
+    engine.clear();
+    engine.addKey('old_candidate', 300);
+    engine.addKey('newer_candidate', 300);
+
+    // old_candidate was added earlier, so its lastAccessedTick is lower
+    let snap = engine.getSnapshot();
+    expect(snap.evictionCandidateKey).toBe('old_candidate');
+
+    // Access old_candidate to make newer_candidate the oldest
+    engine.accessKey('old_candidate');
+    snap = engine.getSnapshot();
+    expect(snap.evictionCandidateKey).toBe('newer_candidate');
+
+    // Switch policy to noeviction -> candidate should be null
+    engine.setPolicy('noeviction');
+    snap = engine.getSnapshot();
+    expect(snap.evictionCandidateKey).toBeNull();
+  });
 });
 
 describe('Redis Persistence Engine (RDB & AOF)', () => {
