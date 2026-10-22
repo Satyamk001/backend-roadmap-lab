@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
+import { Plus, Minus, ChevronDown, ChevronUp } from 'lucide-react';
 import { rangeAssign } from '../../../engine/kafka/assignor';
+import { DemoCommandDeck } from '../../../components/common/DemoCommandDeck';
 
 interface MessageItem {
   id: string;
@@ -233,113 +234,74 @@ export const ConsumersGroupsDemo: React.FC = () => {
   }, []);
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* 1. Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Consumers and groups
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            One consumer per partition: consumer group me har partition ka ek hi owner hota hai.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleReset}
-          className="px-3 py-1.5 text-xs font-medium bg-theme-surface hover:bg-theme-surface-alt border border-theme-border rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset</span>
-          <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-theme-surface-alt text-theme-muted border border-theme-border">R</kbd>
-        </button>
-      </div>
-
-      {/* 2. Status Banner: Ambient pulse beacon + clear Hinglish state */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
-            </div>
-            {statusWhy && (
-              <div className="text-xs text-theme-muted leading-normal font-medium">
-                {statusWhy}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Consumers and groups"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleReset}
+      />
 
       {/* 3. Primary Controls (4 to 5 direct verb buttons) */}
       <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleProduceBatch}
-            className="px-4 py-2 bg-theme-primary text-theme-primary-text font-bold text-sm rounded-lg hover:bg-theme-primary-hover shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
-          >
-            <span>Produce messages</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
-          </button>
-
-          <button
-            type="button"
-            onClick={handlePollPrimary}
-            className="px-3.5 py-2 bg-theme-surface-alt hover:bg-theme-border text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
-          >
-            Poll billing-service
-          </button>
-
-          <div className="flex items-center gap-1.5 bg-theme-surface-alt border border-theme-border rounded-lg p-1">
-            <span className="text-xs text-theme-muted font-medium px-1.5">Consumers:</span>
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
             <button
               type="button"
-              onClick={() => handleModifyConsumers(-1)}
-              disabled={groups[0].numConsumers <= 1}
-              className="p-1.5 bg-theme-surface hover:bg-theme-border disabled:opacity-40 rounded border border-theme-border transition-colors"
-              title="Remove consumer"
+              onClick={handleProduceBatch}
+              className="px-4 py-2 bg-theme-primary text-theme-primary-text font-bold text-xs rounded-lg hover:bg-theme-primary-hover shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
             >
-              <Minus className="w-3 h-3" />
+              <span>Produce messages</span>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
             </button>
-            <span className="font-mono font-bold text-xs px-2 text-theme-text">
-              {groups[0].numConsumers}
-            </span>
+
             <button
               type="button"
-              onClick={() => handleModifyConsumers(1)}
-              disabled={groups[0].numConsumers >= 5}
-              className="p-1.5 bg-theme-surface hover:bg-theme-border disabled:opacity-40 rounded border border-theme-border transition-colors"
-              title="Add consumer"
+              onClick={handlePollPrimary}
+              className="px-3.5 py-2 bg-theme-surface-alt hover:bg-theme-border text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
             >
-              <Plus className="w-3 h-3" />
+              Poll billing-service
+            </button>
+
+            <div className="flex items-center gap-1.5 bg-theme-surface-alt border border-theme-border rounded-lg p-1">
+              <span className="text-xs text-theme-muted font-medium px-1.5">Consumers:</span>
+              <button
+                type="button"
+                onClick={() => handleModifyConsumers(-1)}
+                disabled={groups[0].numConsumers <= 1}
+                className="p-1.5 bg-theme-surface hover:bg-theme-border disabled:opacity-40 rounded border border-theme-border transition-colors"
+                title="Remove consumer"
+              >
+                <Minus className="w-3 h-3" />
+              </button>
+              <span className="font-mono font-bold text-xs px-2 text-theme-text">
+                {groups[0].numConsumers}
+              </span>
+              <button
+                type="button"
+                onClick={() => handleModifyConsumers(1)}
+                disabled={groups[0].numConsumers >= 5}
+                className="p-1.5 bg-theme-surface hover:bg-theme-border disabled:opacity-40 rounded border border-theme-border transition-colors"
+                title="Add consumer"
+              >
+                <Plus className="w-3 h-3" />
+              </button>
+            </div>
+
+            <button
+              type="button"
+              onClick={handleTogglePubSub}
+              className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
+                showPubSub
+                  ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500 font-bold'
+                  : 'bg-theme-surface-alt hover:bg-theme-border border-theme-border text-theme-text'
+              }`}
+            >
+              {showPubSub ? 'Pub/Sub: 2 Groups Active' : '+ Add analytics-service (Pub/Sub)'}
             </button>
           </div>
 
-          <button
-            type="button"
-            onClick={handleTogglePubSub}
-            className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all ${
-              showPubSub
-                ? 'bg-emerald-500/20 border-emerald-500 text-emerald-700 dark:text-emerald-300 ring-1 ring-emerald-500'
-                : 'bg-theme-surface-alt hover:bg-theme-border border-theme-border text-theme-text'
-            }`}
-          >
-            {showPubSub ? 'Pub/Sub: 2 Groups Active' : '+ Add analytics-service (Pub/Sub)'}
-          </button>
-
-          <div className="flex items-center gap-2 ml-auto text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <label htmlFor="cg-part-select" className="text-theme-muted font-medium">
               Partitions:
             </label>
@@ -354,9 +316,9 @@ export const ConsumersGroupsDemo: React.FC = () => {
               }}
               className="px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-bold"
             >
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
+              <option value={2}>2 Partitions</option>
+              <option value={3}>3 Partitions</option>
+              <option value={4}>4 Partitions</option>
             </select>
           </div>
         </div>
@@ -365,14 +327,14 @@ export const ConsumersGroupsDemo: React.FC = () => {
       {/* 4. Topic Partitions Append-Only View */}
       <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-base font-bold text-theme-text flex items-center gap-2">
+          <h3 className="text-sm sm:text-base font-bold text-theme-text flex items-center gap-2">
             <span>Topic</span>
             <code className="text-xs px-2 py-0.5 bg-theme-surface-alt border border-theme-border rounded text-theme-accent font-mono font-bold">
               orders.events
             </code>
             <span>partitions log</span>
           </h3>
-          <span className="text-xs text-theme-muted">
+          <span className="text-xs text-theme-muted font-mono">
             Total messages: {partitionLogs.reduce((acc, p) => acc + p.length, 0)}
           </span>
         </div>
@@ -386,15 +348,15 @@ export const ConsumersGroupsDemo: React.FC = () => {
             return (
               <div
                 key={p}
-                className="grid grid-cols-[48px_1fr] gap-3 items-center py-2.5 border-t first:border-t-0 border-dashed border-theme-border"
+                className="grid grid-cols-[44px_1fr] gap-3 items-center py-2 border-t first:border-t-0 border-dashed border-theme-border"
               >
-                <div className="font-mono font-bold text-sm text-theme-accent">
+                <div className="w-11 h-11 rounded-lg bg-theme-surface-alt border border-theme-border flex items-center justify-center font-mono font-bold text-sm text-theme-accent shrink-0 shadow-2xs">
                   P{p}
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto py-1 min-h-[58px] no-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto py-1 min-h-[56px] no-scrollbar">
                   {messages.length === 0 ? (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed border-theme-border/70 text-xs text-theme-muted bg-theme-surface-alt/40">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-border/70 text-xs text-theme-muted bg-theme-surface-alt/40 h-11">
                       <span className="w-1.5 h-1.5 rounded-full bg-theme-muted/50" />
                       <span>khali log — Pehla message bhejo</span>
                       <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-theme-surface text-theme-muted border border-theme-border">Space</kbd>
@@ -412,11 +374,11 @@ export const ConsumersGroupsDemo: React.FC = () => {
                       return (
                         <div
                           key={m.id}
-                          className={`flex-shrink-0 min-w-[80px] p-1.5 px-2 bg-theme-surface-alt border border-theme-border rounded-lg font-mono text-xs transition-all relative select-none ${
+                          className={`flex-shrink-0 min-w-[90px] h-11 px-2.5 py-1 bg-theme-surface-alt border border-theme-border rounded-lg font-mono text-xs transition-all relative select-none flex flex-col justify-center ${
                             isBillingRead ? 'opacity-60' : 'opacity-100'
                           }`}
                           style={{
-                            borderLeftWidth: '5px',
+                            borderLeftWidth: '4px',
                             borderLeftColor: KEY_COLORS[m.key] || 'var(--entity-1)',
                           }}
                         >
@@ -425,8 +387,8 @@ export const ConsumersGroupsDemo: React.FC = () => {
                               {badgeText}
                             </span>
                           )}
-                          <div className="font-bold text-theme-text truncate pr-4">{m.key}</div>
-                          <div className="text-[10px] text-theme-muted mt-0.5">
+                          <div className="font-bold text-theme-text truncate pr-4 text-xs">{m.key}</div>
+                          <div className="text-[10px] text-theme-muted">
                             off {m.offset} · {m.event.split('.')[1]}
                           </div>
                         </div>

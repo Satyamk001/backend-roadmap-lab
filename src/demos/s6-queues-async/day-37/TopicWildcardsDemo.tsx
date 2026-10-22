@@ -1,6 +1,7 @@
 import React, { useState, useCallback } from 'react';
 import { matchesTopic } from '../../../engine/rabbitmq/topicMatcher';
-import { Send, RotateCcw, ChevronDown, ChevronUp, CheckCircle2, XCircle, ShieldAlert, Info } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, CheckCircle2, XCircle, ShieldAlert, Info } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
 
 interface TopicBinding {
   id: string;
@@ -17,11 +18,11 @@ const TOPIC_BINDINGS: TopicBinding[] = [
 ];
 
 const PRESETS = [
-  { key: 'order.created', label: 'order.created (2 words)' },
-  { key: 'order.created.in', label: 'order.created.in (3 words)' },
-  { key: 'payment.failed', label: 'payment.failed (2 words)' },
-  { key: 'payment.stripe.failed', label: 'payment.stripe.failed (3 words)' },
-  { key: 'unknown.telemetry', label: 'unknown.telemetry (Unrouted)' },
+  { key: 'order.created', label: 'order.created' },
+  { key: 'order.created.in', label: 'order.created.in' },
+  { key: 'payment.failed', label: 'payment.failed' },
+  { key: 'payment.stripe.failed', label: 'payment.stripe.failed' },
+  { key: 'unknown.telemetry', label: 'unknown.telemetry' },
 ];
 
 export const TopicWildcardsDemo: React.FC = () => {
@@ -87,87 +88,43 @@ export const TopicWildcardsDemo: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Topic routing: * and # wildcards
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            * (single word) aur # (zero ya zyada words) wildcards se selective routing aur Alternate Exchange fallback.
-          </p>
-        </div>
-      </div>
-
-      {/* "What just happened?" status line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Topic routing: * and # wildcards"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleReset}
+        actions={
+          <>
+            <div className="flex items-center gap-1.5 flex-wrap">
+              {PRESETS.map((p) => (
+                <button
+                  key={p.key}
+                  onClick={() => {
+                    setActiveKey(p.key);
+                    setCustomKey('');
+                    handleSend(p.key);
+                  }}
+                  className={`px-2 py-1 text-xs font-mono rounded-lg border transition-all ${
+                    activeKey === p.key && !customKey
+                      ? 'bg-theme-surface-alt text-theme-accent border-theme-accent font-bold'
+                      : 'bg-theme-surface text-theme-muted border-theme-border hover:border-theme-muted'
+                  }`}
+                >
+                  {p.label}
+                </button>
+              ))}
             </div>
-            <div className="text-xs text-theme-muted mt-1 leading-normal font-medium">
-              💡 {statusWhy}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Action Controls (Max 5 controls) */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          {/* Key Presets */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-theme-muted font-medium mr-1 hidden sm:inline">Presets:</span>
-            {PRESETS.map((p) => (
-              <button
-                key={p.key}
-                onClick={() => {
-                  setActiveKey(p.key);
-                  setCustomKey('');
-                  handleSend(p.key);
-                }}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg border transition-all ${
-                  activeKey === p.key && !customKey
-                    ? 'bg-theme-surface-alt text-theme-accent border-theme-accent font-bold'
-                    : 'bg-theme-surface text-theme-muted border-theme-border hover:border-theme-muted'
-                }`}
-              >
-                {p.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            <button
+            <DemoActionButton
               onClick={() => handleSend()}
-              className="px-3.5 py-1.5 bg-theme-primary text-black font-bold rounded-lg text-xs flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-xs"
+              icon={<Send className="w-3.5 h-3.5" />}
+              variant="primary"
             >
-              <Send className="w-3.5 h-3.5" />
-              Evaluate Topic
-            </button>
-            <button
-              onClick={handleReset}
-              className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+              Evaluate
+            </DemoActionButton>
+          </>
+        }
+      />
 
       {/* Main Canvas: Word Tokenizer & Wildcard Matching Engine */}
       <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">
@@ -200,7 +157,7 @@ export const TopicWildcardsDemo: React.FC = () => {
 
         {/* Wildcard Rule Reference Box */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 text-xs">
-          <div className="p-3 rounded-lg bg-theme-surface border border-theme-border space-y-1">
+          <div className="p-3 rounded-lg bg-theme-surface border border-theme-border flex flex-col justify-between space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded bg-sky-500/20 text-sky-400 font-mono font-bold text-sm">*</span>
               <span className="font-bold text-theme-text">Star Wildcard (Asterisk)</span>
@@ -210,7 +167,7 @@ export const TopicWildcardsDemo: React.FC = () => {
             </p>
           </div>
 
-          <div className="p-3 rounded-lg bg-theme-surface border border-theme-border space-y-1">
+          <div className="p-3 rounded-lg bg-theme-surface border border-theme-border flex flex-col justify-between space-y-1">
             <div className="flex items-center gap-2">
               <span className="px-2 py-0.5 rounded bg-violet-500/20 text-violet-400 font-mono font-bold text-sm">#</span>
               <span className="font-bold text-theme-text">Hash Wildcard (Octothorpe)</span>

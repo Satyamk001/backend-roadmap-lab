@@ -2,7 +2,7 @@ import React from 'react';
 
 export const RabbitMqExchangeDemo: React.FC = () => {
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
         <div>
           <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">

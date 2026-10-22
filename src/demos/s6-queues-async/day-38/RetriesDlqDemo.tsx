@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, ArrowRight, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
+import { ArrowRight, ShieldAlert, ChevronDown, ChevronUp } from 'lucide-react';
+import { DemoCommandDeck } from '../../../components/common/DemoCommandDeck';
 
 interface DLQMessage {
   id: string;
@@ -137,54 +138,13 @@ export const RetriesDlqDemo: React.FC = () => {
   }, [committedOffset, mainTopic, dlqEnabled, currentAttempts]);
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* 1. Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Retries and DLQ
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Poison message partition block kar deta hai jab tak retry backoff aur DLQ na ho.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleReset}
-          className="px-3 py-1.5 text-xs font-medium bg-theme-surface hover:bg-theme-surface-alt border border-theme-border rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset</span>
-          <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-theme-surface-alt text-theme-muted border border-theme-border">R</kbd>
-        </button>
-      </div>
-
-      {/* 2. Status Banner: Ambient pulse beacon + clear Hinglish state */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
-            </div>
-            {statusWhy && (
-              <div className="text-xs text-theme-muted leading-normal font-medium">
-                {statusWhy}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Retries and DLQ"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleReset}
+      />
 
       {/* 3. Primary Controls (4 to 5 direct verb buttons) */}
       <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">

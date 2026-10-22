@@ -1,7 +1,9 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react';
 import { partitionForKey } from '../../../engine/kafka/murmur2';
 import { rangeAssign } from '../../../engine/kafka/assignor';
-import { RotateCcw, Play, Pause, ChevronDown, ChevronUp } from 'lucide-react';
+import { Play, Pause, ChevronDown, ChevronUp } from 'lucide-react';
+import { DemoCommandDeck } from '../../../components/common/DemoCommandDeck';
+import { LiveEventLog, LogLayoutMode } from '../../../components/common/LiveEventLog';
 
 interface KafkaMessage {
   id: string;
@@ -125,9 +127,9 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
   // Newly produced cell for pop animation
   const [newCellTarget, setNewCellTarget] = useState<string | null>(null);
 
-  // Event stream log
+  // Event stream log & layout
   const [eventLogs, setEventLogs] = useState<Array<{ id: string; tag: string; type: string; text: string }>>([]);
-  const [showEventLog, setShowEventLog] = useState<boolean>(false);
+  const [logLayout, setLogLayout] = useState<LogLayoutMode>('stacked');
 
   // Auto-produce and Auto-consume toggles
   const [autoProduce, setAutoProduce] = useState<boolean>(false);
@@ -464,76 +466,37 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
   }, [handleSendMessage, handleReset]);
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* 1. Header Row */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Producer, topic and partitions
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Same key, same partition: key se partition decide hota hai aur order guaranteed rehta hai.
-          </p>
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Producer, topic and partitions"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={() => handleReset()}
+      />
+
+      <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        <div className={logLayout === 'side' ? 'lg:col-span-7 xl:col-span-8 space-y-4 min-w-0' : 'space-y-4'}>
+          {/* 1. Producer Section Card */}
+      <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-3.5">
+        <div className="flex items-center justify-between pb-2 border-b border-theme-border/60">
+          <h3 className="text-sm sm:text-base font-bold text-theme-text flex items-center gap-2">
+            <span>1. Producer Message Dispatcher</span>
+          </h3>
+          <span className="text-xs text-theme-muted font-mono">Murmur2 Partitioning</span>
         </div>
 
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => handleReset()}
-            className="px-3 py-1.5 text-xs font-medium bg-theme-surface hover:bg-theme-surface-alt border border-theme-border rounded-lg transition-colors flex items-center gap-1.5"
-            title="Reset simulation topic"
-          >
-            <RotateCcw className="w-3.5 h-3.5" />
-            <span>Reset topic</span>
-            <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-theme-surface-alt text-theme-muted border border-theme-border">R</kbd>
-          </button>
-        </div>
-      </div>
-
-      {/* 2. Above Demo: ONE Hinglish Status Banner with Ambient Pulse Indicator */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
-            </div>
-            {statusWhy && (
-              <div className="text-xs text-theme-muted leading-normal font-medium">
-                {statusWhy}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
-
-      {/* 3. Producer Section Card (4 to 5 direct controls) */}
-      <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-        <h3 className="text-base font-bold text-theme-text flex items-center gap-2">
-          <span>1. Producer</span>
-        </h3>
-
-        {/* Form controls row */}
-        <div className="flex flex-wrap items-center gap-3 text-sm">
-          {/* Topic Selector */}
-          <div className="flex items-center gap-2">
-            <label htmlFor="producer-topic" className="text-theme-muted text-xs font-medium">
+        {/* Form controls structured responsive grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-sm">
+          {/* Topic */}
+          <div className="space-y-1">
+            <label htmlFor="producer-topic" className="text-theme-muted text-xs font-semibold block">
               Topic
             </label>
             <select
               id="producer-topic"
               value={selectedTopic}
               onChange={(e) => handleTopicChange(e.target.value)}
-              className="px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-bold"
+              className="w-full px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-bold"
             >
               {Object.keys(TOPIC_CATALOG).map((t) => (
                 <option key={t} value={t}>
@@ -543,8 +506,9 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="producer-key" className="text-theme-muted text-xs font-medium">
+          {/* Key Input + Target Partition */}
+          <div className="space-y-1">
+            <label htmlFor="producer-key" className="text-theme-muted text-xs font-semibold block">
               Key ({selectedTopic.split('.')[0]}Id)
             </label>
             <div className="flex items-center gap-1.5">
@@ -554,20 +518,24 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
                 value={selectedKey}
                 onChange={(e) => setSelectedKey(e.target.value)}
                 disabled={isNullKey}
-                className="px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-sm w-24 focus:outline-none focus:ring-2 focus:ring-theme-primary disabled:opacity-50"
+                className="flex-1 px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none focus:ring-2 focus:ring-theme-primary disabled:opacity-50"
               />
               <span
-                className={`text-xs font-mono font-bold px-2 py-1 rounded border border-theme-border ${isNullKey ? 'bg-theme-surface-alt text-theme-muted' : 'bg-theme-surface-alt text-theme-accent'
-                  }`}
+                className={`text-xs font-mono font-bold px-2 py-1 rounded border border-theme-border shrink-0 ${
+                  isNullKey ? 'bg-theme-surface-alt text-theme-muted' : 'bg-theme-surface-alt text-theme-accent'
+                }`}
                 title="Target partition destination for this key"
               >
-                {isNullKey ? '→ Round-robin' : `→ P${partitionForKey(selectedKey, numPartitions).partition}`}
+                {isNullKey ? '→ RR' : `→ P${partitionForKey(selectedKey, numPartitions).partition}`}
               </span>
             </div>
           </div>
 
-          <div className="flex items-center gap-1.5">
-            <span className="text-xs text-theme-muted">ya chuno:</span>
+          {/* Preset Keys */}
+          <div className="space-y-1">
+            <label className="text-theme-muted text-xs font-semibold block">
+              Preset Key
+            </label>
             <select
               value={selectedKey}
               onChange={(e) => {
@@ -575,7 +543,7 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
                 setIsNullKey(false);
               }}
               disabled={isNullKey}
-              className="px-2 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer disabled:opacity-50"
+              className="w-full px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer disabled:opacity-50"
               aria-label="Preset Keys"
             >
               {(TOPIC_CATALOG[selectedTopic]?.presetKeys || []).map((k) => {
@@ -589,15 +557,27 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
             </select>
           </div>
 
-          <div className="flex items-center gap-2">
-            <label htmlFor="producer-event" className="text-theme-muted text-xs font-medium">
-              Event
-            </label>
+          {/* Event Selector & Null Key */}
+          <div className="space-y-1">
+            <div className="flex items-center justify-between">
+              <label htmlFor="producer-event" className="text-theme-muted text-xs font-semibold">
+                Event Type
+              </label>
+              <label className="flex items-center gap-1 text-[11px] text-theme-muted cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={isNullKey}
+                  onChange={(e) => setIsNullKey(e.target.checked)}
+                  className="rounded border-theme-border text-amber-500 focus:ring-amber-500 w-3.5 h-3.5 cursor-pointer"
+                />
+                <span>null key</span>
+              </label>
+            </div>
             <select
               id="producer-event"
               value={selectedEvent}
               onChange={(e) => handleEventChange(e.target.value)}
-              className="px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-semibold"
+              className="w-full px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-semibold"
             >
               {(TOPIC_CATALOG[selectedTopic]?.events || []).map((evt) => (
                 <option key={evt} value={evt}>
@@ -606,51 +586,44 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
               ))}
             </select>
           </div>
-
-          <label className="flex items-center gap-1.5 text-xs text-theme-text font-medium cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={isNullKey}
-              onChange={(e) => setIsNullKey(e.target.checked)}
-              className="rounded border-theme-border text-amber-500 focus:ring-amber-500 w-4 h-4 cursor-pointer"
-            />
-            <span>key = null</span>
-          </label>
         </div>
 
         {/* Action Buttons Row */}
-        <div className="flex flex-wrap items-center gap-2.5 pt-1">
-          <button
-            type="button"
-            onClick={() => handleSendMessage()}
-            className="px-4 py-2 bg-theme-primary text-theme-primary-text font-bold text-sm rounded-lg hover:bg-theme-primary-hover shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
-          >
-            <span>Send message</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2.5 pt-2 border-t border-theme-border/60">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={() => handleSendMessage()}
+              className="px-4 py-1.5 bg-theme-primary text-theme-primary-text font-bold text-xs rounded-lg hover:bg-theme-primary-hover shadow-xs active:scale-[0.98] transition-all flex items-center gap-1.5"
+            >
+              <span>Send message</span>
+              <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
+            </button>
 
-          <button
-            type="button"
-            onClick={handleSendBurst}
-            className="px-3 py-2 bg-theme-surface-alt hover:bg-theme-border text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
-          >
-            Send batch ({selectedTopic.split('.')[0]})
-          </button>
+            <button
+              type="button"
+              onClick={handleSendBurst}
+              className="px-3 py-1.5 bg-theme-surface-alt hover:bg-theme-border text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors shadow-2xs"
+            >
+              Send batch ({selectedTopic.split('.')[0]})
+            </button>
 
-          <button
-            type="button"
-            onClick={() => setAutoProduce(!autoProduce)}
-            aria-pressed={autoProduce}
-            className={`px-3 py-2 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 ${autoProduce
-                ? 'bg-amber-500/20 border-theme-primary text-theme-accent ring-1 ring-theme-primary'
-                : 'bg-theme-surface-alt hover:bg-theme-border border-theme-border text-theme-text'
+            <button
+              type="button"
+              onClick={() => setAutoProduce(!autoProduce)}
+              aria-pressed={autoProduce}
+              className={`px-3 py-1.5 text-xs font-semibold rounded-lg border transition-all flex items-center gap-1.5 ${
+                autoProduce
+                  ? 'bg-amber-500/20 border-theme-primary text-theme-accent ring-1 ring-theme-primary font-bold'
+                  : 'bg-theme-surface-alt hover:bg-theme-border border-theme-border text-theme-text'
               }`}
-          >
-            {autoProduce ? <Pause className="w-3 h-3 fill-current" /> : <Play className="w-3 h-3 fill-current" />}
-            <span>Auto-produce</span>
-          </button>
+            >
+              {autoProduce ? <Pause className="w-3.5 h-3.5 fill-current" /> : <Play className="w-3.5 h-3.5 fill-current" />}
+              <span>Auto-produce</span>
+            </button>
+          </div>
 
-          <div className="flex items-center gap-2 ml-auto text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <label htmlFor="partition-select" className="text-theme-muted font-medium">
               Partitions:
             </label>
@@ -658,36 +631,36 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
               id="partition-select"
               value={numPartitions}
               onChange={(e) => handlePartitionCountChange(parseInt(e.target.value, 10))}
-              className="px-2.5 py-1.5 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-bold"
+              className="px-2.5 py-1 bg-theme-surface-alt border border-theme-border rounded-lg text-theme-text font-mono text-xs focus:outline-none cursor-pointer font-bold"
             >
-              <option value={1}>1</option>
-              <option value={2}>2</option>
-              <option value={3}>3</option>
-              <option value={4}>4</option>
+              <option value={1}>1 Partition</option>
+              <option value={2}>2 Partitions</option>
+              <option value={3}>3 Partitions</option>
+              <option value={4}>4 Partitions</option>
             </select>
           </div>
         </div>
 
         {/* Route Calculation Math Box */}
-        <div className="p-3 bg-theme-surface-alt border border-theme-border rounded-lg text-xs text-theme-text overflow-x-auto">
+        <div className="p-3 bg-theme-surface-alt/70 border border-theme-border rounded-lg text-xs text-theme-text overflow-x-auto">
           <div dangerouslySetInnerHTML={{ __html: routingExplanation }} />
         </div>
       </section>
 
-      {/* 4. Topic and Partitions Visualizer (The Core Board) */}
-      <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div>
-          <h3 className="text-base font-bold text-theme-text flex items-center gap-2">
-            <span>2. Topic</span>
+      {/* 2. Topic and Partitions Visualizer (The Core Board) */}
+      <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 pb-2 border-b border-theme-border/60">
+          <div className="flex items-center gap-2">
+            <h3 className="text-sm sm:text-base font-bold text-theme-text">Topic Append-Only Log</h3>
             <code className="text-xs px-2 py-0.5 bg-theme-surface-alt border border-theme-border rounded text-theme-accent font-mono font-bold">
               {selectedTopic}
             </code>
-            <span>aur uske partitions</span>
-          </h3>
-          <p className="text-xs text-theme-muted mt-0.5">
-            Har partition ek notebook register hai. Message cell ka <b className="text-theme-text font-mono font-bold">"off 0, off 1..."</b> = <b>Offset (Permanent Page Number)</b> jo kabhi change nahi hota.
-          </p>
+          </div>
+          <span className="text-xs text-theme-muted font-mono">{numPartitions} Partition Registers</span>
         </div>
+        <p className="text-xs text-theme-muted mt-0.5">
+          Har partition ek notebook register hai. Message cell ka <b className="text-theme-text font-mono font-bold">"off 0, off 1..."</b> = <b>Offset (Permanent Page Number)</b> jo kabhi change nahi hota.
+        </p>
 
         {/* Partitions Append-Only Rows */}
         <div className="space-y-2 pt-1">
@@ -696,15 +669,15 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
             return (
               <div
                 key={p}
-                className="grid grid-cols-[48px_1fr] gap-3 items-center py-2.5 border-t first:border-t-0 border-dashed border-theme-border"
+                className="grid grid-cols-[44px_1fr] gap-3 items-center py-2 border-t first:border-t-0 border-dashed border-theme-border"
               >
-                <div className="font-mono font-bold text-sm text-theme-accent">
+                <div className="w-11 h-11 rounded-lg bg-theme-surface-alt border border-theme-border flex items-center justify-center font-mono font-bold text-sm text-theme-accent shrink-0 shadow-2xs">
                   P{p}
                 </div>
 
-                <div className="flex items-center gap-2 overflow-x-auto py-1 min-h-[58px] no-scrollbar">
+                <div className="flex items-center gap-2 overflow-x-auto py-1 min-h-[56px] no-scrollbar">
                   {messages.length === 0 ? (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg border border-dashed border-theme-border/70 text-xs text-theme-muted bg-theme-surface-alt/40">
+                    <div className="flex items-center gap-2 px-3 py-2 rounded-lg border border-dashed border-theme-border/70 text-xs text-theme-muted bg-theme-surface-alt/40 h-11">
                       <span className="w-1.5 h-1.5 rounded-full bg-theme-muted/50" />
                       <span>khali log — Pehla message bhejo</span>
                       <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-theme-surface text-theme-muted border border-theme-border">Space</kbd>
@@ -723,10 +696,10 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
                       return (
                         <div
                           key={m.id}
-                          className={`flex-shrink-0 min-w-[80px] p-1.5 px-2 bg-theme-surface-alt border border-theme-border rounded-lg font-mono text-xs transition-all relative select-none ${isNew ? 'scale-105 ring-2 ring-amber-500' : ''
+                          className={`flex-shrink-0 min-w-[90px] h-11 px-2.5 py-1 bg-theme-surface-alt border border-theme-border rounded-lg font-mono text-xs transition-all relative select-none flex flex-col justify-center ${isNew ? 'scale-105 ring-2 ring-amber-500' : ''
                             } ${isConsumedBilling ? 'opacity-60' : 'opacity-100'}`}
                           style={{
-                            borderLeftWidth: '5px',
+                            borderLeftWidth: '4px',
                             borderLeftColor: getKeyColor(m.key),
                           }}
                           title={`(${m.topic || selectedTopic}, P${p}, offset ${m.offset})`}
@@ -736,10 +709,10 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
                               {badgeText}
                             </span>
                           )}
-                          <div className="font-bold text-theme-text truncate pr-4">
+                          <div className="font-bold text-theme-text truncate pr-4 text-xs">
                             {m.key === null ? 'null' : m.key}
                           </div>
-                          <div className="text-[10px] text-theme-muted mt-0.5">
+                          <div className="text-[10px] text-theme-muted">
                             off {m.offset} · {m.event.split('.')[1] || m.event}
                           </div>
                         </div>
@@ -913,68 +886,24 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
           })}
         </div>
       </section>
+    </div>
 
-      {/* 6. Event Log (Collapsible Diagnostics Pane) */}
-      <div className="border border-theme-border rounded-xl overflow-hidden bg-theme-surface shadow-xs">
-        <button
-          type="button"
-          onClick={() => setShowEventLog(!showEventLog)}
-          className="w-full flex items-center justify-between p-3.5 bg-theme-surface-alt hover:bg-theme-border/40 text-sm font-semibold text-theme-text transition-colors select-none"
-        >
-          <div className="flex items-center gap-2">
-            <span className="font-bold">Event stream log</span>
-            <span className="px-2 py-0.5 text-xs font-mono rounded-full bg-theme-surface border border-theme-border text-theme-muted">
-              {eventLogs.length} events
-            </span>
-          </div>
-
-          <div className="flex items-center gap-2 text-xs text-theme-muted">
-            <span>{showEventLog ? 'Hide log' : 'Show log'}</span>
-            {showEventLog ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-          </div>
-        </button>
-
-        {showEventLog && (
-          <div className="p-4 border-t border-theme-border space-y-2">
-            <div className="flex items-center justify-between">
-              <span className="text-xs text-theme-muted">Live event log (latest 60 entries)</span>
-              <button
-                type="button"
-                onClick={() => setEventLogs([])}
-                className="text-[11px] text-theme-accent hover:underline"
-              >
-                Clear log
-              </button>
-            </div>
-
-            <ul className="space-y-1 font-mono text-xs max-h-48 overflow-y-auto divide-y divide-theme-border/40 text-theme-text">
-              {eventLogs.length === 0 ? (
-                <li className="py-2 text-theme-muted italic font-sans text-xs">
-                  Abhi koi event log nahi hua. Send message dabao to see logs.
-                </li>
-              ) : (
-                eventLogs.map((log) => {
-                  const tagColors: Record<string, string> = {
-                    produce: 'text-amber-700 dark:text-amber-400 border-amber-500/40',
-                    consume: 'text-emerald-700 dark:text-emerald-400 border-emerald-500/40',
-                    rebalance: 'text-purple-700 dark:text-purple-400 border-purple-500/40',
-                  };
-                  return (
-                    <li key={log.id} className="py-1 flex items-start gap-2">
-                      <span
-                        className={`px-1.5 py-0.2 rounded border text-[10px] font-semibold flex-shrink-0 ${tagColors[log.type] || 'text-theme-muted border-theme-border'
-                          }`}
-                      >
-                        {log.tag}
-                      </span>
-                      <span className="break-words leading-relaxed">{log.text}</span>
-                    </li>
-                  );
-                })
-              )}
-            </ul>
-          </div>
-        )}
+        {/* Live Event Stream Log */}
+        <div className={logLayout === 'side' ? 'lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 min-w-0' : 'w-full'}>
+          <LiveEventLog
+            title="Kafka Event Stream Log"
+            entries={eventLogs.map((l) => ({
+              id: l.id,
+              tag: l.tag,
+              type: l.type as any,
+              message: l.text,
+            }))}
+            layout={logLayout}
+            onLayoutChange={setLogLayout}
+            onClear={() => setEventLogs([])}
+            maxHeight={logLayout === 'side' ? 'max-h-[620px]' : 'max-h-56'}
+          />
+        </div>
       </div>
 
       {/* 7. Collapsed "More Options" Row (Direct Manipulation Beats Sliders) */}

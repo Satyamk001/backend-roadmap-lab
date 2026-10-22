@@ -3,7 +3,8 @@ import {
   RabbitMqPrefetchEngine,
   PrefetchSnapshot,
 } from '../../../engine/rabbitmq/prefetchEngine';
-import { Play, Pause, RotateCcw, ChevronDown, ChevronUp, FastForward, Zap, Clock, Info } from 'lucide-react';
+import { Play, Pause, ChevronDown, ChevronUp, FastForward, Zap, Clock, Info } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
 
 export const PrefetchQoSDemo: React.FC = () => {
   const [engine] = useState(() => new RabbitMqPrefetchEngine(0));
@@ -51,104 +52,55 @@ export const PrefetchQoSDemo: React.FC = () => {
   const slowWorker = snapshot.workers.find((w) => w.id === 'w-slow');
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Title */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Prefetch and fair dispatch
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Round-robin worker starvation ko rokne ke liye prefetch (basic.qos) fair dispatch.
-          </p>
-        </div>
-      </div>
-
-      {/* "What just happened?" status line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {snapshot.statusMessage}
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Prefetch and fair dispatch"
+        statusWhat={snapshot.statusMessage}
+        statusWhy={snapshot.whyItMatters}
+        onReset={handleReset}
+        actions={
+          <>
+            <div className="flex items-center gap-1.5 p-1 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
+              <button
+                onClick={() => handleSetPrefetch(0)}
+                className={`px-2.5 py-1 rounded-md font-sans text-xs transition-all ${
+                  snapshot.prefetchSetting === 0
+                    ? 'bg-theme-primary text-black font-bold shadow-xs'
+                    : 'text-theme-muted hover:text-theme-text'
+                }`}
+              >
+                Prefetch = 0 (Unlimited)
+              </button>
+              <button
+                onClick={() => handleSetPrefetch(1)}
+                className={`px-2.5 py-1 rounded-md font-sans text-xs transition-all ${
+                  snapshot.prefetchSetting === 1
+                    ? 'bg-theme-primary text-black font-bold shadow-xs'
+                    : 'text-theme-muted hover:text-theme-text'
+                }`}
+              >
+                Prefetch = 1 (Fair QoS)
+              </button>
             </div>
-            <div className="text-xs text-theme-muted mt-1 leading-normal font-medium">
-              💡 {snapshot.whyItMatters}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Action Controls (Max 5 controls) */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          {/* Prefetch Mode Switcher */}
-          <div className="flex items-center gap-1.5 p-1 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
-            <button
-              onClick={() => handleSetPrefetch(0)}
-              className={`px-3 py-1.5 rounded-md font-sans text-xs transition-all ${
-                snapshot.prefetchSetting === 0
-                  ? 'bg-theme-primary text-black font-bold shadow-xs'
-                  : 'text-theme-muted hover:text-theme-text'
-              }`}
-            >
-              Prefetch = 0 (Unlimited Round-Robin)
-            </button>
-            <button
-              onClick={() => handleSetPrefetch(1)}
-              className={`px-3 py-1.5 rounded-md font-sans text-xs transition-all ${
-                snapshot.prefetchSetting === 1
-                  ? 'bg-theme-primary text-black font-bold shadow-xs'
-                  : 'text-theme-muted hover:text-theme-text'
-              }`}
-            >
-              Prefetch = 1 (Fair QoS)
-            </button>
-          </div>
-
-          {/* Stepper & Playback controls */}
-          <div className="flex items-center gap-2">
-            <button
+            <DemoActionButton
               onClick={() => setIsPlaying(!isPlaying)}
               disabled={snapshot.isAllCompleted}
-              className={`px-3 py-1.5 rounded-lg text-xs font-bold flex items-center gap-1.5 transition-all shadow-xs ${
-                isPlaying
-                  ? 'bg-amber-500 text-black'
-                  : 'bg-theme-primary text-black hover:opacity-90'
-              } disabled:opacity-40`}
+              icon={isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+              variant={isPlaying ? 'secondary' : 'primary'}
             >
-              {isPlaying ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
               {isPlaying ? 'Pause' : 'Auto Play'}
-            </button>
-
-            <button
+            </DemoActionButton>
+            <DemoActionButton
               onClick={handleStep}
               disabled={isPlaying || snapshot.isAllCompleted}
-              className="px-3 py-1.5 bg-theme-surface border border-theme-border text-theme-text font-bold rounded-lg text-xs flex items-center gap-1 hover:bg-theme-surface-alt transition-all disabled:opacity-40"
+              icon={<FastForward className="w-3.5 h-3.5 text-theme-primary" />}
+              variant="secondary"
             >
-              <FastForward className="w-3.5 h-3.5 text-theme-primary" />
               Tick (Step)
-            </button>
-
-            <button
-              onClick={handleReset}
-              className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+            </DemoActionButton>
+          </>
+        }
+      />
 
       {/* Main Simulation Canvas */}
       <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">
@@ -168,7 +120,7 @@ export const PrefetchQoSDemo: React.FC = () => {
         {/* Worker Cards Comparison */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           {/* Worker 1: Fast */}
-          <div className="p-4 rounded-xl bg-theme-surface-alt/50 border border-theme-border space-y-3">
+          <div className="p-4 rounded-xl bg-theme-surface-alt/50 border border-theme-border flex flex-col justify-between h-full min-h-[220px] space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Zap className="w-4 h-4 text-emerald-400" />
@@ -228,7 +180,7 @@ export const PrefetchQoSDemo: React.FC = () => {
           </div>
 
           {/* Worker 2: Slow */}
-          <div className="p-4 rounded-xl bg-theme-surface-alt/50 border border-theme-border space-y-3">
+          <div className="p-4 rounded-xl bg-theme-surface-alt/50 border border-theme-border flex flex-col justify-between h-full min-h-[220px] space-y-3">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4 text-amber-500" />

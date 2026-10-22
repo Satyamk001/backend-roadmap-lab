@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, AlertTriangle, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { AlertTriangle, ShieldCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { DemoCommandDeck } from '../../../components/common/DemoCommandDeck';
 
 interface ConsumerNode {
   id: string;
@@ -120,81 +121,42 @@ export const RebalanceDemo: React.FC = () => {
   }, [consumers, protocol]);
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* 1. Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Rebalance
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Consumer join ya crash hone par partition ownership rebalance hoti hai.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleReset}
-          className="px-3 py-1.5 text-xs font-medium bg-theme-surface hover:bg-theme-surface-alt border border-theme-border rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset</span>
-          <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-theme-surface-alt text-theme-muted border border-theme-border">R</kbd>
-        </button>
-      </div>
-
-      {/* 2. Status Banner: Ambient pulse beacon + clear Hinglish state */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
-            </div>
-            {statusWhy && (
-              <div className="text-xs text-theme-muted leading-normal font-medium">
-                {statusWhy}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Rebalance"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleReset}
+      />
 
       {/* 3. Primary Controls (4 to 5 direct verb buttons) */}
       <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleCrashC2}
-            disabled={consumers.find((c) => c.id === 'c2')?.status === 'crashed'}
-            className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white font-bold text-sm rounded-lg shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
-          >
-            <AlertTriangle className="w-4 h-4" />
-            <span>Crash Consumer C2 (Timeout)</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/20 text-white border border-white/20">Space</kbd>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleCrashC2}
+              disabled={consumers.find((c) => c.id === 'c2')?.status === 'crashed'}
+              className="px-4 py-2 bg-rose-600 hover:bg-rose-700 disabled:opacity-40 text-white font-bold text-xs rounded-lg shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>Crash Consumer C2 (Timeout)</span>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/20 text-white border border-white/20">Space</kbd>
+            </button>
 
-          <button
-            type="button"
-            onClick={handleReviveC2}
-            disabled={consumers.find((c) => c.id === 'c2')?.status === 'active'}
-            className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5"
-          >
-            <ShieldCheck className="w-4 h-4" />
-            <span>Revive Consumer C2</span>
-          </button>
+            <button
+              type="button"
+              onClick={handleReviveC2}
+              disabled={consumers.find((c) => c.id === 'c2')?.status === 'active'}
+              className="px-3.5 py-2 bg-emerald-600 hover:bg-emerald-700 disabled:opacity-40 text-white font-semibold text-xs rounded-lg transition-colors flex items-center gap-1.5"
+            >
+              <ShieldCheck className="w-4 h-4" />
+              <span>Revive Consumer C2</span>
+            </button>
+          </div>
 
           {/* Protocol Toggle */}
-          <div className="flex items-center gap-2 ml-auto text-xs">
+          <div className="flex items-center gap-2 text-xs">
             <span className="text-theme-muted font-medium">Rebalance Protocol:</span>
             <div className="flex rounded-lg border border-theme-border overflow-hidden">
               <button
@@ -256,7 +218,7 @@ export const RebalanceDemo: React.FC = () => {
             return (
               <div
                 key={c.id}
-                className={`p-4 rounded-xl border transition-all ${
+                className={`p-4 rounded-xl border transition-all flex flex-col justify-between min-h-[140px] ${
                   isCrashed
                     ? 'bg-rose-500/10 border-rose-300 dark:border-rose-900/50 opacity-80'
                     : isFrozen

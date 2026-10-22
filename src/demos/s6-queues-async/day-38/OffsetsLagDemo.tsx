@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { RotateCcw, FastForward, Rewind, ChevronDown, ChevronUp } from 'lucide-react';
+import { FastForward, Rewind, ChevronDown, ChevronUp } from 'lucide-react';
+import { DemoCommandDeck } from '../../../components/common/DemoCommandDeck';
 
 interface OffsetMessage {
   id: string;
@@ -126,86 +127,47 @@ export const OffsetsLagDemo: React.FC = () => {
   }, [handleProduceBurst]);
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* 1. Header */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Offsets and lag
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Committed offset progress bookmark hai; lag consumer ka backlog batata hai.
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={handleResetAll}
-          className="px-3 py-1.5 text-xs font-medium bg-theme-surface hover:bg-theme-surface-alt border border-theme-border rounded-lg transition-colors flex items-center gap-1.5"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          <span>Reset</span>
-          <kbd className="text-[10px] font-mono px-1 py-0.2 rounded bg-theme-surface-alt text-theme-muted border border-theme-border">R</kbd>
-        </button>
-      </div>
-
-      {/* 2. Status Banner: Ambient pulse beacon + clear Hinglish state */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
-            </div>
-            {statusWhy && (
-              <div className="text-xs text-theme-muted leading-normal font-medium">
-                {statusWhy}
-              </div>
-            )}
-          </div>
-        </div>
-      </div>
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Offsets and lag"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleResetAll}
+      />
 
       {/* 3. Primary Controls (4 to 5 direct verb buttons) */}
       <section className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-sm space-y-3">
-        <div className="flex flex-wrap items-center gap-2.5">
-          <button
-            type="button"
-            onClick={handleProduceBurst}
-            className="px-4 py-2 bg-theme-primary text-theme-primary-text font-bold text-sm rounded-lg hover:bg-theme-primary-hover shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
-          >
-            <span>Produce 3 messages (LEO ↑)</span>
-            <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
-          </button>
+        <div className="flex flex-wrap items-center justify-between gap-2.5">
+          <div className="flex flex-wrap items-center gap-2">
+            <button
+              type="button"
+              onClick={handleProduceBurst}
+              className="px-4 py-2 bg-theme-primary text-theme-primary-text font-bold text-xs rounded-lg hover:bg-theme-primary-hover shadow-sm active:translate-y-0.5 transition-all flex items-center gap-1.5"
+            >
+              <span>Produce 3 messages (LEO ↑)</span>
+              <kbd className="text-[10px] font-mono px-1.5 py-0.5 rounded bg-black/15 text-stone-900 border border-black/10">Space</kbd>
+            </button>
 
-          <button
-            type="button"
-            onClick={handlePollAndCommit}
-            disabled={committedOffset >= messages.length}
-            className="px-3.5 py-2 bg-theme-surface-alt hover:bg-theme-border disabled:opacity-40 text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
-          >
-            Poll & commit 1 msg (Lag ↓)
-          </button>
+            <button
+              type="button"
+              onClick={handlePollAndCommit}
+              disabled={committedOffset >= messages.length}
+              className="px-3.5 py-2 bg-theme-surface-alt hover:bg-theme-border disabled:opacity-40 text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
+            >
+              Poll & commit 1 msg (Lag ↓)
+            </button>
 
-          <button
-            type="button"
-            onClick={handleDrainLag}
-            disabled={lag === 0}
-            className="px-3 py-2 bg-theme-surface-alt hover:bg-theme-border disabled:opacity-40 text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
-          >
-            Drain all lag (Catch up)
-          </button>
+            <button
+              type="button"
+              onClick={handleDrainLag}
+              disabled={lag === 0}
+              className="px-3 py-2 bg-theme-surface-alt hover:bg-theme-border disabled:opacity-40 text-theme-text font-semibold text-xs rounded-lg border border-theme-border transition-colors"
+            >
+              Drain all lag (Catch up)
+            </button>
+          </div>
 
-          <div className="flex items-center gap-1.5 ml-auto">
+          <div className="flex items-center gap-1.5 text-xs">
             <button
               type="button"
               onClick={handleResetEarliest}
@@ -253,28 +215,34 @@ export const OffsetsLagDemo: React.FC = () => {
 
       {/* 4. Offset Metrics Board: LEO vs Committed vs Lag */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl">
-          <div className="text-xs text-theme-muted font-medium">Log End Offset (LEO)</div>
-          <div className="text-2xl font-mono font-bold text-theme-text mt-1">{leo}</div>
+        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl flex flex-col justify-between min-h-[96px]">
+          <div>
+            <div className="text-xs text-theme-muted font-medium">Log End Offset (LEO)</div>
+            <div className="text-2xl font-mono font-bold text-theme-text mt-1">{leo}</div>
+          </div>
           <div className="text-[11px] text-theme-muted mt-1">Notebook ka aakhri likha hua page (Total messages)</div>
         </div>
 
-        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl">
-          <div className="text-xs text-theme-muted font-medium">Committed Offset (Bookmark)</div>
-          <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">
-            {committedOffset}
+        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl flex flex-col justify-between min-h-[96px]">
+          <div>
+            <div className="text-xs text-theme-muted font-medium">Committed Offset (Bookmark)</div>
+            <div className="text-2xl font-mono font-bold text-emerald-600 dark:text-emerald-400 mt-1">
+              {committedOffset}
+            </div>
           </div>
           <div className="text-[11px] text-theme-muted mt-1">Consumer bookmark: agla offset jo padhna hai</div>
         </div>
 
-        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl">
-          <div className="text-xs text-theme-muted font-medium">Consumer Lag (Pending Backlog)</div>
-          <div
-            className={`text-2xl font-mono font-bold mt-1 ${
-              lag > 3 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-500'
-            }`}
-          >
-            {lag}
+        <div className="p-4 bg-theme-surface border border-theme-border rounded-xl flex flex-col justify-between min-h-[96px]">
+          <div>
+            <div className="text-xs text-theme-muted font-medium">Consumer Lag (Pending Backlog)</div>
+            <div
+              className={`text-2xl font-mono font-bold mt-1 ${
+                lag > 3 ? 'text-rose-600 dark:text-rose-400' : 'text-amber-500'
+              }`}
+            >
+              {lag}
+            </div>
           </div>
           <div className="text-[11px] text-theme-muted mt-1">
             {lag === 0 ? 'Caught up (Real-time, Lag = 0)' : `${lag} unread messages bache hain`}

@@ -2,7 +2,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { BullJobLifecycleEngine, BullQueueSnapshot, BullJob } from '../../../engine/queues/lifecycle';
 import {
   Play,
-  RotateCcw,
   Plus,
   CheckCircle2,
   AlertTriangle,
@@ -11,6 +10,8 @@ import {
   ChevronDown,
   Layers,
 } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
+import { LiveEventLog, LogLayoutMode } from '../../../components/common/LiveEventLog';
 
 export const JobLifecycleDemo: React.FC = () => {
   const engineRef = useRef<BullJobLifecycleEngine | null>(null);
@@ -23,6 +24,7 @@ export const JobLifecycleDemo: React.FC = () => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [selectedJobId, setSelectedJobId] = useState<string | null>(null);
+  const [logLayout, setLogLayout] = useState<LogLayoutMode>('stacked');
 
   const sync = () => setSnap(engine.getSnapshot());
 
@@ -141,126 +143,87 @@ export const JobLifecycleDemo: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Tab Heading & Summary */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      {/* 1. Unified Command & Status Deck */}
+      <DemoCommandDeck
+        title="Job lifecycle states"
+        statusMessage={snap.statusMessage}
+        whyItMatters={snap.whyItMatters}
+        badge="BullMQ · Day 35"
+        notesAnchor="job-lifecycle-states"
+        onReset={() => {
+          engine.reset();
+          sync();
+        }}
+        actions={
+          <>
+            <DemoActionButton
+              variant="primary"
+              onClick={() => {
+                engine.stepPick();
+                sync();
+              }}
+              disabled={snap.waiting.length === 0 || !snap.workers.some((w) => w.status === 'idle')}
+            >
+              <Play className="w-3.5 h-3.5 fill-current" />
+              <span>Pick Next Job</span>
+            </DemoActionButton>
 
-            <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-              Job lifecycle states
-            </h2>
-          </div>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Jobs move atomically through Redis sets: waiting to active with a lock, then completed or failed.
-          </p>
-        </div>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.addJob('email:welcome', { to: 'bala@test.com' });
+                sync();
+              }}
+            >
+              <Plus className="w-3.5 h-3.5" />
+              <span>Add Job</span>
+            </DemoActionButton>
 
-        <button
-          type="button"
-          onClick={() => {
-            engine.reset();
-            sync();
-          }}
-          className="px-2.5 py-1 text-xs font-semibold rounded-lg border border-theme-border bg-theme-surface hover:bg-theme-surface-alt text-theme-text flex items-center gap-1.5 shadow-xs transition-colors"
-        >
-          <RotateCcw className="w-3 h-3" />
-          <span>Reset</span>
-        </button>
-      </div>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.completeJob();
+                sync();
+              }}
+              disabled={snap.active.length === 0}
+              className="text-emerald-600 dark:text-emerald-400 font-semibold"
+            >
+              <CheckCircle2 className="w-3.5 h-3.5" />
+              <span>Complete Active</span>
+            </DemoActionButton>
 
-      {/* "What just happened?" Live Status Line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all border-l-4 border-l-theme-primary"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {snap.statusMessage}
-            </div>
-            <div className="text-xs text-theme-muted mt-0.5 leading-normal font-medium">
-              {snap.whyItMatters}
-            </div>
-          </div>
-        </div>
-      </div>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.failJob();
+                sync();
+              }}
+              disabled={snap.active.length === 0}
+              className="text-rose-600 dark:text-rose-400 font-semibold"
+            >
+              <AlertTriangle className="w-3.5 h-3.5" />
+              <span>Fail Active</span>
+            </DemoActionButton>
 
-      {/* Primary Action Controls (Max 5 verbs in default view) */}
-      <div className="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          onClick={() => {
-            engine.stepPick();
-            sync();
-          }}
-          disabled={snap.waiting.length === 0 || !snap.workers.some((w) => w.status === 'idle')}
-          className="px-4 py-2 rounded-lg bg-theme-primary text-theme-primary-text font-bold text-sm shadow-xs active:scale-[0.98] transition-all disabled:opacity-50 flex items-center gap-1.5"
-        >
-          <Play className="w-4 h-4 fill-current" />
-          <span>Pick Next Job</span>
-        </button>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.advanceClock();
+                sync();
+              }}
+            >
+              <Clock className="w-3.5 h-3.5 text-theme-muted" />
+              <span>Advance Clock</span>
+            </DemoActionButton>
+          </>
+        }
+      />
 
-        <button
-          type="button"
-          onClick={() => {
-            engine.addJob('email:welcome', { to: 'bala@test.com' });
-            sync();
-          }}
-          className="px-3.5 py-2 rounded-lg border border-theme-border bg-theme-surface hover:bg-theme-surface-alt text-theme-text font-semibold text-sm shadow-xs transition-colors flex items-center gap-1.5"
-        >
-          <Plus className="w-4 h-4" />
-          <span>Add Job</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            engine.completeJob();
-            sync();
-          }}
-          disabled={snap.active.length === 0}
-          className="px-3.5 py-2 rounded-lg border border-theme-border bg-theme-surface hover:bg-theme-surface-alt text-emerald-600 dark:text-emerald-400 font-semibold text-sm shadow-xs transition-colors disabled:opacity-40 flex items-center gap-1.5"
-        >
-          <CheckCircle2 className="w-4 h-4" />
-          <span>Complete Active</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            engine.failJob();
-            sync();
-          }}
-          disabled={snap.active.length === 0}
-          className="px-3.5 py-2 rounded-lg border border-theme-border bg-theme-surface hover:bg-theme-surface-alt text-rose-600 dark:text-rose-400 font-semibold text-sm shadow-xs transition-colors disabled:opacity-40 flex items-center gap-1.5"
-        >
-          <AlertTriangle className="w-4 h-4" />
-          <span>Fail Active</span>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => {
-            engine.advanceClock();
-            sync();
-          }}
-          className="px-3.5 py-2 rounded-lg border border-theme-border bg-theme-surface hover:bg-theme-surface-alt text-theme-text font-semibold text-sm shadow-xs transition-colors flex items-center gap-1.5"
-        >
-          <Clock className="w-4 h-4 text-theme-muted" />
-          <span>Advance Clock</span>
-        </button>
-      </div>
-
-      {/* Main Simulation Canvas: BullMQ Redis State Lanes */}
-      <div className="p-4 sm:p-5 rounded-xl border border-theme-border bg-theme-surface shadow-xs space-y-4">
+      <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        <div className={logLayout === 'side' ? 'lg:col-span-7 xl:col-span-8 space-y-4 min-w-0' : 'space-y-4'}>
+          {/* Main Simulation Canvas: BullMQ Redis State Lanes */}
+          <div className="p-4 sm:p-5 rounded-xl border border-theme-border bg-theme-surface shadow-xs space-y-4">
         {/* Workers Status Row */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-lg bg-theme-surface-alt/50 border border-theme-border text-xs">
           <div className="flex items-center gap-2">
@@ -494,40 +457,27 @@ export const JobLifecycleDemo: React.FC = () => {
                 </div>
               </div>
             </div>
-
-            {/* Live Event Log */}
-            <div className="space-y-1.5">
-              <span className="text-xs font-bold uppercase tracking-wider text-theme-accent">
-                Virtual Tick Event Log
-              </span>
-              <div className="p-3 rounded-lg border border-theme-border bg-theme-surface-alt/40 font-mono text-[11px] max-h-36 overflow-y-auto space-y-1">
-                {snap.eventLog.length === 0 ? (
-                  <span className="text-theme-muted italic">No events recorded.</span>
-                ) : (
-                  snap.eventLog.map((ev) => (
-                    <div key={ev.id} className="flex items-center gap-2">
-                      <span className="text-theme-muted">T+{ev.tick}</span>
-                      <span
-                        className={
-                          ev.type === 'success'
-                            ? 'text-emerald-600 dark:text-emerald-400'
-                            : ev.type === 'error'
-                              ? 'text-rose-600 dark:text-rose-400'
-                              : ev.type === 'warning'
-                                ? 'text-amber-600 dark:text-amber-400'
-                                : 'text-theme-text'
-                        }
-                      >
-                        {ev.message}
-                      </span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         )}
       </div>
+      </div>
+
+      {/* Live Event Stream Log */}
+      <div className={logLayout === 'side' ? 'lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 min-w-0' : 'w-full'}>
+        <LiveEventLog
+          title="BullMQ Job Lifecycle Event Stream"
+          entries={snap.eventLog.map((ev) => ({
+            id: ev.id,
+            tick: ev.tick,
+            type: ev.type,
+            message: ev.message,
+          }))}
+          layout={logLayout}
+          onLayoutChange={setLogLayout}
+          maxHeight={logLayout === 'side' ? 'max-h-[620px]' : 'max-h-56'}
+        />
+      </div>
+    </div>
     </div>
   );
 };

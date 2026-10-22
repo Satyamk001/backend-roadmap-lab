@@ -3,7 +3,8 @@ import {
   RabbitMqDlxEngine,
   DlxSnapshot,
 } from '../../../engine/rabbitmq/dlxEngine';
-import { Send, RotateCcw, ChevronDown, ChevronUp, AlertOctagon, RefreshCw, ShieldAlert, CheckCircle2, Clock, Info } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, AlertOctagon, RefreshCw, ShieldAlert, CheckCircle2, Clock, Info } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
 
 export const DlxRetriesDemo: React.FC = () => {
   const [engine] = useState(() => new RabbitMqDlxEngine());
@@ -40,82 +41,38 @@ export const DlxRetriesDemo: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Title */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Dead letter exchange (DLX) and retries
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Poison messages ko isolate karne ke liye x-dead-letter-exchange aur delayed retry queue.
-          </p>
-        </div>
-      </div>
-
-      {/* "What just happened?" status line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {snapshot.statusMessage}
-            </div>
-            <div className="text-xs text-theme-muted mt-1 leading-normal font-medium">
-              💡 {snapshot.whyItMatters}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Action Controls (Max 5 controls) */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          <div className="flex items-center gap-2 flex-wrap">
-            <button
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Dead letter exchange (DLX) and retries"
+        statusWhat={snapshot.statusMessage}
+        statusWhy={snapshot.whyItMatters}
+        onReset={handleReset}
+        actions={
+          <>
+            <DemoActionButton
               onClick={handlePublishNormal}
-              className="px-3 py-1.5 bg-emerald-500/20 text-emerald-400 border border-emerald-500/40 font-bold rounded-lg text-xs flex items-center gap-1.5 hover:bg-emerald-500/30 transition-all shadow-xs"
+              icon={<Send className="w-3.5 h-3.5" />}
+              variant="secondary"
             >
-              <Send className="w-3.5 h-3.5" />
-              Publish Normal Job
-            </button>
-
-            <button
+              Normal Job
+            </DemoActionButton>
+            <DemoActionButton
               onClick={handlePublishPoison}
-              className="px-3 py-1.5 bg-red-500/20 text-red-400 border border-red-500/40 font-bold rounded-lg text-xs flex items-center gap-1.5 hover:bg-red-500/30 transition-all shadow-xs"
+              icon={<AlertOctagon className="w-3.5 h-3.5 text-red-400" />}
+              variant="danger"
             >
-              <AlertOctagon className="w-3.5 h-3.5" />
-              Publish Poison Pill
-            </button>
-
-            <button
+              Poison Pill
+            </DemoActionButton>
+            <DemoActionButton
               onClick={handleStep}
-              className="px-3.5 py-1.5 bg-theme-primary text-black font-bold rounded-lg text-xs flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-xs"
+              icon={<Clock className="w-3.5 h-3.5" />}
+              variant="primary"
             >
-              Step Tick (Clock: #{snapshot.tick})
-            </button>
-          </div>
-
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReset}
-              className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+              Step Tick (#{snapshot.tick})
+            </DemoActionButton>
+          </>
+        }
+      />
 
       {/* Main DLX Architecture Canvas */}
       <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">
@@ -153,13 +110,15 @@ export const DlxRetriesDemo: React.FC = () => {
         {/* 3 Queue Lanes: Main Queue -> Retry Queue -> Dead Letter Queue */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* 1. Main Queue */}
-          <div className="p-4 rounded-xl bg-theme-surface-alt/40 border border-theme-border space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-theme-text">1. Main Queue</span>
-              <span className="text-[10px] font-mono text-theme-muted">{snapshot.mainQueue.length} waiting</span>
-            </div>
-            <div className="text-[11px] text-theme-muted">
-              Argument: <code>x-dead-letter-exchange: orders.dlx</code>
+          <div className="p-4 rounded-xl bg-theme-surface-alt/40 border border-theme-border flex flex-col justify-between h-full min-h-[240px] space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-theme-text">1. Main Queue</span>
+                <span className="text-[10px] font-mono text-theme-muted">{snapshot.mainQueue.length} waiting</span>
+              </div>
+              <div className="text-[11px] text-theme-muted mt-1">
+                Argument: <code>x-dead-letter-exchange: orders.dlx</code>
+              </div>
             </div>
 
             <div className="space-y-1.5 min-h-[120px] max-h-[160px] overflow-y-auto p-1">
@@ -188,16 +147,18 @@ export const DlxRetriesDemo: React.FC = () => {
           </div>
 
           {/* 2. Delayed Retry Queue (TTL) */}
-          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/30 space-y-3">
-            <div className="flex items-center justify-between">
-              <span className="font-bold text-xs text-theme-accent flex items-center gap-1.5">
-                <Clock className="w-3.5 h-3.5" />
-                2. Retry Queue (TTL Backoff)
-              </span>
-              <span className="text-[10px] font-mono text-theme-accent">{snapshot.retryQueue.length} in delay</span>
-            </div>
-            <div className="text-[11px] text-theme-muted">
-              Argument: <code>x-message-ttl: 2 ticks</code>
+          <div className="p-4 rounded-xl bg-amber-500/5 border border-amber-500/30 flex flex-col justify-between h-full min-h-[240px] space-y-3">
+            <div>
+              <div className="flex items-center justify-between">
+                <span className="font-bold text-xs text-theme-accent flex items-center gap-1.5">
+                  <Clock className="w-3.5 h-3.5" />
+                  2. Retry Queue (TTL Backoff)
+                </span>
+                <span className="text-[10px] font-mono text-theme-accent">{snapshot.retryQueue.length} in delay</span>
+              </div>
+              <div className="text-[11px] text-theme-muted mt-1">
+                Argument: <code>x-message-ttl: 2 ticks</code>
+              </div>
             </div>
 
             <div className="space-y-1.5 min-h-[120px] max-h-[160px] overflow-y-auto p-1">
@@ -220,7 +181,7 @@ export const DlxRetriesDemo: React.FC = () => {
           </div>
 
           {/* 3. Dead Letter Queue (Quarantine) */}
-          <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/30 space-y-3">
+          <div className="p-4 rounded-xl bg-red-500/5 border border-red-500/30 flex flex-col justify-between h-full min-h-[240px] space-y-3">
             <div className="flex items-center justify-between">
               <span className="font-bold text-xs text-red-400 flex items-center gap-1.5">
                 <ShieldAlert className="w-3.5 h-3.5" />

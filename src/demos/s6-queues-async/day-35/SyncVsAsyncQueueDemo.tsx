@@ -1,7 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { SyncVsAsyncEngine, SyncAsyncSnapshot } from '../../../engine/queues/syncVsAsync';
 import {
-  RotateCcw,
   Zap,
   Clock,
   ChevronDown,
@@ -13,6 +12,8 @@ import {
   HelpCircle,
   TrendingUp,
 } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
+import { LiveEventLog, LogLayoutMode } from '../../../components/common/LiveEventLog';
 
 export const SyncVsAsyncQueueDemo: React.FC = () => {
   const engineRef = useRef<SyncVsAsyncEngine | null>(null);
@@ -24,6 +25,7 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
   const [snap, setSnap] = useState<SyncAsyncSnapshot>(() => engine.getSnapshot());
   const [showMoreOptions, setShowMoreOptions] = useState(false);
   const [activeTabGuide, setActiveTabGuide] = useState<number>(1);
+  const [logLayout, setLogLayout] = useState<LogLayoutMode>('stacked');
 
   const sync = () => setSnap(engine.getSnapshot());
 
@@ -71,51 +73,72 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
   };
 
   return (
-    <div className="bg-theme-surface rounded-xl border border-theme-border p-4 md:p-6 shadow-xs transition-colors duration-150">
-      {/* 1. Header & Title (Enforced by Demo Titles test) */}
-      <div className="mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-              <h2 className="text-xl font-bold text-theme-text">
-                Sync HTTP vs async queue
-              </h2>
-            </div>
-            <p className="text-sm text-theme-muted">
-              Why queues exist in backend engineering: blocking HTTP latency vs non-blocking background queue buffers.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      {/* 1. Unified Command & Status Deck */}
+      <DemoCommandDeck
+        title="Sync HTTP vs async queue"
+        statusMessage={snap.statusMessage}
+        whyItMatters={snap.whyItMatters}
+        badge="BullMQ · Day 35"
+        notesAnchor="sync-vs-async-queue"
+        onReset={() => {
+          engine.reset();
+          sync();
+        }}
+        actions={
+          <>
+            <DemoActionButton
+              variant="primary"
               onClick={() => {
-                engine.reset();
+                engine.sendRequest('pdf');
                 sync();
               }}
-              title="Reset simulation"
-              className="p-1.5 rounded-lg border border-theme-border text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt transition-colors"
             >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+              <Zap className="w-3.5 h-3.5 fill-current" />
+              <span>Send Request (PDF)</span>
+            </DemoActionButton>
 
-        {/* 2. "What just happened?" line */}
-        <div className="mt-4 p-3 rounded-lg bg-theme-surface-alt border-l-4 border-theme-primary transition-colors">
-          <div className="text-sm font-medium text-theme-text flex items-start gap-2">
-            <span className="font-bold text-theme-accent shrink-0 text-xs uppercase tracking-wide px-1.5 py-0.5 rounded bg-theme-primary/10">
-              STATUS
-            </span>
-            <span>{snap.statusMessage}</span>
-          </div>
-          <div className="text-xs text-theme-muted mt-1 pl-14">
-            💡 {snap.whyItMatters}
-          </div>
-        </div>
-      </div>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.sendSpike(5);
+                sync();
+              }}
+            >
+              <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
+              <span>Simulate Spike (5 Reqs)</span>
+            </DemoActionButton>
 
-      {/* 3. Beginner Guided Tour Stepper */}
-      <div className="mb-4 p-3 bg-theme-surface-alt/60 rounded-lg border border-theme-border">
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                const nextMode = snap.mode === 'sync' ? 'async' : 'sync';
+                engine.setMode(nextMode);
+                sync();
+              }}
+            >
+              <ArrowRight className="w-3.5 h-3.5" />
+              <span>Switch to {snap.mode === 'sync' ? 'Async Queue' : 'Sync HTTP'}</span>
+            </DemoActionButton>
+
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.step();
+                sync();
+              }}
+            >
+              <Clock className="w-3.5 h-3.5 text-sky-500" />
+              <span>Step Clock (1s)</span>
+            </DemoActionButton>
+          </>
+        }
+      />
+
+      <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        <div className={logLayout === 'side' ? 'lg:col-span-7 xl:col-span-8 space-y-4 min-w-0' : 'space-y-4'}>
+          {/* 3. Beginner Guided Tour Stepper */}
+          <div className="mb-4 p-3 bg-theme-surface-alt/60 rounded-lg border border-theme-border">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-semibold text-theme-text uppercase tracking-wider flex items-center gap-1.5">
             <HelpCircle className="w-3.5 h-3.5 text-theme-accent" />
@@ -176,7 +199,7 @@ export const SyncVsAsyncQueueDemo: React.FC = () => {
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
         {/* Left Column: Client Browser & Response Latency */}
         <div className="lg:col-span-4 space-y-4">
-          <div className="bg-theme-surface rounded-lg p-3.5 border border-theme-border">
+          <div className="bg-theme-surface rounded-lg p-3.5 border border-theme-border h-full flex flex-col justify-between">
             <div className="flex items-center justify-between mb-2">
               <span className="text-xs font-semibold text-theme-text uppercase tracking-wider flex items-center gap-1.5">
                 <Gauge className="w-3.5 h-3.5 text-theme-accent" />
@@ -397,72 +420,7 @@ app.post("/signup", async (req, res) => {
         </div>
       </div>
 
-      {/* 5. Primary Action Controls (5 controls max) */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {/* Control 1: Send Single Heavy Request */}
-        <button
-          onClick={() => {
-            engine.sendRequest('pdf');
-            sync();
-          }}
-          className="px-3.5 py-2 rounded-lg bg-theme-primary text-theme-surface font-semibold text-xs flex items-center gap-1.5 hover:opacity-90 transition-opacity"
-        >
-          <Zap className="w-3.5 h-3.5" />
-          Send Request (PDF Invoice)
-        </button>
 
-        {/* Control 2: Simulate Traffic Spike */}
-        <button
-          onClick={() => {
-            engine.sendSpike(5);
-            sync();
-          }}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt transition-colors"
-        >
-          <TrendingUp className="w-3.5 h-3.5 text-amber-500" />
-          Simulate Spike (5 Reqs)
-        </button>
-
-        {/* Control 3: Mode Switcher */}
-        <button
-          onClick={() => {
-            const nextMode = snap.mode === 'sync' ? 'async' : 'sync';
-            engine.setMode(nextMode);
-            sync();
-          }}
-          className={`px-3 py-2 rounded-lg border font-medium text-xs flex items-center gap-1.5 transition-colors ${snap.mode === 'sync'
-              ? 'border-emerald-500/40 bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 hover:bg-emerald-500/20'
-              : 'border-amber-500/40 bg-amber-500/10 text-amber-600 dark:text-amber-400 hover:bg-amber-500/20'
-            }`}
-        >
-          <ArrowRight className="w-3.5 h-3.5" />
-          Switch to {snap.mode === 'sync' ? 'Async Queue' : 'Sync HTTP'}
-        </button>
-
-        {/* Control 4: Step Virtual Clock */}
-        <button
-          onClick={() => {
-            engine.step();
-            sync();
-          }}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt transition-colors"
-        >
-          <Clock className="w-3.5 h-3.5 text-sky-500" />
-          Step Clock (1s)
-        </button>
-
-        {/* Control 5: Complete Reset */}
-        <button
-          onClick={() => {
-            engine.reset();
-            sync();
-          }}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-muted hover:text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt transition-colors"
-        >
-          <RotateCcw className="w-3.5 h-3.5" />
-          Reset
-        </button>
-      </div>
 
       {/* 6. Collapsed "More Options" Row */}
       <div className="border-t border-theme-border pt-3">
@@ -521,43 +479,27 @@ app.post("/signup", async (req, res) => {
               </div>
             </div>
 
-            {/* Event Log */}
-            <div className="p-3 bg-theme-surface rounded-lg border border-theme-border">
-              <div className="text-xs font-bold text-theme-text uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span>Architecture Traffic & Connection Stream</span>
-                <span className="text-[10px] font-mono text-theme-muted">
-                  Virtual Tick T+{snap.tick}
-                </span>
-              </div>
-              <div
-                className="max-h-36 overflow-y-auto space-y-1 font-mono text-[11px] pr-1"
-                aria-live="polite"
-              >
-                {snap.eventLog.length === 0 ? (
-                  <div className="text-theme-muted py-2 text-center">No events logged yet.</div>
-                ) : (
-                  snap.eventLog.map((ev) => (
-                    <div
-                      key={ev.id}
-                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${ev.type === 'error'
-                          ? 'bg-rose-500/10 text-rose-500'
-                          : ev.type === 'warning'
-                            ? 'bg-amber-500/10 text-amber-500'
-                            : ev.type === 'success'
-                              ? 'bg-emerald-500/10 text-emerald-500'
-                              : 'text-theme-muted'
-                        }`}
-                    >
-                      <span className="text-theme-muted shrink-0">[T+{ev.tick}]</span>
-                      <span>{ev.message}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         )}
       </div>
+      </div>
+
+      {/* Live Event Stream Log */}
+      <div className={logLayout === 'side' ? 'lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 min-w-0' : 'w-full'}>
+        <LiveEventLog
+          title="Architecture Traffic & Connection Stream"
+          entries={snap.eventLog.map((ev) => ({
+            id: ev.id,
+            tick: ev.tick,
+            type: ev.type,
+            message: ev.message,
+          }))}
+          layout={logLayout}
+          onLayoutChange={setLogLayout}
+          maxHeight={logLayout === 'side' ? 'max-h-[620px]' : 'max-h-56'}
+        />
+      </div>
+    </div>
     </div>
   );
 };

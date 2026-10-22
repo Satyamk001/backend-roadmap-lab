@@ -78,7 +78,7 @@ export const PersistenceDemo: React.FC = () => {
   const isCrashed = snapshot.serverStatus === 'crashed';
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
       {/* 1. Header */}
       <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
         <div>

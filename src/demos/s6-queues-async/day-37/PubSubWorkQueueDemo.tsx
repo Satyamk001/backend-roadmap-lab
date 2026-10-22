@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
-import { Send, RotateCcw, ChevronDown, ChevronUp, Users, Copy, AlertTriangle, Info } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, Copy, AlertTriangle, Info, Users } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
 
 type ArchitectureMode = 'pubsub' | 'workqueue' | 'shared_queue_bug';
 
@@ -125,99 +126,56 @@ export const PubSubWorkQueueDemo: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Title */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Pub/Sub vs work queues
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Ek queue par competing consumers (work queue) vs har subscriber ki apni queue (pub/sub).
-          </p>
-        </div>
-      </div>
-
-      {/* "What just happened?" status line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      <DemoCommandDeck
+        title="Pub/Sub vs work queues"
+        statusWhat={statusWhat}
+        statusWhy={statusWhy}
+        onReset={handleReset}
+        actions={
+          <>
+            <div className="flex items-center gap-1.5 p-1 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
+              <button
+                onClick={() => handleModeChange('pubsub')}
+                className={`px-2.5 py-1 rounded-md font-sans text-xs transition-all ${
+                  mode === 'pubsub'
+                    ? 'bg-theme-primary text-black font-bold shadow-xs'
+                    : 'text-theme-muted hover:text-theme-text'
+                }`}
+              >
+                Pub/Sub
+              </button>
+              <button
+                onClick={() => handleModeChange('workqueue')}
+                className={`px-2.5 py-1 rounded-md font-sans text-xs transition-all ${
+                  mode === 'workqueue'
+                    ? 'bg-theme-primary text-black font-bold shadow-xs'
+                    : 'text-theme-muted hover:text-theme-text'
+                }`}
+              >
+                Work Queue
+              </button>
+              <button
+                onClick={() => handleModeChange('shared_queue_bug')}
+                className={`px-2.5 py-1 rounded-md font-sans text-xs transition-all ${
+                  mode === 'shared_queue_bug'
+                    ? 'bg-red-500/20 text-red-400 border border-red-500/40 font-bold'
+                    : 'text-red-400/80 hover:text-red-400'
+                }`}
+              >
+                Shared Queue Bug
+              </button>
             </div>
-            <div className="text-xs text-theme-muted mt-1 leading-normal font-medium">
-              💡 {statusWhy}
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Primary Action Controls (Max 5 controls) */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          {/* Architecture Switcher */}
-          <div className="flex items-center gap-1.5 p-1 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
-            <button
-              onClick={() => handleModeChange('pubsub')}
-              className={`px-3 py-1.5 rounded-md font-sans text-xs transition-all ${
-                mode === 'pubsub'
-                  ? 'bg-theme-primary text-black font-bold shadow-xs'
-                  : 'text-theme-muted hover:text-theme-text'
-              }`}
-            >
-              Pub/Sub (Copy to all)
-            </button>
-            <button
-              onClick={() => handleModeChange('workqueue')}
-              className={`px-3 py-1.5 rounded-md font-sans text-xs transition-all ${
-                mode === 'workqueue'
-                  ? 'bg-theme-primary text-black font-bold shadow-xs'
-                  : 'text-theme-muted hover:text-theme-text'
-              }`}
-            >
-              Work Queue (1 worker gets it)
-            </button>
-            <button
-              onClick={() => handleModeChange('shared_queue_bug')}
-              className={`px-2.5 py-1.5 rounded-md font-sans text-xs transition-all ${
-                mode === 'shared_queue_bug'
-                  ? 'bg-red-500/20 text-red-400 border border-red-500/40 font-bold'
-                  : 'text-red-400/80 hover:text-red-400'
-              }`}
-            >
-              ⚠️ Shared Queue Bug
-            </button>
-          </div>
-
-          {/* Action buttons */}
-          <div className="flex items-center gap-2">
-            <button
+            <DemoActionButton
               onClick={handlePublish}
-              className="px-3.5 py-1.5 bg-theme-primary text-black font-bold rounded-lg text-xs flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-xs"
+              icon={<Send className="w-3.5 h-3.5" />}
+              variant="primary"
             >
-              <Send className="w-3.5 h-3.5" />
               Publish order.created
-            </button>
-            <button
-              onClick={handleReset}
-              className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
-      </div>
+            </DemoActionButton>
+          </>
+        }
+      />
 
       {/* Main Canvas */}
       <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">

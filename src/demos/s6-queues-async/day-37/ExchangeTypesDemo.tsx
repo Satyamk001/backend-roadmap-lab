@@ -5,7 +5,9 @@ import {
   RouteResult,
   QueueBinding,
 } from '../../../engine/rabbitmq/exchangeEngine';
-import { Send, RotateCcw, ChevronDown, ChevronUp, Layers, ArrowRight, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { Send, ChevronDown, ChevronUp, Layers, ArrowRight, CheckCircle2, XCircle, Info } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
+import { LiveEventLog, LogLayoutMode } from '../../../components/common/LiveEventLog';
 
 const INITIAL_BINDINGS: QueueBinding[] = [
   { id: 'b1', queueId: 'q-billing', queueName: 'billing.queue', bindingKey: 'order.created' },
@@ -45,6 +47,7 @@ export const ExchangeTypesDemo: React.FC = () => {
 
   const [showMoreOptions, setShowMoreOptions] = useState<boolean>(false);
   const [eventLog, setEventLog] = useState<Array<{ id: string; text: string; type: 'info' | 'success' | 'warn' }>>([]);
+  const [logLayout, setLogLayout] = useState<LogLayoutMode>('stacked');
 
   const appendLog = useCallback((text: string, type: 'info' | 'success' | 'warn' = 'info') => {
     setEventLog((prev) => [
@@ -112,108 +115,73 @@ export const ExchangeTypesDemo: React.FC = () => {
   };
 
   return (
-    <div className="w-full max-w-[1040px] mx-auto text-theme-text space-y-4">
-      {/* Title & Subtitle */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pb-1 border-b border-theme-border">
-        <div>
-          <h2 className="text-xl sm:text-2xl font-bold tracking-tight text-theme-text">
-            Exchange types: Direct, fanout, and topic
-          </h2>
-          <p className="text-sm text-theme-muted mt-0.5">
-            Direct exact match, fanout broadcast, aur topic pattern matching ka live exchange type comparison.
-          </p>
-        </div>
-      </div>
-
-      {/* "What just happened?" status line */}
-      <div
-        role="status"
-        aria-live="polite"
-        className="relative overflow-hidden px-4 py-3 bg-theme-surface border border-theme-border rounded-xl shadow-xs transition-all"
-      >
-        <div className="flex items-start gap-3">
-          <div className="mt-1 flex items-center justify-center shrink-0">
-            <span className="relative flex h-2.5 w-2.5">
-              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-theme-primary opacity-75"></span>
-              <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-theme-primary"></span>
-            </span>
-          </div>
-          <div className="space-y-0.5 min-w-0 flex-1">
-            <div className="text-sm sm:text-base font-bold text-theme-text leading-snug">
-              {statusWhat}
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      {/* 1. Unified Command & Status Deck */}
+      <DemoCommandDeck
+        title="Exchange types: Direct, fanout, and topic"
+        statusMessage={statusWhat}
+        whyItMatters={statusWhy}
+        badge=""
+        notesAnchor="exchange-types"
+        onReset={handleReset}
+        actions={
+          <div className="flex flex-wrap items-center justify-between gap-2.5 w-full">
+            {/* Control 1: Exchange Type Selector */}
+            <div className="flex items-center gap-1 p-0.5 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
+              <span className="px-2 text-theme-muted font-sans font-medium hidden sm:inline">Exchange:</span>
+              {(['direct', 'fanout', 'topic'] as ExchangeType[]).map((t) => (
+                <button
+                  key={t}
+                  type="button"
+                  onClick={() => handleTypeChange(t)}
+                  className={`px-2.5 py-1 rounded-md font-mono uppercase tracking-wider text-[11.5px] transition-all ${exchangeType === t
+                      ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
+                      : 'text-theme-muted hover:text-theme-text'
+                    }`}
+                >
+                  {t}
+                </button>
+              ))}
             </div>
-            <div className="text-xs text-theme-muted mt-1 leading-normal font-medium">
-              💡 {statusWhy}
+
+            {/* Control 2: Routing Key Presets */}
+            <div className="flex items-center gap-1.5 flex-wrap">
+              <span className="text-xs text-theme-muted font-medium mr-1 hidden md:inline">Key:</span>
+              {PRESET_KEYS.map((pk) => (
+                <button
+                  key={pk.key}
+                  type="button"
+                  onClick={() => {
+                    setSelectedKey(pk.key);
+                    setCustomKey('');
+                    handleRoute(undefined, pk.key);
+                  }}
+                  className={`px-2 py-0.5 text-xs font-mono rounded-lg border transition-all ${selectedKey === pk.key && !customKey
+                      ? 'bg-theme-surface-alt text-theme-accent border-theme-accent font-bold'
+                      : 'bg-theme-surface text-theme-muted border-theme-border hover:border-theme-muted'
+                    }`}
+                >
+                  {pk.label}
+                </button>
+              ))}
             </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Primary Action Controls (Max 5 controls) */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-3.5 shadow-xs space-y-3">
-        <div className="flex flex-wrap items-center justify-between gap-2.5">
-          {/* Control 1: Exchange Type Selector */}
-          <div className="flex items-center gap-1.5 p-1 bg-theme-surface-alt rounded-lg border border-theme-border text-xs font-semibold">
-            <span className="px-2 text-theme-muted font-sans font-medium hidden sm:inline">Exchange:</span>
-            {(['direct', 'fanout', 'topic'] as ExchangeType[]).map((t) => (
-              <button
-                key={t}
-                onClick={() => handleTypeChange(t)}
-                className={`px-3 py-1.5 rounded-md font-mono uppercase tracking-wider text-xs transition-all ${
-                  exchangeType === t
-                    ? 'bg-theme-primary text-black font-bold shadow-xs'
-                    : 'text-theme-muted hover:text-theme-text'
-                }`}
-              >
-                {t}
-              </button>
-            ))}
-          </div>
-
-          {/* Control 2: Routing Key Presets */}
-          <div className="flex items-center gap-1.5 flex-wrap">
-            <span className="text-xs text-theme-muted font-medium mr-1 hidden md:inline">Key:</span>
-            {PRESET_KEYS.map((pk) => (
-              <button
-                key={pk.key}
-                onClick={() => {
-                  setSelectedKey(pk.key);
-                  setCustomKey('');
-                  handleRoute(undefined, pk.key);
-                }}
-                className={`px-2.5 py-1 text-xs font-mono rounded-lg border transition-all ${
-                  selectedKey === pk.key && !customKey
-                    ? 'bg-theme-surface-alt text-theme-accent border-theme-accent font-bold'
-                    : 'bg-theme-surface text-theme-muted border-theme-border hover:border-theme-muted'
-                }`}
-              >
-                {pk.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Control 3 & 4: Route Message & Reset */}
-          <div className="flex items-center gap-2">
-            <button
+            {/* Control 3: Route Message */}
+            <DemoActionButton
+              variant="primary"
               onClick={() => handleRoute()}
-              className="px-3.5 py-1.5 bg-theme-primary text-black font-bold rounded-lg text-xs flex items-center gap-1.5 hover:opacity-90 active:scale-95 transition-all shadow-xs"
             >
               <Send className="w-3.5 h-3.5" />
-              Route Message
-            </button>
-            <button
-              onClick={handleReset}
-              className="p-1.5 bg-theme-surface border border-theme-border text-theme-muted hover:text-theme-text rounded-lg text-xs transition-all"
-              title="Reset"
-            >
-              <RotateCcw className="w-4 h-4" />
-            </button>
+              <span>Route Message</span>
+            </DemoActionButton>
           </div>
-        </div>
-      </div>
+        }
+      />
 
-      {/* Main Interactive Simulation Canvas */}
-      <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">
+      <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        <div className={logLayout === 'side' ? 'lg:col-span-7 xl:col-span-8 space-y-4 min-w-0' : 'space-y-4'}>
+          {/* Main Interactive Simulation Canvas */}
+          <div className="bg-theme-surface border border-theme-border rounded-xl p-4 sm:p-5 shadow-xs space-y-5">
         {/* Visual Architecture Flow: Producer -> Exchange -> Queues */}
         <div className="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           {/* 1. Producer Box (3 cols) */}
@@ -314,11 +282,10 @@ export const ExchangeTypesDemo: React.FC = () => {
               return (
                 <div
                   key={b.id}
-                  className={`p-3.5 rounded-xl border transition-all ${
-                    isMatched
+                  className={`p-3.5 rounded-xl border transition-all flex flex-col justify-between h-full min-h-[200px] ${isMatched
                       ? 'bg-emerald-500/10 border-emerald-500/60 shadow-xs'
                       : 'bg-theme-surface border-theme-border opacity-90'
-                  }`}
+                    }`}
                 >
                   {/* Queue Header */}
                   <div className="flex items-center justify-between gap-1">
@@ -390,7 +357,7 @@ export const ExchangeTypesDemo: React.FC = () => {
         >
           <span className="flex items-center gap-1.5">
             <Info className="w-3.5 h-3.5" />
-            More options (Custom routing key, Event log & State inspector)
+            More options (Custom routing key &amp; State inspector)
           </span>
           {showMoreOptions ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
         </button>
@@ -423,31 +390,6 @@ export const ExchangeTypesDemo: React.FC = () => {
               </p>
             </div>
 
-            {/* Event Log */}
-            <div className="space-y-1.5">
-              <span className="font-bold text-theme-text block">Live Event Log</span>
-              <div className="h-28 overflow-y-auto p-2 bg-theme-surface-alt/70 rounded-lg border border-theme-border font-mono text-[11px] space-y-1">
-                {eventLog.length === 0 ? (
-                  <span className="text-theme-muted italic">Event log will appear here after actions...</span>
-                ) : (
-                  eventLog.map((log) => (
-                    <div
-                      key={log.id}
-                      className={
-                        log.type === 'success'
-                          ? 'text-emerald-400'
-                          : log.type === 'warn'
-                          ? 'text-red-400'
-                          : 'text-theme-muted'
-                      }
-                    >
-                      • {log.text}
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
-
             {/* State Inspector */}
             <details className="cursor-pointer">
               <summary className="font-semibold text-theme-muted hover:text-theme-text">
@@ -460,6 +402,24 @@ export const ExchangeTypesDemo: React.FC = () => {
           </div>
         )}
       </div>
+      </div>
+
+      {/* Live Event Stream Log */}
+      <div className={logLayout === 'side' ? 'lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 min-w-0' : 'w-full'}>
+        <LiveEventLog
+          title="RabbitMQ Routing Event Log"
+          entries={eventLog.map((l) => ({
+            id: l.id,
+            type: l.type === 'warn' ? 'warn' : l.type,
+            message: l.text,
+          }))}
+          layout={logLayout}
+          onLayoutChange={setLogLayout}
+          onClear={() => setEventLog([])}
+          maxHeight={logLayout === 'side' ? 'max-h-[620px]' : 'max-h-56'}
+        />
+      </div>
+    </div>
     </div>
   );
 };

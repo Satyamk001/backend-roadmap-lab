@@ -3,7 +3,6 @@ import { BullStalledEngine, StalledDemoSnapshot } from '../../../engine/queues/s
 import {
   Play,
   Pause,
-  RotateCcw,
   Lock,
   HeartHandshake,
   Skull,
@@ -16,6 +15,8 @@ import {
   Cpu,
   Layers,
 } from 'lucide-react';
+import { DemoCommandDeck, DemoActionButton } from '../../../components/common/DemoCommandDeck';
+import { LiveEventLog, LogLayoutMode } from '../../../components/common/LiveEventLog';
 
 export const WorkerLocksStalledDemo: React.FC = () => {
   const engineRef = useRef<BullStalledEngine | null>(null);
@@ -27,6 +28,7 @@ export const WorkerLocksStalledDemo: React.FC = () => {
   const [snap, setSnap] = useState<StalledDemoSnapshot>(() => engine.getSnapshot());
   const [isPlaying, setIsPlaying] = useState(false);
   const [showMoreOptions, setShowMoreOptions] = useState(false);
+  const [logLayout, setLogLayout] = useState<LogLayoutMode>('stacked');
 
   const sync = () => setSnap(engine.getSnapshot());
 
@@ -79,52 +81,87 @@ export const WorkerLocksStalledDemo: React.FC = () => {
   const challenge2Passed = snap.duplicateDetected && snap.sideEffectExecutionCount === 1;
 
   return (
-    <div className="bg-theme-surface rounded-xl border border-theme-border p-4 md:p-6 shadow-xs transition-colors duration-150">
-      {/* 1. Header & Title (Enforced by Demo Titles test) */}
-      <div className="mb-4">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2">
-          <div>
-            <div className="flex items-center gap-2 mb-1">
-
-              <h2 className="text-xl font-bold text-theme-text">
-                Worker locks and stalled jobs
-              </h2>
-            </div>
-            <p className="text-sm text-theme-muted">
-              Heartbeat lock renewals, crash detection, watchdog re-queue, and idempotency protection.
-            </p>
-          </div>
-
-          <div className="flex items-center gap-2 self-start sm:self-auto">
-            <button
+    <div className="w-full text-theme-text space-y-3 sm:space-y-4">
+      {/* 1. Unified Command & Status Deck */}
+      <DemoCommandDeck
+        title="Worker locks and stalled jobs"
+        statusMessage={snap.statusMessage}
+        whyItMatters={snap.whyItMatters}
+        badge="BullMQ · Day 35"
+        notesAnchor="worker-locks-and-stalled-jobs"
+        onReset={() => {
+          engine.reset();
+          sync();
+        }}
+        actions={
+          <>
+            <DemoActionButton
+              variant="primary"
               onClick={() => {
-                engine.reset();
+                engine.pickJob();
                 sync();
               }}
-              title="Reset simulation"
-              className="p-1.5 rounded-lg border border-theme-border text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt transition-colors"
+              disabled={!!snap.activeJob || snap.waitingJobs.length === 0}
             >
-              <RotateCcw className="w-4 h-4" />
-            </button>
-          </div>
-        </div>
+              <Lock className="w-3.5 h-3.5" />
+              <span>Pick & Lock Job</span>
+            </DemoActionButton>
 
-        {/* 2. "What just happened?" line with amber left border */}
-        <div className="mt-4 p-3 rounded-lg bg-theme-surface-alt border-l-4 border-theme-primary transition-colors">
-          <div className="text-sm font-medium text-theme-text flex items-start gap-2">
-            <span className="font-bold text-theme-accent shrink-0 text-xs uppercase tracking-wide px-1.5 py-0.5 rounded bg-theme-primary/10">
-              STATUS
-            </span>
-            <span>{snap.statusMessage}</span>
-          </div>
-          <div className="text-xs text-theme-muted mt-1 pl-14">
-            💡 {snap.whyItMatters}
-          </div>
-        </div>
-      </div>
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.renewHeartbeat();
+                sync();
+              }}
+              disabled={!snap.activeJob || snap.workers.find((w) => w.id === snap.activeJob?.workerId)?.status !== 'processing'}
+              className="text-emerald-600 dark:text-emerald-400 font-semibold"
+            >
+              <HeartHandshake className="w-3.5 h-3.5" />
+              <span>Renew Heartbeat</span>
+            </DemoActionButton>
 
-      {/* 3. Demo Canvas (Largest Element) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
+            <DemoActionButton
+              variant="danger"
+              onClick={() => {
+                engine.crashWorker('w1');
+                sync();
+              }}
+              disabled={snap.workers.find((w) => w.id === 'w1')?.status === 'crashed'}
+            >
+              <Skull className="w-3.5 h-3.5" />
+              <span>Crash Worker-1</span>
+            </DemoActionButton>
+
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.tickClock();
+                sync();
+              }}
+            >
+              <Clock className="w-3.5 h-3.5 text-sky-500" />
+              <span>Step Clock (1s)</span>
+            </DemoActionButton>
+
+            <DemoActionButton
+              variant="secondary"
+              onClick={() => {
+                engine.completeJob();
+                sync();
+              }}
+              disabled={!snap.activeJob}
+            >
+              <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
+              <span>Complete Job</span>
+            </DemoActionButton>
+          </>
+        }
+      />
+
+      <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>
+        <div className={logLayout === 'side' ? 'lg:col-span-7 xl:col-span-8 space-y-4 min-w-0' : 'space-y-4'}>
+          {/* 3. Demo Canvas (Largest Element) */}
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-4 mb-4">
         {/* Left Column: Workers & Active Job Lock */}
         <div className="lg:col-span-7 space-y-4">
           {/* Workers Lane */}
@@ -351,72 +388,7 @@ export const WorkerLocksStalledDemo: React.FC = () => {
         </div>
       </div>
 
-      {/* 4. Primary Action Controls (Max 5 controls) */}
-      <div className="flex flex-wrap items-center gap-2 mb-4">
-        {/* Control 1: Pick & Lock Job */}
-        <button
-          onClick={() => {
-            engine.pickJob();
-            sync();
-          }}
-          disabled={!!snap.activeJob || snap.waitingJobs.length === 0}
-          className="px-3.5 py-2 rounded-lg bg-theme-primary text-theme-surface font-semibold text-xs flex items-center gap-1.5 hover:opacity-90 disabled:opacity-40 transition-opacity"
-        >
-          <Lock className="w-3.5 h-3.5" />
-          Pick & Lock Job
-        </button>
 
-        {/* Control 2: Renew Heartbeat */}
-        <button
-          onClick={() => {
-            engine.renewHeartbeat();
-            sync();
-          }}
-          disabled={!snap.activeJob || snap.workers.find((w) => w.id === snap.activeJob?.workerId)?.status !== 'processing'}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt disabled:opacity-40 transition-colors"
-        >
-          <HeartHandshake className="w-3.5 h-3.5 text-emerald-500" />
-          Renew Heartbeat
-        </button>
-
-        {/* Control 3: Crash Worker */}
-        <button
-          onClick={() => {
-            engine.crashWorker('w1');
-            sync();
-          }}
-          disabled={snap.workers.find((w) => w.id === 'w1')?.status === 'crashed'}
-          className="px-3 py-2 rounded-lg border border-rose-500/30 bg-rose-500/10 text-rose-500 font-medium text-xs flex items-center gap-1.5 hover:bg-rose-500/20 disabled:opacity-40 transition-colors"
-        >
-          <Skull className="w-3.5 h-3.5" />
-          Crash Worker-1
-        </button>
-
-        {/* Control 4: Step Clock (1s) */}
-        <button
-          onClick={() => {
-            engine.tickClock();
-            sync();
-          }}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt transition-colors"
-        >
-          <Clock className="w-3.5 h-3.5 text-sky-500" />
-          Step Clock (1s)
-        </button>
-
-        {/* Control 5: Complete Job */}
-        <button
-          onClick={() => {
-            engine.completeJob();
-            sync();
-          }}
-          disabled={!snap.activeJob}
-          className="px-3 py-2 rounded-lg border border-theme-border bg-theme-surface text-theme-text font-medium text-xs flex items-center gap-1.5 hover:bg-theme-surface-alt disabled:opacity-40 transition-colors"
-        >
-          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />
-          Complete Job
-        </button>
-      </div>
 
       {/* 5. Collapsed "More Options" Row */}
       <div className="border-t border-theme-border pt-3">
@@ -520,43 +492,27 @@ export const WorkerLocksStalledDemo: React.FC = () => {
               </div>
             </div>
 
-            {/* Event Log */}
-            <div className="p-3 bg-theme-surface rounded-lg border border-theme-border">
-              <div className="text-xs font-bold text-theme-text uppercase tracking-wider mb-2 flex items-center justify-between">
-                <span>Watchdog & Lock Event Stream</span>
-                <span className="text-[10px] font-mono text-theme-muted">
-                  Virtual Tick T+{snap.tick}
-                </span>
-              </div>
-              <div
-                className="max-h-36 overflow-y-auto space-y-1 font-mono text-[11px] pr-1"
-                aria-live="polite"
-              >
-                {snap.eventLog.length === 0 ? (
-                  <div className="text-theme-muted py-2 text-center">No events logged yet.</div>
-                ) : (
-                  snap.eventLog.map((ev) => (
-                    <div
-                      key={ev.id}
-                      className={`py-1 px-1.5 rounded flex items-start gap-2 ${ev.type === 'error'
-                          ? 'bg-rose-500/10 text-rose-500'
-                          : ev.type === 'warning'
-                            ? 'bg-amber-500/10 text-amber-500'
-                            : ev.type === 'success'
-                              ? 'bg-emerald-500/10 text-emerald-500'
-                              : 'text-theme-muted'
-                        }`}
-                    >
-                      <span className="text-theme-muted shrink-0">[T+{ev.tick}]</span>
-                      <span>{ev.message}</span>
-                    </div>
-                  ))
-                )}
-              </div>
-            </div>
           </div>
         )}
       </div>
+      </div>
+
+      {/* Live Event Stream Log */}
+      <div className={logLayout === 'side' ? 'lg:col-span-5 xl:col-span-4 lg:sticky lg:top-4 min-w-0' : 'w-full'}>
+        <LiveEventLog
+          title="Watchdog & Lock Event Stream"
+          entries={snap.eventLog.map((ev) => ({
+            id: ev.id,
+            tick: ev.tick,
+            type: ev.type,
+            message: ev.message,
+          }))}
+          layout={logLayout}
+          onLayoutChange={setLogLayout}
+          maxHeight={logLayout === 'side' ? 'max-h-[620px]' : 'max-h-56'}
+        />
+      </div>
+    </div>
     </div>
   );
 };
