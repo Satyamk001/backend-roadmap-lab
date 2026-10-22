@@ -124,6 +124,8 @@ export const ExchangeTypesDemo: React.FC = () => {
         badge=""
         notesAnchor="exchange-types"
         onReset={handleReset}
+        layout={logLayout}
+        onLayoutChange={setLogLayout}
         actions={
           <div className="flex flex-wrap items-center justify-between gap-2.5 w-full">
             {/* Control 1: Exchange Type Selector */}

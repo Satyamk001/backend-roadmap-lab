@@ -6,9 +6,9 @@ import {
   ChevronUp,
   Circle,
   Code,
-  Columns,
+  Columns2,
   RotateCcw,
-  Rows,
+  Rows2,
   Target,
   Terminal,
 } from 'lucide-react';
@@ -246,25 +246,35 @@ export const DemoShell: React.FC<DemoShellProps> = ({
               <span>Notes</span>
             </button>
 
-            {/* Layout Split / Stack toggle on desktop */}
-            <button
-              type="button"
-              onClick={() => setLayoutMode((m) => (m === 'split' ? 'stacked' : 'split'))}
-              className="hidden lg:inline-flex items-center gap-1 rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 text-[11.5px] sm:text-[12px] font-medium text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt transition-all"
-              title={layoutMode === 'split' ? 'Switch to stacked layout' : 'Switch to split side-by-side layout'}
-            >
-              {layoutMode === 'split' ? (
-                <>
-                  <Rows className="h-3 w-3" aria-hidden="true" />
-                  <span>Stacked</span>
-                </>
-              ) : (
-                <>
-                  <Columns className="h-3 w-3" aria-hidden="true" />
-                  <span>Split log</span>
-                </>
-              )}
-            </button>
+            {/* Layout Split / Stack segmented switcher */}
+            <div className="hidden sm:flex items-center rounded-lg border border-theme-border bg-theme-surface p-0.5 text-theme-muted">
+              <button
+                type="button"
+                onClick={() => setLayoutMode('stacked')}
+                className={`p-1 rounded transition-colors ${
+                  layoutMode === 'stacked'
+                    ? 'bg-theme-surface-alt text-theme-text font-bold shadow-2xs'
+                    : 'hover:text-theme-text'
+                }`}
+                title="Stacked layout (Log at bottom)"
+                aria-label="Stacked layout"
+              >
+                <Rows2 className="w-3.5 h-3.5" />
+              </button>
+              <button
+                type="button"
+                onClick={() => setLayoutMode('split')}
+                className={`p-1 rounded transition-colors ${
+                  layoutMode === 'split'
+                    ? 'bg-theme-surface-alt text-theme-text font-bold shadow-2xs'
+                    : 'hover:text-theme-text'
+                }`}
+                title="Split layout (Log on side)"
+                aria-label="Split side-by-side layout"
+              >
+                <Columns2 className="w-3.5 h-3.5" />
+              </button>
+            </div>
           </div>
         </div>
 
@@ -314,7 +324,29 @@ export const DemoShell: React.FC<DemoShellProps> = ({
                   {logs.length}
                 </span>
               </div>
-              <span className="font-mono text-[10px] text-theme-muted">live</span>
+              <div className="flex items-center gap-1.5">
+                <div className="hidden sm:flex items-center rounded-lg border border-theme-border bg-theme-surface p-0.5 text-theme-muted">
+                  <button
+                    type="button"
+                    onClick={() => setLayoutMode('stacked')}
+                    className="p-1 rounded transition-colors hover:text-theme-text"
+                    title="Stacked layout"
+                    aria-label="Stacked layout"
+                  >
+                    <Rows2 className="w-3.5 h-3.5" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setLayoutMode('split')}
+                    className="p-1 rounded transition-colors bg-theme-surface-alt text-theme-text font-bold shadow-2xs"
+                    title="Split layout"
+                    aria-label="Split layout"
+                  >
+                    <Columns2 className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <span className="font-mono text-[10px] text-theme-muted">live</span>
+              </div>
             </div>
 
             <p className="px-2.5 py-1 text-[11px] text-theme-muted border-b border-theme-border/60 bg-theme-surface">
@@ -375,31 +407,52 @@ export const DemoShell: React.FC<DemoShellProps> = ({
 
           {/* Collapsible Event Log under Canvas */}
           <div className="overflow-hidden rounded-xl border border-theme-border bg-theme-surface shadow-xs">
-            <button
-              type="button"
-              onClick={() => setShowLog((value) => !value)}
-              aria-expanded={showLog}
-              className="flex w-full items-center justify-between gap-3 px-3.5 py-2 text-left transition-colors hover:bg-theme-surface-alt/60"
-            >
-              <span className="flex items-center gap-2 text-[14px] font-semibold text-theme-text">
+            <div className="flex items-center justify-between gap-3 px-3.5 py-2 bg-theme-surface-alt/40 border-b border-theme-border/60">
+              <button
+                type="button"
+                onClick={() => setShowLog((value) => !value)}
+                aria-expanded={showLog}
+                className="flex items-center gap-2 text-left transition-colors hover:text-theme-accent select-none"
+              >
                 <Terminal className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                <span>Event log</span>
-                <span className="rounded-full border border-theme-border bg-theme-surface-alt px-1.5 py-0.2 font-mono text-[11px] font-normal text-theme-muted">
+                <span className="text-[14px] font-semibold text-theme-text">Event log</span>
+                <span className="rounded-full border border-theme-border bg-theme-surface px-1.5 py-0.2 font-mono text-[11px] font-semibold text-theme-muted">
                   {logs.length}
                 </span>
-              </span>
-              <span className="flex items-center gap-1 text-[13px] text-theme-muted">
-                <span>{showLog ? 'Hide' : 'Show'}</span>
+                <span className="ml-1 text-[12px] text-theme-muted">
+                  ({showLog ? 'Hide' : 'Show'})
+                </span>
                 {showLog ? (
-                  <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ChevronUp className="h-3.5 w-3.5 text-theme-muted" aria-hidden="true" />
                 ) : (
-                  <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                  <ChevronDown className="h-3.5 w-3.5 text-theme-muted" aria-hidden="true" />
                 )}
-              </span>
-            </button>
+              </button>
+
+              <div className="hidden sm:flex items-center rounded-lg border border-theme-border bg-theme-surface p-0.5 text-theme-muted">
+                <button
+                  type="button"
+                  onClick={() => setLayoutMode('stacked')}
+                  className="p-1 rounded transition-colors bg-theme-surface-alt text-theme-text font-bold shadow-2xs"
+                  title="Stacked layout (Log at bottom)"
+                  aria-label="Stacked layout"
+                >
+                  <Rows2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setLayoutMode('split')}
+                  className="p-1 rounded transition-colors hover:text-theme-text"
+                  title="Split layout (Log on side)"
+                  aria-label="Split side-by-side layout"
+                >
+                  <Columns2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            </div>
 
             {showLog && (
-              <div className="border-t border-theme-border">
+              <div>
                 <p className="px-3.5 py-1 text-[11.5px] text-theme-muted border-b border-theme-border/60">
                   Kisi line par click karo to canvas me uska key highlight hoga.
                 </p>

@@ -472,6 +472,8 @@ export const ProducerTopicPartitionsDemo: React.FC = () => {
         statusWhat={statusWhat}
         statusWhy={statusWhy}
         onReset={() => handleReset()}
+        layout={logLayout}
+        onLayoutChange={setLogLayout}
       />
 
       <div className={logLayout === 'side' ? 'grid grid-cols-1 lg:grid-cols-12 gap-5 items-start' : 'space-y-4'}>

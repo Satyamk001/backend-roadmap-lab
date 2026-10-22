@@ -93,6 +93,8 @@ export const WorkerLocksStalledDemo: React.FC = () => {
           engine.reset();
           sync();
         }}
+        layout={logLayout}
+        onLayoutChange={setLogLayout}
         actions={
           <>
             <DemoActionButton

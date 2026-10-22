@@ -155,6 +155,8 @@ export const JobLifecycleDemo: React.FC = () => {
           engine.reset();
           sync();
         }}
+        layout={logLayout}
+        onLayoutChange={setLogLayout}
         actions={
           <>
             <DemoActionButton

@@ -100,6 +100,8 @@ export const BackoffDlqDemo: React.FC = () => {
           setInspectedDlqJob(null);
           sync();
         }}
+        layout={logLayout}
+        onLayoutChange={setLogLayout}
         actions={
           <>
             <DemoActionButton

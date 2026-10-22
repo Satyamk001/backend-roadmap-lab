@@ -1,5 +1,5 @@
 import React from 'react';
-import { BookOpen, RotateCcw } from 'lucide-react';
+import { BookOpen, RotateCcw, Rows2, Columns2 } from 'lucide-react';
 import { useNotes } from '../notes/NotesContext';
 
 export interface DemoCommandDeckProps {
@@ -25,6 +25,10 @@ export interface DemoCommandDeckProps {
   rightControls?: React.ReactNode;
   /** Optional container class */
   className?: string;
+  /** Optional layout mode for simulation and event log */
+  layout?: 'stacked' | 'side';
+  /** Optional callback to change layout mode */
+  onLayoutChange?: (mode: 'stacked' | 'side') => void;
 }
 
 /**
@@ -119,6 +123,8 @@ export const DemoCommandDeck: React.FC<DemoCommandDeckProps> = ({
   actions,
   rightControls,
   className = '',
+  layout = 'stacked',
+  onLayoutChange,
 }) => {
   const { openNotes } = useNotes();
   const liveMessage = statusMessage ?? statusWhat ?? '';
@@ -179,6 +185,37 @@ export const DemoCommandDeck: React.FC<DemoCommandDeckProps> = ({
                 <RotateCcw className="h-3 w-3" aria-hidden="true" />
                 <span>{resetLabel}</span>
               </button>
+            )}
+
+            {onLayoutChange && (
+              <div className="hidden sm:flex items-center rounded-lg border border-theme-border bg-theme-surface p-0.5 text-theme-muted">
+                <button
+                  type="button"
+                  onClick={() => onLayoutChange('stacked')}
+                  className={`p-1 rounded transition-colors ${
+                    layout === 'stacked'
+                      ? 'bg-theme-surface-alt text-theme-text font-bold shadow-2xs'
+                      : 'hover:text-theme-text'
+                  }`}
+                  title="Stacked layout (Log at bottom)"
+                  aria-label="Stacked layout"
+                >
+                  <Rows2 className="w-3.5 h-3.5" />
+                </button>
+                <button
+                  type="button"
+                  onClick={() => onLayoutChange('side')}
+                  className={`p-1 rounded transition-colors ${
+                    layout === 'side'
+                      ? 'bg-theme-surface-alt text-theme-text font-bold shadow-2xs'
+                      : 'hover:text-theme-text'
+                  }`}
+                  title="Split layout (Log on side)"
+                  aria-label="Split side-by-side layout"
+                >
+                  <Columns2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             )}
 
             {rightControls}
