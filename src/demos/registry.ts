@@ -33,8 +33,14 @@ export const demoRegistry: Record<string, React.LazyExoticComponent<React.Compon
   'redis-ttl-vs-eviction': React.lazy(() => import('./s4-caching-redis/day-22/TtlVsEvictionDemo')),
   'redis-rdb-vs-aof': React.lazy(() => import('./s4-caching-redis/day-22/RdbVsAofDemo')),
 
-  // Day 1: Node.js Event Loop
-  'event-loop-visualizer': React.lazy(() => import('./s1-nodejs-internals/day-01/EventLoopVisualizerDemo')),
+  // Day 1: Node.js Internals & Event Loop (in story order 1-6)
+  'node-stack-gec': React.lazy(() => import('./s1-nodejs-internals/day-01/StackGecDemo')),
+  'node-architecture-libuv': React.lazy(() => import('./s1-nodejs-internals/day-01/NodeArchDemo')),
+  'node-event-loop-phases': React.lazy(() => import('./s1-nodejs-internals/day-01/EventLoopPhasesDemo')),
+  'node-microtasks-macrotasks': React.lazy(() => import('./s1-nodejs-internals/day-01/MicrotasksMacrotasksDemo')),
+  'node-predict-output': React.lazy(() => import('./s1-nodejs-internals/day-01/PredictOutputDemo')),
+  'node-breaking-loop': React.lazy(() => import('./s1-nodejs-internals/day-01/BreakingLoopDemo')),
+  'event-loop-visualizer': React.lazy(() => import('./s1-nodejs-internals/day-01/EventLoopPhasesDemo')),
 };
 
 export function getDemoComponent(demoId: string): React.LazyExoticComponent<React.ComponentType<any>> {

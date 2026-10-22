@@ -56,4 +56,31 @@ describe('Notes heading anchors', () => {
       ).toBe(true);
     }
   });
+
+  it('points every Day 1 demo at a real notes heading', () => {
+    const day1Dir = path.resolve(
+      process.cwd(),
+      'content',
+      'stages',
+      's1-nodejs-internals',
+      'day-01'
+    );
+    const notes = fs.readFileSync(path.join(day1Dir, 'notes.md'), 'utf8');
+    const meta = JSON.parse(
+      fs.readFileSync(path.join(day1Dir, 'meta.json'), 'utf8')
+    ) as { demos: Array<{ id: string; notesAnchor: string }> };
+
+    const headingIds = new Set(
+      parseNotionMarkdown(notes)
+        .filter((block): block is HeadingBlock => block.type === 'heading')
+        .map((heading) => heading.id)
+    );
+
+    for (const demo of meta.demos) {
+      expect(
+        headingIds.has(demo.notesAnchor),
+        `Demo "${demo.id}" points at missing notes heading "${demo.notesAnchor}"`
+      ).toBe(true);
+    }
+  });
 });

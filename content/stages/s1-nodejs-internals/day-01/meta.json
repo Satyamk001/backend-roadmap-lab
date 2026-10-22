@@ -27,15 +27,52 @@
     "libuv Thread Pool",
     "Microtask Queue",
     "process.nextTick",
-    "setImmediate vs setTimeout"
+    "setImmediate vs setTimeout",
+    "Hoisting & Call Stack",
+    "Loop Starvation & Latency Spikes"
   ],
   "demos": [
     {
-      "id": "event-loop-visualizer",
-      "title": "Event Loop Phase Runner",
-      "summary": "Interactive event loop execution order puzzle visualizer.",
+      "id": "node-stack-gec",
+      "title": "Call Stack & GEC: Hoisting before execution",
+      "summary": "Memory creation phase me var undefined aur let/const TDZ me rehte hain. Line-by-line execution se stack frames push/pop hote hain.",
+      "difficulty": "easy",
+      "notesAnchor": "node-js-runtime-v8-libuv-single-thread"
+    },
+    {
+      "id": "node-architecture-libuv",
+      "title": "Node Architecture: Thread pool vs Kernel async",
+      "summary": "Network sockets kernel (epoll/kqueue) ko jaate hain bina thread pool ke; fs, crypto aur dns.lookup 4 worker threads ko use karte hain.",
+      "difficulty": "medium",
+      "notesAnchor": "libuv-thread-pool-vs-os-async-i-o"
+    },
+    {
+      "id": "node-event-loop-phases",
+      "title": "Event Loop Phases: The 6-stage ring",
+      "summary": "Timers → Pending → Idle/Prepare → Poll → Check → Close. Har stage me sirf us phase ke callbacks execute hote hain.",
       "difficulty": "medium",
       "notesAnchor": "event-loop-phases"
+    },
+    {
+      "id": "node-microtasks-macrotasks",
+      "title": "Microtasks vs Macrotasks: nextTick drains first",
+      "summary": "Har callback ke baad pehle poori nextTick queue drain hoti hai, phir Promise microtasks, aur tab agla macrotask chalta hai.",
+      "difficulty": "medium",
+      "notesAnchor": "microtasks-vs-macrotasks"
+    },
+    {
+      "id": "node-predict-output",
+      "title": "Predict the Output: Execution order puzzles",
+      "summary": "Apna prediction check karo: setTimeout vs setImmediate, microtasks priority aur async/await ordering compare karo.",
+      "difficulty": "hard",
+      "notesAnchor": "settimeout-vs-setimmediate-vs-nexttick"
+    },
+    {
+      "id": "node-breaking-loop",
+      "title": "Breaking the Loop: Freeze, starvation & saturation",
+      "summary": "Sync infinite loop event loop ko freeze karta hai, recursive nextTick I/O starve karta hai, aur pool saturation fs calls delay karti hai.",
+      "difficulty": "hard",
+      "notesAnchor": "production-concerns-failure-modes"
     }
   ],
   "notesUrl": "https://app.notion.com/p/3f6bcc23fb65814bacf2fd10e6761b79",
