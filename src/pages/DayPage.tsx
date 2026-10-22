@@ -1,10 +1,10 @@
-import React, { useState, Suspense, useCallback, useEffect, useRef } from 'react';
+import React, { useState, Suspense, useCallback, useEffect, useRef, useTransition } from 'react';
 import { useParams, Navigate } from 'react-router-dom';
 import { getStage, getDay } from '../lib/content';
 import { Breadcrumbs } from '../components/layout/Breadcrumbs';
 import { DayPager } from '../components/layout/DayPager';
 import { DayHeader } from '../components/common/DayHeader';
-import { getDemoComponent } from '../demos/registry';
+import { getDemoComponent, preloadDemo } from '../demos/registry';
 import { NotionNotesRenderer } from '../components/notes/NotionNotesRenderer';
 import { NotesProvider } from '../components/notes/NotesContext';
 import { BookOpen, ExternalLink, ChevronDown, ChevronUp, Maximize2, Minimize2 } from 'lucide-react';
@@ -17,6 +17,14 @@ export const DayPage: React.FC = () => {
   const [activeDemoId, setActiveDemoId] = useState<string>(() => {
     return day?.demos?.[0]?.id || '';
   });
+
+  const [, startTransition] = useTransition();
+
+  const handleSelectDemo = useCallback((id: string) => {
+    startTransition(() => {
+      setActiveDemoId(id);
+    });
+  }, [startTransition]);
 
   const [showNotesDrawer, setShowNotesDrawer] = useState(false);
   const [isNotesExpanded, setIsNotesExpanded] = useState(false);
@@ -46,11 +54,22 @@ export const DayPage: React.FC = () => {
     setShowNotesDrawer(false);
   }, [stageId, dayId]);
 
-  // Keep the active demo tab visible when tabs are switched with 1-6 on a
-  // narrow screen, where the tab strip scrolls horizontally.
+  // Preload sibling demos for this day in the background after initial render
+  useEffect(() => {
+    if (!day?.demos) return;
+    day.demos.forEach((d) => {
+      preloadDemo(d.id);
+    });
+  }, [day?.demos]);
+
+  // Keep the active demo tab visible ONLY when the strip actually overflows
+  // and the tab is cut off, avoiding jitter/shifting on desktop or when the tab is already visible.
   useEffect(() => {
     const bar = tabBarRef.current;
     if (!bar) return;
+
+    // If all tabs fit in the bar width, never scroll
+    if (bar.scrollWidth <= bar.clientWidth) return;
 
     const activeTab = bar.querySelector<HTMLElement>(
       `[data-demo-tab="${activeDemoId}"]`
@@ -59,16 +78,26 @@ export const DayPage: React.FC = () => {
 
     const barRect = bar.getBoundingClientRect();
     const tabRect = activeTab.getBoundingClientRect();
-    // Left-align the active tab so the next tabs stay visible as a hint that
-    // the strip scrolls; centering a long tab hides all of its neighbours.
-    const targetLeft =
-      bar.scrollLeft + (tabRect.left - barRect.left);
-    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
 
-    bar.scrollTo({
-      left: Math.max(0, targetLeft),
-      behavior: reduceMotion ? 'auto' : 'smooth',
-    });
+    // If the tab is already fully visible inside the visible area of the bar, don't scroll
+    const isFullyVisible =
+      tabRect.left >= barRect.left && tabRect.right <= barRect.right;
+    if (isFullyVisible) return;
+
+    const reduceMotion = window.matchMedia?.('(prefers-reduced-motion: reduce)').matches;
+    if (tabRect.left < barRect.left) {
+      // Clipped on the left: scroll left just enough to reveal it
+      bar.scrollTo({
+        left: Math.max(0, bar.scrollLeft + (tabRect.left - barRect.left) - 12),
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      });
+    } else if (tabRect.right > barRect.right) {
+      // Clipped on the right: scroll right just enough to reveal it
+      bar.scrollTo({
+        left: bar.scrollLeft + (tabRect.right - barRect.right) + 12,
+        behavior: reduceMotion ? 'auto' : 'smooth',
+      });
+    }
   }, [activeDemoId]);
 
   useEffect(() => {
@@ -107,163 +136,163 @@ export const DayPage: React.FC = () => {
       const activeTag = (document.activeElement?.tagName || '').toLowerCase();
       const isInput = activeTag === 'input' || activeTag === 'textarea' || activeTag === 'select';
 
-      // Arrow navigation when focused on a tab
-      if (document.activeElement?.getAttribute('role') === 'tab' && day?.demos) {
-        const currentIndex = day.demos.findIndex((d) => d.id === activeDemoId);
-        if (e.key === 'ArrowRight' && currentIndex < day.demos.length - 1) {
+        // Arrow navigation when focused on a tab
+        if (document.activeElement?.getAttribute('role') === 'tab' && day?.demos) {
+          const currentIndex = day.demos.findIndex((d) => d.id === activeDemoId);
+          if (e.key === 'ArrowRight' && currentIndex < day.demos.length - 1) {
+            e.preventDefault();
+            const nextDemo = day.demos[currentIndex + 1];
+            handleSelectDemo(nextDemo.id);
+            const nextBtn = document.getElementById(`demo-tab-${nextDemo.id}`);
+            nextBtn?.focus();
+            return;
+          }
+          if (e.key === 'ArrowLeft' && currentIndex > 0) {
+            e.preventDefault();
+            const prevDemo = day.demos[currentIndex - 1];
+            handleSelectDemo(prevDemo.id);
+            const prevBtn = document.getElementById(`demo-tab-${prevDemo.id}`);
+            prevBtn?.focus();
+            return;
+          }
+        }
+
+        // 1 to 9: Switch tabs if not typing in input
+        if (!isInput && e.key >= '1' && e.key <= '9') {
+          const index = parseInt(e.key, 10) - 1;
+          if (day?.demos && index < day.demos.length) {
+            e.preventDefault();
+            handleSelectDemo(day.demos[index].id);
+            return;
+          }
+        }
+
+        // Space: Primary action if not typing in input/textarea and not focused on a button
+        if (e.code === 'Space' && !isInput && activeTag !== 'button') {
           e.preventDefault();
-          const nextDemo = day.demos[currentIndex + 1];
-          setActiveDemoId(nextDemo.id);
-          const nextBtn = document.getElementById(`demo-tab-${nextDemo.id}`);
-          nextBtn?.focus();
+          window.dispatchEvent(new CustomEvent('lab:primary-action'));
           return;
         }
-        if (e.key === 'ArrowLeft' && currentIndex > 0) {
+
+        // R or r: Reset if not typing in input
+        if ((e.key === 'r' || e.key === 'R') && !isInput) {
           e.preventDefault();
-          const prevDemo = day.demos[currentIndex - 1];
-          setActiveDemoId(prevDemo.id);
-          const prevBtn = document.getElementById(`demo-tab-${prevDemo.id}`);
-          prevBtn?.focus();
+          window.dispatchEvent(new CustomEvent('lab:reset'));
           return;
         }
-      }
+      };
 
-      // 1 to 9: Switch tabs if not typing in input
-      if (!isInput && e.key >= '1' && e.key <= '9') {
-        const index = parseInt(e.key, 10) - 1;
-        if (day?.demos && index < day.demos.length) {
-          e.preventDefault();
-          setActiveDemoId(day.demos[index].id);
-          return;
-        }
-      }
+      window.addEventListener('keydown', handleKeyDown);
+      return () => window.removeEventListener('keydown', handleKeyDown);
+    }, [day?.demos, activeDemoId, handleSelectDemo]);
 
-      // Space: Primary action if not typing in input/textarea and not focused on a button
-      if (e.code === 'Space' && !isInput && activeTag !== 'button') {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent('lab:primary-action'));
-        return;
-      }
+    if (!stage || !day) {
+      return <Navigate to="/" replace />;
+    }
 
-      // R or r: Reset if not typing in input
-      if ((e.key === 'r' || e.key === 'R') && !isInput) {
-        e.preventDefault();
-        window.dispatchEvent(new CustomEvent('lab:reset'));
-        return;
-      }
-    };
+    // Active demo object & Component
+    const currentDemo = day.demos.find((d) => d.id === activeDemoId) || day.demos[0];
+    const DemoComponent = currentDemo ? getDemoComponent(currentDemo.id) : null;
 
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [day?.demos, activeDemoId]);
+    return (
+      <div className="w-full max-w-6xl mx-auto py-1 sm:py-2 space-y-2.5 sm:space-y-3.5 text-theme-text">
+        {/* Breadcrumbs */}
+        <Breadcrumbs
+          items={[
+            { label: stage.title.split(':')[0], path: `/stage/${stage.id}` },
+            { label: `Day ${day.dayNumber}` },
+          ]}
+        />
 
-  if (!stage || !day) {
-    return <Navigate to="/" replace />;
-  }
+        {/* Header: Title, Short Definition, 3 Key Takeaway Cards & Collapsible Recap */}
+        <DayHeader day={day} />
 
-  // Active demo object & Component
-  const currentDemo = day.demos.find((d) => d.id === activeDemoId) || day.demos[0];
-  const DemoComponent = currentDemo ? getDemoComponent(currentDemo.id) : null;
-
-  return (
-    <div className="w-full max-w-6xl mx-auto py-1 sm:py-2 space-y-2.5 sm:space-y-3.5 text-theme-text">
-      {/* Breadcrumbs */}
-      <Breadcrumbs
-        items={[
-          { label: stage.title.split(':')[0], path: `/stage/${stage.id}` },
-          { label: `Day ${day.dayNumber}` },
-        ]}
-      />
-
-      {/* Header: Title, Short Definition, 3 Key Takeaway Cards & Collapsible Recap */}
-      <DayHeader day={day} />
-
-      {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
-      {day.demos && day.demos.length > 1 && (
-        <div className="space-y-1 sm:space-y-1.5">
-          <div className="relative">
-            <div
-              ref={tabBarRef}
-              role="tablist"
-              aria-label="Story-ordered interactive demos"
-              className="flex items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1.5 select-none no-scrollbar scroll-smooth"
-            >
-              {day.demos.map((d, idx) => {
-                const isActive = (currentDemo?.id || '') === d.id;
-                return (
-                  <button
-                    key={d.id}
-                    id={`demo-tab-${d.id}`}
-                    role="tab"
-                    aria-selected={isActive}
-                    aria-controls={`demo-panel-${d.id}`}
-                    tabIndex={isActive ? 0 : -1}
-                    data-demo-tab={d.id}
-                    type="button"
-                    onClick={() => setActiveDemoId(d.id)}
-                    className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-[13.5px] sm:text-[14px] font-semibold transition-all duration-150 active:scale-[0.98] ${
-                      isActive
-                        ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
-                        : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
-                    }`}
-                  >
-                    <span>{idx + 1}. {d.title}</span>
-                    <kbd
-                      className={`text-[10px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
+        {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
+        {day.demos && day.demos.length > 1 && (
+          <div className="space-y-1 sm:space-y-1.5">
+            <div className="relative">
+              <div
+                ref={tabBarRef}
+                role="tablist"
+                aria-label="Story-ordered interactive demos"
+                className="flex items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1.5 select-none no-scrollbar scroll-smooth"
+              >
+                {day.demos.map((d, idx) => {
+                  const isActive = (currentDemo?.id || '') === d.id;
+                  return (
+                    <button
+                      key={d.id}
+                      id={`demo-tab-${d.id}`}
+                      role="tab"
+                      aria-selected={isActive}
+                      aria-controls={`demo-panel-${d.id}`}
+                      tabIndex={isActive ? 0 : -1}
+                      data-demo-tab={d.id}
+                      type="button"
+                      onClick={() => handleSelectDemo(d.id)}
+                      className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-[13.5px] sm:text-[14px] font-semibold transition-colors duration-150 ${
                         isActive
-                          ? 'bg-black/15 text-stone-900 border-black/20'
-                          : 'bg-theme-surface-alt text-theme-muted border-theme-border'
+                          ? 'bg-theme-primary text-theme-primary-text shadow-xs'
+                          : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
                       }`}
                     >
-                      {idx + 1}
-                    </kbd>
-                  </button>
-                );
-              })}
+                      <span>{idx + 1}. {d.title}</span>
+                      <kbd
+                        className={`text-[10px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
+                          isActive
+                            ? 'bg-black/15 text-stone-900 border-black/20'
+                            : 'bg-theme-surface-alt text-theme-muted border-theme-border'
+                        }`}
+                      >
+                        {idx + 1}
+                      </kbd>
+                    </button>
+                  );
+                })}
+              </div>
+              {/* Visual fade cue on narrow viewports indicating more tabs follow */}
+              <div
+                aria-hidden="true"
+                className="pointer-events-none absolute right-0 top-0 bottom-1.5 w-6 bg-gradient-to-l from-theme-bg to-transparent sm:hidden"
+              />
             </div>
-            {/* Visual fade cue on narrow viewports indicating more tabs follow */}
-            <div
-              aria-hidden="true"
-              className="pointer-events-none absolute right-0 top-0 bottom-1.5 w-6 bg-gradient-to-l from-theme-bg to-transparent sm:hidden"
-            />
-          </div>
 
-          <div className="hidden sm:flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] text-theme-muted select-none">
-            <div className="flex flex-wrap items-center gap-3">
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
-                <span>Switch tabs</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">Space</kbd>
-                <span>Step</span>
-              </span>
-              <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">R</kbd>
-                <span>Reset</span>
-              </span>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Main Single-Column Demo Stage */}
-      <div
-        id={`demo-panel-${activeDemoId}`}
-        role="tabpanel"
-        aria-labelledby={`demo-tab-${activeDemoId}`}
-        className="w-full"
-      >
-        {DemoComponent ? (
-          <Suspense
-            fallback={
-              <div className="flex items-center justify-center p-16 bg-theme-surface border border-theme-border rounded-xl">
-                <span className="text-sm font-mono text-theme-muted">
-                  Loading demo...
+            <div className="hidden sm:flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] text-theme-muted select-none">
+              <div className="flex flex-wrap items-center gap-3">
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
+                  <span>Switch tabs</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">Space</kbd>
+                  <span>Step</span>
+                </span>
+                <span className="flex items-center gap-1">
+                  <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">R</kbd>
+                  <span>Reset</span>
                 </span>
               </div>
-            }
-          >
+            </div>
+          </div>
+        )}
+
+        {/* Main Single-Column Demo Stage */}
+        <div
+          id={`demo-panel-${activeDemoId}`}
+          role="tabpanel"
+          aria-labelledby={`demo-tab-${activeDemoId}`}
+          className="w-full min-h-[580px] sm:min-h-[640px]"
+        >
+          {DemoComponent ? (
+            <Suspense
+              fallback={
+                <div className="flex items-center justify-center min-h-[580px] sm:min-h-[640px] bg-theme-surface border border-theme-border rounded-xl">
+                  <span className="text-sm font-mono text-theme-muted">
+                    Loading demo...
+                  </span>
+                </div>
+              }
+            >
             <NotesProvider onOpen={openNotes}>
               <DemoComponent />
             </NotesProvider>
