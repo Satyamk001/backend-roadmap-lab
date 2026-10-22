@@ -144,7 +144,6 @@ export const ZSetDemo: React.FC = () => {
       notesAnchor="sorted-sets-zset-leaderboard-ka-dil"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[34.25rem] sm:min-h-[30.25rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
@@ -159,7 +158,7 @@ export const ZSetDemo: React.FC = () => {
         <>
           <DemoActionButton variant="primary" onClick={handleBobBoost}>
             <ArrowUp className="h-4 w-4" aria-hidden="true" />
-            <span>Bob +50 points</span>
+            <span>Bob +50 points (ZINCRBY)</span>
           </DemoActionButton>
           <DemoActionButton onClick={handleAliceBoost}>
             <ArrowUp className="h-4 w-4" aria-hidden="true" />
@@ -167,84 +166,114 @@ export const ZSetDemo: React.FC = () => {
           </DemoActionButton>
           <DemoActionButton onClick={handleAddDina}>
             <Plus className="h-4 w-4" aria-hidden="true" />
-            <span>Add Dina</span>
+            <span>Add Dina (100 pts)</span>
           </DemoActionButton>
         </>
       }
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
+        {/* Header Strip */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-theme-border/70 pb-2">
           <div className="flex items-center gap-2">
             <Trophy className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-            <code className="font-mono text-[15px] font-semibold text-theme-text">
+            <code className="font-mono text-[15px] font-bold text-theme-text">
               {BOARD_KEY}
             </code>
+            <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+              Type: ZSet (Sorted Set)
+            </span>
           </div>
-          <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2 py-0.5 text-[13px] font-semibold text-theme-muted">
-            Sorted Set · score DESC
-          </span>
+          <div className="flex items-center gap-1.5 font-mono text-[12px] text-theme-muted">
+            <span>Ordering: <strong className="text-theme-text">Score DESC (ZREVRANGE)</strong></span>
+          </div>
         </div>
 
-        <div className="min-h-[21rem] max-h-[21rem] space-y-2 overflow-y-auto pr-0.5">
+        {/* Dynamic Leaderboard Cards */}
+        <div className="space-y-2.5">
           {ranked.length === 0 ? (
-            <p className="rounded-lg border border-dashed border-theme-border bg-theme-bg px-3 py-4 text-[15px] text-theme-muted">
+            <p className="rounded-xl border border-dashed border-theme-border bg-theme-bg p-6 text-center text-[15px] text-theme-muted">
               Leaderboard khaali hai. Add Dina dabao.
             </p>
           ) : (
             ranked.map((item, index) => {
               const rank = index + 1;
-              const percent = Math.max(8, Math.round((item.score / maxScore) * 100));
+              const percent = Math.max(12, Math.round((item.score / maxScore) * 100));
+              const isLeader = rank === 1;
+
               return (
                 <div
                   key={item.member}
                   data-highlight-id={`member:${item.member}`}
-                  className="rounded-xl border border-theme-border bg-theme-bg p-3"
+                  className={`rounded-xl border p-3.5 transition-all duration-300 shadow-2xs ${
+                    isLeader
+                      ? 'border-semantic-success/50 bg-theme-bg ring-1 ring-semantic-success/30'
+                      : 'border-theme-border bg-theme-bg'
+                  }`}
                 >
-                  <div className="flex flex-wrap items-center gap-3">
-                    <span
-                      className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-full border font-mono text-[13px] font-bold ${
-                        rank === 1
-                          ? 'border-semantic-success/40 bg-semantic-success-bg text-semantic-success'
-                          : 'border-theme-border bg-theme-surface-alt text-theme-muted'
-                      }`}
-                      aria-label={`Rank ${rank}`}
-                    >
-                      #{rank}
-                    </span>
-
-                    <span className="flex min-w-[6rem] flex-1 items-center gap-2">
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <div className="flex items-center gap-3">
+                      {/* Rank Number Badge */}
                       <span
-                        className="h-2.5 w-2.5 flex-shrink-0 rounded-full"
+                        className={`flex h-8 w-8 flex-shrink-0 items-center justify-center rounded-xl font-mono text-[13px] font-extrabold shadow-2xs ${
+                          isLeader
+                            ? 'border border-semantic-success/50 bg-semantic-success-bg text-semantic-success'
+                            : rank === 2
+                            ? 'border border-theme-border bg-theme-surface-alt font-bold text-theme-text'
+                            : 'border border-theme-border bg-theme-surface text-theme-muted'
+                        }`}
+                        aria-label={`Rank ${rank}`}
+                      >
+                        #{rank}
+                      </span>
+
+                      {/* Avatar & Player Info */}
+                      <div className="flex items-center gap-2.5">
+                        <div
+                          className="flex h-7 w-7 flex-shrink-0 items-center justify-center rounded-lg font-mono text-[12px] font-bold text-stone-900 shadow-2xs"
+                          style={{
+                            backgroundColor:
+                              PLAYER_COLORS[item.member] ?? 'var(--entity-6)',
+                          }}
+                        >
+                          {item.member.slice(0, 1).toUpperCase()}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="font-bold text-[15px] text-theme-text">
+                            {item.member}
+                          </span>
+                          {isLeader && (
+                            <span className="rounded-full border border-semantic-success/40 bg-semantic-success-bg px-2 py-0.2 font-mono text-[10.5px] font-bold text-semantic-success uppercase tracking-wider">
+                              Leader
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Score Value */}
+                    <div className="flex items-baseline gap-1.5 font-mono">
+                      <span className="text-[12px] text-theme-muted">score</span>
+                      <span className="text-[18px] font-extrabold tabular-nums text-theme-text">
+                        {item.score}
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Relative Score Bar */}
+                  <div className="mt-3 flex items-center gap-2.5">
+                    <div className="h-2 flex-1 overflow-hidden rounded-full bg-theme-surface-alt/80">
+                      <div
+                        className="h-full rounded-full transition-all duration-300"
                         style={{
+                          width: `${percent}%`,
                           backgroundColor:
                             PLAYER_COLORS[item.member] ?? 'var(--entity-6)',
                         }}
-                        aria-hidden="true"
                       />
-                      <span className="font-semibold text-[15px] text-theme-text">
-                        {item.member}
-                      </span>
-                      {rank === 1 && (
-                        <span className="rounded-full border border-semantic-success/40 bg-semantic-success-bg px-2 py-0.5 text-[12px] font-semibold text-semantic-success">
-                          top score
-                        </span>
-                      )}
+                    </div>
+                    <span className="font-mono text-[11px] text-theme-muted tabular-nums shrink-0">
+                      {percent}% of leader
                     </span>
-
-                    <span className="font-mono text-[15px] font-bold tabular-nums text-theme-text">
-                      {item.score}
-                    </span>
-                  </div>
-
-                  <div className="mt-2 h-2 overflow-hidden rounded-full bg-theme-surface-alt">
-                    <div
-                      className="h-full rounded-full transition-[width] duration-300"
-                      style={{
-                        width: `${percent}%`,
-                        backgroundColor:
-                          PLAYER_COLORS[item.member] ?? 'var(--entity-6)',
-                      }}
-                    />
                   </div>
                 </div>
               );
@@ -252,10 +281,32 @@ export const ZSetDemo: React.FC = () => {
           )}
         </div>
 
-        <div className="rounded-lg border border-dashed border-theme-border bg-theme-surface-alt/40 px-3 py-2.5 text-[15px] leading-relaxed text-theme-muted">
-          <span className="font-semibold text-theme-text">Rank formula: </span>
-          sabse zyada score = rank #1. Equal score par member name tie-break
-          karta hai; rank kisi array index me hardcoded nahi hota.
+        {/* Live Command Execution Feedback */}
+        <div className="rounded-lg border border-theme-border bg-theme-surface-alt/50 px-3 py-2 text-[13px] font-mono text-theme-text flex flex-wrap items-center justify-between gap-2">
+          <span>O(log N) SkipList Index Rebuilt Automatically</span>
+          <span className="text-[12px] text-theme-muted">
+            Array manual sorting ki zarurat nahi hoti
+          </span>
+        </div>
+
+        {/* Architecture Comparison */}
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 pt-1">
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-muted">
+              🗄️ Traditional SQL Leaderboard
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              <code className="font-mono text-[12px]">ORDER BY score DESC LIMIT 10</code> har query par index traversal ya sorting karta hai. Concurrent game writes me DB bottleneck ban jaata hai.
+            </p>
+          </div>
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-accent">
+              ⚡ Redis ZSet (SkipList + Hash)
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              Hash se O(1) score lookups aur SkipList se O(log N) ranking scan. Score badalte hi rank real-time RAM me update hoti hai — sub-millisecond latency guaranteed!
+            </p>
+          </div>
         </div>
       </div>
     </DemoShell>

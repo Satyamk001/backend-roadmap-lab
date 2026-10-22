@@ -14,6 +14,20 @@ export function App() {
   const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const [isMobileSidebarOpen, setIsMobileSidebarOpen] = useState(false);
 
+  // The palette and the mobile drawer are both modal. Never leave both open:
+  // the drawer's focus trap would otherwise capture the palette's input.
+  const openCommandPalette = () => {
+    setIsCommandPaletteOpen(true);
+    setIsMobileSidebarOpen(false);
+  };
+
+  const toggleMobileSidebar = () => {
+    setIsMobileSidebarOpen((isOpen) => !isOpen);
+    setIsCommandPaletteOpen(false);
+  };
+
+  const closeMobileSidebar = () => setIsMobileSidebarOpen(false);
+
   return (
     <BrowserRouter>
       <ScrollToTop />
@@ -27,15 +41,16 @@ export function App() {
         </a>
 
         <Navbar
-          onOpenCommandPalette={() => setIsCommandPaletteOpen(true)}
-          onToggleMobileMenu={() => setIsMobileSidebarOpen(!isMobileSidebarOpen)}
+          onOpenCommandPalette={openCommandPalette}
+          onToggleMobileMenu={toggleMobileSidebar}
+          isMobileMenuOpen={isMobileSidebarOpen}
         />
 
         <div className="flex-1 flex w-full">
           {/* Desktop & Mobile Slide-Over Sidebar */}
           <Sidebar
             isMobileOpen={isMobileSidebarOpen}
-            onCloseMobile={() => setIsMobileSidebarOpen(false)}
+            onCloseMobile={closeMobileSidebar}
           />
 
           {/* Main Content Area */}
@@ -53,7 +68,7 @@ export function App() {
         {/* Global Quick Command Palette (Cmd+K) */}
         <CommandPalette
           isOpen={isCommandPaletteOpen}
-          onOpen={() => setIsCommandPaletteOpen(true)}
+          onOpen={openCommandPalette}
           onClose={() => setIsCommandPaletteOpen(false)}
         />
       </div>

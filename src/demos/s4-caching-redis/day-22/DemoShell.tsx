@@ -6,7 +6,9 @@ import {
   ChevronUp,
   Circle,
   Code,
+  Columns,
   RotateCcw,
+  Rows,
   Target,
   Terminal,
 } from 'lucide-react';
@@ -91,7 +93,7 @@ function renderLiveNarrative(text: string): React.ReactNode {
       parts.push(
         <code
           key={match.index}
-          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[13px] font-semibold text-theme-accent shadow-2xs"
+          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[12px] font-semibold text-theme-accent shadow-2xs"
         >
           {num}
         </code>
@@ -107,7 +109,7 @@ function renderLiveNarrative(text: string): React.ReactNode {
       parts.push(
         <code
           key={match.index}
-          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[13px] font-semibold text-theme-accent shadow-2xs"
+          className="mx-0.5 inline-block rounded border border-theme-border bg-theme-surface px-1.5 py-0.5 font-mono text-[12px] font-semibold text-theme-accent shadow-2xs"
         >
           {displayToken}
         </code>
@@ -132,9 +134,9 @@ export const DemoActionButton: React.FC<
     primary:
       'bg-theme-primary text-theme-primary-text font-semibold hover:brightness-105 active:scale-[0.98] shadow-xs border border-transparent',
     secondary:
-      'bg-theme-surface text-theme-text border border-theme-border hover:bg-theme-surface-alt hover:border-theme-border/80 active:scale-[0.98] shadow-2xs font-medium',
+      'bg-theme-surface text-theme-text border border-theme-border hover:bg-theme-surface-alt hover:border-theme-border/90 active:scale-[0.98] shadow-2xs font-semibold',
     danger:
-      'bg-theme-surface text-semantic-error border border-semantic-error/40 hover:bg-semantic-error-bg active:scale-[0.98] font-medium',
+      'bg-theme-surface text-semantic-error border border-semantic-error/40 hover:bg-semantic-error-bg active:scale-[0.98] font-semibold',
     ghost:
       'text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt font-medium',
   }[variant];
@@ -142,7 +144,7 @@ export const DemoActionButton: React.FC<
   return (
     <button
       type={type}
-      className={`inline-flex min-h-[2.35rem] items-center justify-center gap-2 rounded-lg px-3.5 py-1.5 text-[14px] sm:text-[14.5px] transition-all disabled:cursor-not-allowed disabled:opacity-50 select-none ${variantClasses} ${className}`}
+      className={`inline-flex min-h-[2.1rem] sm:min-h-[2.2rem] items-center justify-center gap-1.5 rounded-lg px-2.5 sm:px-3 py-1 text-[13px] sm:text-[13.5px] transition-all duration-150 disabled:cursor-not-allowed disabled:opacity-40 select-none ${variantClasses} ${className}`}
       {...props}
     >
       {children}
@@ -152,7 +154,7 @@ export const DemoActionButton: React.FC<
 
 export const DemoShell: React.FC<DemoShellProps> = ({
   title,
-  summary,
+  summary: _summary,
   difficulty,
   notesAnchor,
   whatJustHappened,
@@ -170,8 +172,9 @@ export const DemoShell: React.FC<DemoShellProps> = ({
 }) => {
   const { openNotes } = useNotes();
   const rootRef = useRef<HTMLDivElement>(null);
-  const [showLog, setShowLog] = useState<boolean>(
-    () => typeof window === 'undefined' || window.innerWidth >= 640
+  const [showLog, setShowLog] = useState<boolean>(true);
+  const [layoutMode, setLayoutMode] = useState<'split' | 'stacked'>(() =>
+    typeof window !== 'undefined' && window.innerWidth >= 1024 ? 'split' : 'stacked'
   );
   const [selectedLogId, setSelectedLogId] = useState<string | null>(null);
   const [selectedTarget, setSelectedTarget] = useState<string | null>(null);
@@ -202,155 +205,249 @@ export const DemoShell: React.FC<DemoShellProps> = ({
   const visibleLogs = logs.slice(0, 100);
 
   return (
-    <div ref={rootRef} className="w-full space-y-3.5 text-theme-text">
+    <div ref={rootRef} className="w-full space-y-2.5 sm:space-y-3 text-theme-text">
       {/* The demo title already lives in the active tab; keep it for screen
           readers without repeating it visually. */}
       <h2 className="sr-only">{title}</h2>
 
-      <header className="flex flex-col gap-2.5 border-b border-theme-border pb-2.5 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex min-w-0 flex-1 flex-col gap-1 sm:flex-row sm:flex-wrap sm:items-center sm:gap-2">
-          <span className="w-fit rounded-full border border-theme-border bg-theme-surface-alt px-2.5 py-0.5 text-[12.5px] font-semibold text-theme-muted">
-            {difficultyLabel[difficulty]}
-          </span>
-          <p className="min-w-0 flex-1 text-[14.5px] sm:text-[15px] leading-relaxed text-theme-muted">
-            {summary}
-          </p>
-        </div>
-
-        <button
-          type="button"
-          onClick={() => openNotes(notesAnchor)}
-          className="inline-flex min-h-8 w-full items-center justify-center gap-1.5 rounded-lg border border-theme-border bg-theme-surface px-3 py-1.5 text-[13.5px] sm:text-[14px] font-semibold text-theme-accent transition-colors hover:bg-theme-surface-alt sm:w-auto sm:justify-start"
-        >
-          <BookOpen className="h-4 w-4 flex-shrink-0" aria-hidden="true" />
-          <span>Read this in notes</span>
-        </button>
-      </header>
-
-      {/* Live State Monitor */}
-      <section
-        role="status"
-        aria-live="polite"
-        aria-atomic="true"
-        className="rounded-xl border border-theme-border bg-theme-surface-alt/40 p-3 sm:p-3.5 shadow-2xs"
-      >
-        <div className="flex items-center justify-between gap-2 border-b border-theme-border/60 pb-2 mb-2">
-          <div className="flex items-center gap-2">
-            <span className="relative flex h-2 w-2">
+      {/* Unified Compact Command & Status Deck */}
+      <div className="rounded-xl border border-theme-border bg-theme-surface p-2.5 sm:p-3 shadow-xs space-y-2">
+        {/* Top line: Status line + Controls & Badges */}
+        <div className="flex flex-col gap-1.5 sm:flex-row sm:items-center sm:justify-between">
+          {/* Status Live Narrative with pulsing dot */}
+          <div
+            role="status"
+            aria-live="polite"
+            aria-atomic="true"
+            className="flex items-center gap-2 min-w-0 flex-1"
+          >
+            <span className="relative flex h-2 w-2 flex-shrink-0" aria-hidden="true">
               <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75" />
               <span className="relative inline-flex h-2 w-2 rounded-full bg-emerald-500" />
             </span>
-            <span className="font-mono text-[11px] font-bold tracking-wider uppercase text-theme-muted">
-              Live State Monitor
-            </span>
+            <div className="min-w-0 text-[13.5px] sm:text-[14.5px] font-semibold leading-snug text-theme-text truncate">
+              {renderLiveNarrative(whatJustHappened)}
+            </div>
           </div>
-          <span className="font-mono text-[11px] text-theme-muted">
-            redis-cli · live
-          </span>
+
+          {/* Right badges & controls */}
+          <div className="flex items-center gap-1.5 flex-shrink-0 self-end sm:self-auto">
+            <span className="inline-flex items-center rounded-md border border-theme-border bg-theme-surface-alt px-1.5 py-0.5 font-mono text-[10.5px] font-bold uppercase tracking-wider text-theme-muted">
+              {difficultyLabel[difficulty]}
+            </span>
+
+            <button
+              type="button"
+              onClick={() => openNotes(notesAnchor)}
+              className="inline-flex items-center gap-1 rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 text-[11.5px] sm:text-[12px] font-semibold text-theme-accent transition-all duration-150 hover:bg-theme-surface-alt active:scale-[0.98]"
+              title="Open Notion notes snapshot"
+            >
+              <BookOpen className="h-3 w-3 flex-shrink-0" aria-hidden="true" />
+              <span>Notes</span>
+            </button>
+
+            {/* Layout Split / Stack toggle on desktop */}
+            <button
+              type="button"
+              onClick={() => setLayoutMode((m) => (m === 'split' ? 'stacked' : 'split'))}
+              className="hidden lg:inline-flex items-center gap-1 rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 text-[11.5px] sm:text-[12px] font-medium text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt transition-all"
+              title={layoutMode === 'split' ? 'Switch to stacked layout' : 'Switch to split side-by-side layout'}
+            >
+              {layoutMode === 'split' ? (
+                <>
+                  <Rows className="h-3 w-3" aria-hidden="true" />
+                  <span>Stacked</span>
+                </>
+              ) : (
+                <>
+                  <Columns className="h-3 w-3" aria-hidden="true" />
+                  <span>Split log</span>
+                </>
+              )}
+            </button>
+          </div>
         </div>
 
-        <div className="space-y-1">
-          <p className="text-[15px] sm:text-[15.5px] font-semibold leading-snug text-theme-text">
-            {renderLiveNarrative(whatJustHappened)}
-          </p>
-          <div className="flex items-start gap-1.5 text-[13.5px] sm:text-[14px] leading-relaxed text-theme-muted">
-            <span className="font-mono text-theme-accent select-none font-bold pt-0.5" aria-hidden="true">
+        {/* Sub-line: Why it matters */}
+        {whyItMatters && (
+          <div className="flex items-start gap-1.5 text-[12px] sm:text-[12.5px] leading-tight text-theme-muted border-t border-theme-border/50 pt-1.5">
+            <span className="font-mono text-theme-accent select-none font-bold" aria-hidden="true">
               ↳
             </span>
             <div className="min-w-0">{renderLiveNarrative(whyItMatters)}</div>
           </div>
-        </div>
-      </section>
+        )}
 
-      {actions && (
-        <div
-          role="group"
-          aria-label="Simulation actions"
-          className="flex flex-wrap items-center gap-2 py-0.5"
-        >
-          {actions}
-        </div>
-      )}
+        {/* Primary Action Buttons Bar */}
+        {actions && (
+          <div
+            role="group"
+            aria-label="Simulation actions"
+            className="flex flex-wrap items-center gap-1.5 pt-1 border-t border-theme-border/50"
+          >
+            {actions}
+          </div>
+        )}
+      </div>
 
-      <section
-        aria-label="Demo canvas"
-        className={`rounded-xl border border-theme-border bg-theme-surface p-4 sm:p-5 ${canvasClassName}`}
-      >
-        {children}
-      </section>
+      {/* Main Interactive Stage & Event Log */}
+      {layoutMode === 'split' ? (
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-3 items-start">
+          {/* Main Simulation Canvas (8 cols on lg) */}
+          <section
+            aria-label="Demo canvas"
+            className={`lg:col-span-8 rounded-xl border border-theme-border bg-theme-surface p-3.5 sm:p-4 shadow-xs ${canvasClassName}`}
+          >
+            {children}
+          </section>
 
-      <div className="overflow-hidden rounded-xl border border-theme-border bg-theme-surface">
-        <button
-          type="button"
-          onClick={() => setShowLog((value) => !value)}
-          aria-expanded={showLog}
-          className="flex w-full items-center justify-between gap-3 px-4 py-3 text-left transition-colors hover:bg-theme-surface-alt/60"
-        >
-          <span className="flex items-center gap-2 text-[16px] font-semibold text-theme-text">
-            <Terminal className="h-4 w-4 text-theme-muted" aria-hidden="true" />
-            <span>Event log</span>
-            <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2 py-0.5 font-mono text-[12px] font-normal text-theme-muted">
-              {logs.length}
-            </span>
-          </span>
-          <span className="flex items-center gap-1 text-[15px] text-theme-muted">
-            <span>{showLog ? 'Hide' : 'Show'}</span>
-            {showLog ? (
-              <ChevronUp className="h-4 w-4" aria-hidden="true" />
-            ) : (
-              <ChevronDown className="h-4 w-4" aria-hidden="true" />
-            )}
-          </span>
-        </button>
+          {/* Side-by-Side Live Event Log (4 cols on lg) */}
+          <aside
+            aria-label="Simulation event log"
+            className="lg:col-span-4 rounded-xl border border-theme-border bg-theme-surface shadow-xs flex flex-col overflow-hidden max-h-[520px]"
+          >
+            <div className="flex items-center justify-between gap-2 px-3 py-2 border-b border-theme-border bg-theme-surface-alt/40">
+              <div className="flex items-center gap-1.5">
+                <Terminal className="h-3.5 w-3.5 text-theme-accent" aria-hidden="true" />
+                <span className="text-[13px] font-bold text-theme-text">Event log</span>
+                <span className="rounded-full border border-theme-border bg-theme-surface px-1.5 py-0.2 font-mono text-[10.5px] font-semibold text-theme-muted">
+                  {logs.length}
+                </span>
+              </div>
+              <span className="font-mono text-[10px] text-theme-muted">live</span>
+            </div>
 
-        {showLog && (
-          <div className="border-t border-theme-border">
-            <p className="px-4 py-2 text-[15px] text-theme-muted">
-              Kisi line par click karo to canvas me uska key highlight hoga.
+            <p className="px-2.5 py-1 text-[11px] text-theme-muted border-b border-theme-border/60 bg-theme-surface">
+              Click line to highlight in canvas
             </p>
-            <ol aria-live="polite" className="max-h-56 overflow-y-auto border-t border-theme-border">
+
+            <ol aria-live="polite" className="flex-1 overflow-y-auto divide-y divide-theme-border/60">
               {visibleLogs.length === 0 ? (
-                <li className="px-4 py-4 text-[15px] text-theme-muted">
-                  Abhi koi action nahi hua. Upar ka pehla button dabao.
+                <li className="px-3 py-6 text-center text-[12.5px] text-theme-muted">
+                  Abhi koi action nahi hua. Upar ka button dabao.
                 </li>
               ) : (
                 visibleLogs.map((log) => (
-                  <li key={log.id} className="border-b border-theme-border/60 last:border-b-0">
+                  <li key={log.id}>
                     <button
                       type="button"
                       onClick={() => {
                         setSelectedLogId(log.id);
                         setSelectedTarget(log.target ?? null);
                       }}
-                      className={`flex w-full items-start gap-3 px-4 py-2 text-left transition-colors ${
+                      className={`flex w-full items-start gap-2 px-2.5 py-1.5 text-left transition-colors ${
                         selectedLogId === log.id
-                          ? 'bg-theme-surface-alt/80'
+                          ? 'bg-theme-surface-alt font-medium'
                           : 'hover:bg-theme-surface-alt/40'
                       }`}
                     >
-                      <span className="pt-0.5 font-mono text-[12px] text-theme-muted">
+                      <span className="pt-0.5 font-mono text-[11px] text-theme-muted flex-shrink-0">
                         t{log.tick}
                       </span>
-                      <span className="min-w-0 flex-1">
+                      <div className="min-w-0 flex-1">
                         <span
-                          className={`block font-mono text-[13px] font-semibold ${
+                          className={`inline-block font-mono text-[11.5px] font-semibold ${
                             logTypeStyles[log.type ?? 'info']
                           }`}
                         >
                           {log.label}
                         </span>
-                        <span className="mt-0.5 block text-[15px] leading-snug text-theme-text">
+                        <span className="block text-[12px] leading-tight text-theme-text truncate">
                           {log.message}
                         </span>
-                      </span>
+                      </div>
                     </button>
                   </li>
                 ))
               )}
             </ol>
+          </aside>
+        </div>
+      ) : (
+        /* Stacked Layout Mode */
+        <div className="space-y-2.5">
+          <section
+            aria-label="Demo canvas"
+            className={`w-full rounded-xl border border-theme-border bg-theme-surface p-3.5 sm:p-4 shadow-xs ${canvasClassName}`}
+          >
+            {children}
+          </section>
+
+          {/* Collapsible Event Log under Canvas */}
+          <div className="overflow-hidden rounded-xl border border-theme-border bg-theme-surface shadow-xs">
+            <button
+              type="button"
+              onClick={() => setShowLog((value) => !value)}
+              aria-expanded={showLog}
+              className="flex w-full items-center justify-between gap-3 px-3.5 py-2 text-left transition-colors hover:bg-theme-surface-alt/60"
+            >
+              <span className="flex items-center gap-2 text-[14px] font-semibold text-theme-text">
+                <Terminal className="h-4 w-4 text-theme-accent" aria-hidden="true" />
+                <span>Event log</span>
+                <span className="rounded-full border border-theme-border bg-theme-surface-alt px-1.5 py-0.2 font-mono text-[11px] font-normal text-theme-muted">
+                  {logs.length}
+                </span>
+              </span>
+              <span className="flex items-center gap-1 text-[13px] text-theme-muted">
+                <span>{showLog ? 'Hide' : 'Show'}</span>
+                {showLog ? (
+                  <ChevronUp className="h-3.5 w-3.5" aria-hidden="true" />
+                ) : (
+                  <ChevronDown className="h-3.5 w-3.5" aria-hidden="true" />
+                )}
+              </span>
+            </button>
+
+            {showLog && (
+              <div className="border-t border-theme-border">
+                <p className="px-3.5 py-1 text-[11.5px] text-theme-muted border-b border-theme-border/60">
+                  Kisi line par click karo to canvas me uska key highlight hoga.
+                </p>
+                <ol aria-live="polite" className="max-h-48 overflow-y-auto divide-y divide-theme-border/60">
+                  {visibleLogs.length === 0 ? (
+                    <li className="px-3.5 py-3 text-[13px] text-theme-muted">
+                      Abhi koi action nahi hua. Upar ka button dabao.
+                    </li>
+                  ) : (
+                    visibleLogs.map((log) => (
+                      <li key={log.id}>
+                        <button
+                          type="button"
+                          onClick={() => {
+                            setSelectedLogId(log.id);
+                            setSelectedTarget(log.target ?? null);
+                          }}
+                          className={`flex w-full items-start gap-2.5 px-3 py-1.5 text-left transition-colors ${
+                            selectedLogId === log.id
+                              ? 'bg-theme-surface-alt'
+                              : 'hover:bg-theme-surface-alt/40'
+                          }`}
+                        >
+                          <span className="pt-0.5 font-mono text-[11px] text-theme-muted">
+                            t{log.tick}
+                          </span>
+                          <span className="min-w-0 flex-1">
+                            <span
+                              className={`block font-mono text-[12px] font-semibold ${
+                                logTypeStyles[log.type ?? 'info']
+                              }`}
+                            >
+                              {log.label}
+                            </span>
+                            <span className="block text-[12.5px] leading-snug text-theme-text">
+                              {log.message}
+                            </span>
+                          </span>
+                        </button>
+                      </li>
+                    ))
+                  )}
+                </ol>
+              </div>
+            )}
           </div>
-        )}
-      </div>
+        </div>
+      )}
 
       <details className="group overflow-hidden rounded-xl border border-theme-border bg-theme-surface">
         <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-4 py-3 text-[16px] font-semibold text-theme-text transition-colors hover:bg-theme-surface-alt/60">

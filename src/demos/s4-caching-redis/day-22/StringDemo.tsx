@@ -108,7 +108,6 @@ export const StringDemo: React.FC = () => {
       notesAnchor="strings"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[54.75rem] sm:min-h-[26.25rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
@@ -123,130 +122,186 @@ export const StringDemo: React.FC = () => {
         <>
           <DemoActionButton variant="primary" onClick={handleIncrement}>
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            <span>Increment views</span>
+            <span>Increment views (+1)</span>
           </DemoActionButton>
           <DemoActionButton onClick={handleSaveCache}>
             <Braces className="h-4 w-4" aria-hidden="true" />
-            <span>Save cache</span>
+            <span>Save cache (SET)</span>
           </DemoActionButton>
         </>
       }
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center gap-2">
-          <h3 className="text-[17px] font-bold tracking-tight text-theme-text sm:text-[18px]">
-            Ek key ke andar kya rehta hai?
-          </h3>
-          <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2 py-0.5 font-mono text-[12px] text-theme-muted">
-            key → value
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-theme-border/70 pb-2">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[12px] font-bold uppercase tracking-wider text-theme-muted">
+              In-Memory String Cells
+            </span>
+            <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2 py-0.5 font-mono text-[11px] text-theme-muted">
+              key → 512MB max bytes
+            </span>
+          </div>
+          <span className="font-mono text-[12px] text-theme-muted">
+            RAM footprint: {(viewsEntry?.bytes ?? 0) + (cacheEntry?.bytes ?? 0)} B
           </span>
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-2">
+          {/* Cell 1: Atomic Counter */}
           <article
             data-highlight-id="key:views:home"
-            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 ${
+            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 shadow-2xs ${
               viewsFlash ? 'demo-write-flash ring-2 ring-semantic-success' : ''
             }`}
           >
-            <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="flex flex-wrap items-start justify-between gap-2 border-b border-theme-border/60 pb-2.5">
               <div className="flex items-center gap-2">
                 <Hash className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                <code className="break-all font-mono text-[15px] font-semibold text-theme-text">
+                <code className="break-all font-mono text-[15px] font-bold text-theme-text">
                   views:home
                 </code>
               </div>
-              <span className="rounded-full border border-theme-border bg-theme-surface px-2 py-0.5 text-[13px] font-semibold text-theme-muted">
-                String
-              </span>
+              <div className="flex items-center gap-1.5">
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  encoding: {viewsEntry?.encoding ?? 'int'}
+                </span>
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  {viewsEntry?.bytes ?? 66} B
+                </span>
+              </div>
             </div>
 
-            <div className="mt-3">
-              <p className="text-[15px] text-theme-muted">Value</p>
-              {viewsValue !== null ? (
-                <p className="mt-0.5 font-mono text-4xl font-bold tabular-nums tracking-tight text-theme-text">
-                  {viewsValue}
-                </p>
-              ) : (
-                <p className="mt-0.5 text-[15px] font-semibold text-theme-muted">
-                  Key nahi mili. More options se reset karo.
-                </p>
-              )}
-              <p className="mt-1 font-mono text-[13px] text-theme-muted">
-                encoding {viewsEntry?.encoding ?? '—'} · {viewsEntry?.bytes ?? '—'} B
+            <div className="mt-3.5 space-y-3">
+              <div>
+                <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-theme-muted">
+                  Live Value (Atomic Counter)
+                </span>
+                {viewsValue !== null ? (
+                  <div className="mt-1 flex items-baseline gap-2">
+                    <p className="font-mono text-4xl sm:text-5xl font-extrabold tabular-nums tracking-tight text-theme-text">
+                      {viewsValue}
+                    </p>
+                    <span className="rounded-full border border-semantic-success/40 bg-semantic-success-bg px-2 py-0.5 font-mono text-[11px] font-semibold text-semantic-success">
+                      integer (64-bit)
+                    </span>
+                  </div>
+                ) : (
+                  <p className="mt-1 text-[15px] text-theme-muted">Key missing.</p>
+                )}
+              </div>
+
+              <div className="rounded-lg border border-theme-border bg-theme-surface-alt/50 p-2.5">
+                <div className="flex items-center justify-between text-[12px] font-mono text-theme-muted">
+                  <span>Atomic Command</span>
+                  <span>Next result</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-2 font-mono text-[13px] text-theme-text">
+                  <span className="font-bold">INCRBY views:home 1</span>
+                  {nextViews !== null && (
+                    <div className="flex items-center gap-1.5 font-semibold text-semantic-info">
+                      <ArrowRight className="h-3.5 w-3.5" aria-hidden="true" />
+                      <span className="tabular-nums font-bold text-theme-text">{nextViews}</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <p className="text-[14px] sm:text-[14.5px] leading-relaxed text-theme-muted">
+                Redis single-threaded execution model guarantees concurrency safety: chahe hazaron users ek saath click karein, counter lost-updates ke bina atomically badhta hai.
               </p>
             </div>
-
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-theme-border bg-theme-surface-alt/60 px-3 py-2 font-mono text-[13px] text-theme-text">
-              <span>INCRBY views:home 1</span>
-              {nextViews !== null && (
-                <>
-                  <ArrowRight className="h-3.5 w-3.5 text-theme-muted" aria-hidden="true" />
-                  <span className="font-bold tabular-nums">{nextViews}</span>
-                </>
-              )}
-            </div>
-
-            <p className="mt-3 text-[15px] leading-relaxed text-theme-muted">
-              Counter ek hi key me rehta hai. Redis ise atomically badhata hai,
-              isliye do requests ek doosre ko overwrite nahi karti.
-            </p>
           </article>
 
+          {/* Cell 2: JSON String Cache */}
           <article
             data-highlight-id="key:cache:home"
-            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 ${
+            className={`rounded-xl border border-theme-border bg-theme-bg p-4 transition-all duration-300 shadow-2xs ${
               cacheFlash ? 'demo-write-flash ring-2 ring-semantic-success' : ''
             }`}
           >
-            <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="flex flex-wrap items-start justify-between gap-2 border-b border-theme-border/60 pb-2.5">
               <div className="flex items-center gap-2">
                 <Braces className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                <code className="break-all font-mono text-[15px] font-semibold text-theme-text">
+                <code className="break-all font-mono text-[15px] font-bold text-theme-text">
                   cache:home
                 </code>
               </div>
-              <span className="rounded-full border border-theme-border bg-theme-surface px-2 py-0.5 text-[13px] font-semibold text-theme-muted">
-                String
-              </span>
-            </div>
-
-            <div className="mt-3">
-              <p className="text-[15px] text-theme-muted">Value</p>
-              <pre className="mt-1 overflow-x-auto whitespace-pre-wrap break-all rounded-lg border border-theme-border bg-theme-surface px-3 py-2 font-mono text-[13px] leading-relaxed text-theme-text">
-                {cacheValue ?? 'Key nahi mili.'}
-              </pre>
-              <div className="mt-1 flex flex-wrap items-center justify-between gap-1 font-mono text-[13px] text-theme-muted">
-                <span>
-                  encoding {cacheEntry?.encoding ?? '—'} · {cacheEntry?.bytes ?? '—'} B
+              <div className="flex items-center gap-1.5">
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  encoding: {cacheEntry?.encoding ?? 'embstr'}
                 </span>
-                {cacheWrites > 0 && (
-                  <span className="text-[12px] font-semibold text-semantic-success">
-                    writes: {cacheWrites}
-                  </span>
-                )}
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  {cacheEntry?.bytes ?? 89} B
+                </span>
               </div>
             </div>
 
-            <div className="mt-3 flex flex-wrap items-center gap-2 rounded-lg border border-theme-border bg-theme-surface-alt/60 px-3 py-2 font-mono text-[13px] text-theme-text">
-              <span>SET cache:home ...</span>
-            </div>
+            <div className="mt-3.5 space-y-3">
+              <div>
+                <div className="flex items-center justify-between">
+                  <span className="font-mono text-[11px] font-bold uppercase tracking-wider text-theme-muted">
+                    Raw UTF-8 Byte Payload
+                  </span>
+                  {cacheWrites > 0 && (
+                    <span className="rounded-full border border-semantic-success/40 bg-semantic-success-bg px-2 py-0.5 font-mono text-[11px] font-semibold text-semantic-success">
+                      overwrites: {cacheWrites}
+                    </span>
+                  )}
+                </div>
+                <div className="mt-1 rounded-lg border border-theme-border bg-theme-surface p-2.5 font-mono text-[13px] leading-relaxed text-theme-text shadow-2xs">
+                  {cacheValue ? (
+                    <div>
+                      <span className="text-theme-muted">{"{"}</span>
+                      <div className="pl-4">
+                        <span className="text-theme-accent font-semibold">"theme"</span>: <span className="text-semantic-success font-semibold">"dark"</span>,
+                      </div>
+                      <div className="pl-4">
+                        <span className="text-theme-accent font-semibold">"lang"</span>: <span className="text-semantic-success font-semibold">"hi"</span>
+                      </div>
+                      <span className="text-theme-muted">{"}"}</span>
+                    </div>
+                  ) : (
+                    <span className="text-theme-muted">Key missing.</span>
+                  )}
+                </div>
+              </div>
 
-            <p className="mt-3 text-[15px] leading-relaxed text-theme-muted">
-              JSON bhi ek string hai. Redis usse parse nahi karta; application
-              hi value ko JSON samajhta hai.
-            </p>
+              <div className="rounded-lg border border-theme-border bg-theme-surface-alt/50 p-2.5">
+                <div className="flex items-center justify-between text-[12px] font-mono text-theme-muted">
+                  <span>Write Command</span>
+                  <span>Backend serialization</span>
+                </div>
+                <div className="mt-1 flex items-center justify-between gap-2 font-mono text-[13px] text-theme-text">
+                  <span className="font-bold truncate">SET cache:home '{"{...}"}'</span>
+                  <span className="text-[12px] text-theme-muted shrink-0">JSON.stringify()</span>
+                </div>
+              </div>
+
+              <p className="text-[14px] sm:text-[14.5px] leading-relaxed text-theme-muted">
+                Redis is JSON ko parse nahi karta — uske liye ye sirf 29 raw bytes hain. Agar <code className="font-mono text-theme-accent text-[12.5px]">lang</code> badalna ho, to poora JSON string fir se rewrite karna hoga.
+              </p>
+            </div>
           </article>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 rounded-lg border border-dashed border-theme-border bg-theme-surface-alt/40 px-3 py-2.5 text-[15px] text-theme-muted">
-          <span className="font-mono text-theme-text">key</span>
-          <ArrowRight className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-          <span className="font-mono text-theme-text">one value</span>
-          <span>
-            Bas itna hi. String number, JSON, ya raw bytes ho sakta hai — Redis
-            ke liye sab ek hi value hai.
-          </span>
+        {/* Takeaway Matrix */}
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 pt-1">
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-accent">
+              ✓ Best Use Cases for String
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              Atomic rate-limit counters (<code className="font-mono text-[12px]">INCR</code>), distributed locks (<code className="font-mono text-[12px]">SET key token NX EX 10</code>), aur pre-rendered HTML/API caches.
+            </p>
+          </div>
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-muted">
+              ⚠️ Inefficient for Objects
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              Agar session me 10 fields hain aur sirf 1 field update karni hai, to poora JSON rewrite karna wasteful hai. Next tab me dekho: <span className="font-semibold text-theme-text">Redis Hash</span>!
+            </p>
+          </div>
         </div>
       </div>
     </DemoShell>

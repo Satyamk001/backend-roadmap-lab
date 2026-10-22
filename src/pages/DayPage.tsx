@@ -145,7 +145,7 @@ export const DayPage: React.FC = () => {
   const DemoComponent = currentDemo ? getDemoComponent(currentDemo.id) : null;
 
   return (
-    <div className="w-full max-w-7xl mx-auto py-2 space-y-6 text-theme-text">
+    <div className="w-full max-w-6xl mx-auto py-1 sm:py-2 space-y-3 sm:space-y-3.5 text-theme-text">
       {/* Breadcrumbs */}
       <Breadcrumbs
         items={[
@@ -159,10 +159,10 @@ export const DayPage: React.FC = () => {
 
       {/* Story-Ordered Demo Tab Bar with Keyboard Badges */}
       {day.demos && day.demos.length > 1 && (
-        <div className="space-y-2">
+        <div className="space-y-1.5">
           <div
             ref={tabBarRef}
-            className="flex flex-nowrap items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1 select-none no-scrollbar sm:flex-wrap sm:overflow-visible"
+            className="flex items-center gap-1.5 overflow-x-auto border-b border-theme-border pb-1.5 select-none no-scrollbar"
           >
             {day.demos.map((d, idx) => {
               const isActive = (currentDemo?.id || '') === d.id;
@@ -172,7 +172,7 @@ export const DayPage: React.FC = () => {
                   data-demo-tab={d.id}
                   type="button"
                   onClick={() => setActiveDemoId(d.id)}
-                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-3 py-1.5 text-[15px] font-semibold transition-all duration-150 active:scale-[0.98] ${
+                  className={`flex shrink-0 items-center gap-1.5 whitespace-nowrap rounded-lg px-2.5 py-1 text-[13.5px] sm:text-[14px] font-semibold transition-all duration-150 active:scale-[0.98] ${
                     isActive
                       ? 'bg-theme-primary text-theme-primary-text font-bold shadow-xs'
                       : 'bg-theme-surface hover:bg-theme-surface-alt border border-theme-border text-theme-muted hover:text-theme-text'
@@ -180,7 +180,7 @@ export const DayPage: React.FC = () => {
                 >
                   <span>{idx + 1}. {d.title}</span>
                   <kbd
-                    className={`text-[10px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
+                    className={`text-[9.5px] font-mono px-1 py-0.2 rounded border max-[380px]:hidden ${
                       isActive
                         ? 'bg-black/15 text-stone-900 border-black/20'
                         : 'bg-theme-surface-alt text-theme-muted border-theme-border'
@@ -193,18 +193,18 @@ export const DayPage: React.FC = () => {
             })}
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[13px] text-theme-muted select-none">
+          <div className="flex flex-wrap items-center justify-between gap-2 px-1 text-[12px] text-theme-muted select-none">
             <div className="flex flex-wrap items-center gap-3">
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
+                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">1-6</kbd>
                 <span>Switch tabs</span>
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">Space</kbd>
+                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">Space</kbd>
                 <span>Step / Produce</span>
               </span>
               <span className="flex items-center gap-1">
-                <kbd className="px-1.5 py-0.5 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">R</kbd>
+                <kbd className="px-1.5 py-0.2 rounded bg-theme-surface border border-theme-border font-mono text-[10px] text-theme-text font-bold">R</kbd>
                 <span>Reset</span>
               </span>
             </div>

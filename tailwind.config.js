@@ -19,6 +19,8 @@ export default {
           'primary-hover': 'var(--color-primary-hover)',
           'primary-text': 'var(--color-primary-text)',
           accent: 'var(--color-accent)',
+          neutral: 'var(--color-neutral)',
+          'neutral-bg': 'var(--color-neutral-bg)',
         },
         semantic: {
           success: 'var(--color-success)',

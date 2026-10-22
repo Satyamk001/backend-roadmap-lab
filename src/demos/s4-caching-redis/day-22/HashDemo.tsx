@@ -41,19 +41,28 @@ export const HashDemo: React.FC = () => {
   const role = fields?.role ?? '';
   const loginCount = Number(fields?.loginCount ?? 0);
 
+  const [changedField, setChangedField] = useState<string | null>(null);
+
+  const triggerChange = useCallback((field: string) => {
+    setChangedField(field);
+    setTimeout(() => setChangedField(null), 600);
+  }, []);
+
   const handleLogin = useCallback(() => {
     if (!fields) return;
     const nextTick = engine.getSnapshot().tick + 1;
     engine.hset(SESSION_KEY, 'lastSeen', `t${nextTick}`);
     engine.hincrby(SESSION_KEY, 'loginCount', 1);
+    triggerChange('loginCount');
     sync();
-  }, [engine, fields, sync]);
+  }, [engine, fields, sync, triggerChange]);
 
   const handleToggleRole = useCallback(() => {
     if (!fields) return;
     engine.hset(SESSION_KEY, 'role', role === 'admin' ? 'viewer' : 'admin');
+    triggerChange('role');
     sync();
-  }, [engine, fields, role, sync]);
+  }, [engine, fields, role, sync, triggerChange]);
 
   const handleDelete = useCallback(() => {
     engine.del(SESSION_KEY);
@@ -67,6 +76,7 @@ export const HashDemo: React.FC = () => {
     engine.hset(SESSION_KEY, 'loginCount', '2');
     engine.hset(SESSION_KEY, 'lastSeen', '10:42');
     engine.setNarrative(INTRO_WHAT, INTRO_WHY);
+    setChangedField(null);
     sync();
   }, [engine, sync]);
 
@@ -111,7 +121,6 @@ export const HashDemo: React.FC = () => {
       notesAnchor="hashes"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[34.25rem] max-[380px]:min-h-[35.75rem] sm:min-h-[27.25rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
@@ -129,7 +138,7 @@ export const HashDemo: React.FC = () => {
           disabled={!fields}
         >
           <Trash2 className="h-4 w-4" aria-hidden="true" />
-          <span>Delete whole session</span>
+          <span>Delete whole session (DEL)</span>
         </DemoActionButton>
       }
       actions={
@@ -140,94 +149,139 @@ export const HashDemo: React.FC = () => {
             disabled={!fields}
           >
             <LogIn className="h-4 w-4" aria-hidden="true" />
-            <span>Record login</span>
+            <span>Record login (HINCRBY)</span>
           </DemoActionButton>
           <DemoActionButton onClick={handleToggleRole} disabled={!fields}>
             <ShieldCheck className="h-4 w-4" aria-hidden="true" />
-            <span>{role === 'admin' ? 'Demote to viewer' : 'Promote to admin'}</span>
+            <span>{role === 'admin' ? 'Demote to viewer' : 'Promote to admin (HSET)'}</span>
           </DemoActionButton>
         </>
       }
     >
       {!fields ? (
-        <div className="flex flex-col items-start gap-2 rounded-xl border border-dashed border-theme-border bg-theme-bg p-5">
-          <div className="flex items-center gap-2 text-[16px] font-semibold text-theme-text">
-            <KeyRound className="h-4 w-4 text-theme-muted" aria-hidden="true" />
-            <span>Session key delete ho gayi</span>
+        <div className="flex flex-col items-center justify-center gap-3 rounded-2xl border border-dashed border-theme-border bg-theme-bg p-8 text-center">
+          <div className="flex h-12 w-12 items-center justify-center rounded-full bg-semantic-error-bg text-semantic-error border border-semantic-error/40">
+            <KeyRound className="h-6 w-6" aria-hidden="true" />
           </div>
-          <p className="text-[15px] leading-relaxed text-theme-muted">
-            Ek DEL ne poora Hash aur uske saare fields hata diye. More options se
-            scenario reset karo.
-          </p>
+          <div className="space-y-1">
+            <p className="text-[17px] font-bold text-theme-text">Session Key Deleted (DEL sess:alice)</p>
+            <p className="text-[14.5px] max-w-md text-theme-muted">
+              Ek single DEL command ne pure Hash object aur uske saare internal fields ko RAM se clean wipe kar diya.
+            </p>
+          </div>
+          <DemoActionButton variant="primary" onClick={handleReset}>
+            Restore session
+          </DemoActionButton>
         </div>
       ) : (
         <div className="space-y-4">
           <article
             data-highlight-id="key:sess:alice"
-            className="rounded-xl border border-theme-border bg-theme-bg p-4"
+            className="rounded-xl border border-theme-border bg-theme-bg p-4 shadow-2xs"
           >
-            <div className="flex flex-wrap items-start justify-between gap-2">
+            <div className="flex flex-wrap items-center justify-between gap-2 border-b border-theme-border/60 pb-3">
               <div className="flex items-center gap-2">
                 <Hash className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                <code className="break-all font-mono text-[15px] font-semibold text-theme-text">
+                <code className="break-all font-mono text-[15px] font-bold text-theme-text">
                   {SESSION_KEY}
                 </code>
               </div>
-              <div className="flex flex-wrap items-center gap-2">
-                <span className="rounded-full border border-theme-border bg-theme-surface px-2 py-0.5 text-[13px] font-semibold text-theme-muted">
-                  Hash
+              <div className="flex flex-wrap items-center gap-1.5">
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  Type: Hash
                 </span>
-                <span className="font-mono text-[13px] text-theme-muted">
-                  {Object.keys(fields).length} fields · {entry?.encoding}
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  {Object.keys(fields).length} fields
+                </span>
+                <span className="rounded-md border border-theme-border bg-theme-surface px-2 py-0.5 font-mono text-[11px] font-semibold text-theme-muted">
+                  encoding: {entry?.encoding ?? 'listpack'}
                 </span>
               </div>
             </div>
 
-            <div className="mt-3 overflow-hidden rounded-lg border border-theme-border">
-              {FIELD_ORDER.filter((field) => fields[field] !== undefined).map(
-                (field) => (
+            {/* Fields Grid */}
+            <div className="mt-3.5 divide-y divide-theme-border/60 rounded-xl border border-theme-border bg-theme-surface overflow-hidden shadow-2xs">
+              {FIELD_ORDER.filter((field) => fields[field] !== undefined).map((field) => {
+                const isRecentlyChanged = changedField === field;
+                return (
                   <div
                     key={field}
                     data-highlight-id={`field:${field}`}
-                    className="flex flex-wrap items-center justify-between gap-2 border-b border-theme-border/70 bg-theme-surface px-3 py-2.5 last:border-b-0"
+                    className={`flex flex-wrap items-center justify-between gap-2 px-3.5 py-3 transition-colors duration-300 ${
+                      isRecentlyChanged
+                        ? 'bg-semantic-success-bg/40 ring-1 ring-inset ring-semantic-success'
+                        : 'hover:bg-theme-surface-alt/30'
+                    }`}
                   >
-                    <code className="font-mono text-[13px] font-semibold text-theme-muted">
-                      {field}
-                    </code>
-                    {field === 'role' ? (
-                      <span
-                        className={`rounded-full border px-2 py-0.5 text-[13px] font-semibold ${
-                          fields[field] === 'admin'
-                            ? 'border-semantic-success/40 bg-semantic-success-bg text-semantic-success'
-                            : 'border-theme-border bg-theme-surface-alt text-theme-muted'
-                        }`}
-                      >
-                        {fields[field]}
+                    <div className="flex items-center gap-2">
+                      <span className="font-mono text-[13px] font-bold text-theme-accent">
+                        {field}
                       </span>
-                    ) : (
-                      <span className="font-mono text-[15px] font-semibold text-theme-text">
-                        {fields[field]}
-                      </span>
-                    )}
+                      {isRecentlyChanged && (
+                        <span className="rounded-full border border-semantic-success/40 bg-semantic-success-bg px-2 py-0.2 font-mono text-[10px] font-bold text-semantic-success">
+                          updated in-place
+                        </span>
+                      )}
+                    </div>
+
+                    <div>
+                      {field === 'role' ? (
+                        <span
+                          className={`inline-flex items-center rounded-full border px-2.5 py-0.5 text-[12.5px] font-bold transition-all duration-200 ${
+                            fields[field] === 'admin'
+                              ? 'border-semantic-success/50 bg-semantic-success-bg text-semantic-success shadow-xs'
+                              : 'border-theme-border bg-theme-surface-alt text-theme-muted'
+                          }`}
+                        >
+                          {fields[field]}
+                        </span>
+                      ) : field === 'loginCount' ? (
+                        <span className="font-mono text-[16px] font-extrabold tabular-nums text-theme-text">
+                          {fields[field]}
+                        </span>
+                      ) : (
+                        <span className="font-mono text-[14px] font-semibold text-theme-text">
+                          {fields[field]}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                )
-              )}
+                );
+              })}
             </div>
 
-            <div className="mt-3 grid min-h-[5.25rem] gap-1 rounded-lg border border-theme-border bg-theme-surface-alt/60 px-3 py-2 sm:min-h-[2.75rem] sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center sm:gap-2">
-              <span className="font-mono text-[13px] text-theme-text">
-                Next: HSET {SESSION_KEY} role {role === 'admin' ? 'viewer' : 'admin'}
-              </span>
-              <span className="text-[15px] text-theme-muted">
-                sirf role field badlegi
+            {/* Next Live Command Pill */}
+            <div className="mt-3.5 flex flex-wrap items-center justify-between gap-2 rounded-lg border border-theme-border bg-theme-surface-alt/50 px-3 py-2 font-mono text-[12.5px] text-theme-text">
+              <div className="flex items-center gap-2">
+                <span className="font-bold text-theme-muted uppercase text-[11px]">Next Operation:</span>
+                <span className="font-semibold text-theme-accent">
+                  HSET {SESSION_KEY} role {role === 'admin' ? 'viewer' : 'admin'}
+                </span>
+              </div>
+              <span className="text-[12px] text-theme-muted">
+                Sirf role field update hogi, baaki fields untouched!
               </span>
             </div>
           </article>
 
-          <div className="rounded-lg border border-dashed border-theme-border bg-theme-surface-alt/40 px-3 py-2.5 text-[15px] leading-relaxed text-theme-muted">
-            <span className="font-semibold text-theme-text">String JSON vs Hash: </span>
-            JSON me role badalne ke liye poora object parse + rewrite karna padta
-            hai. Hash me Redis sirf selected field update karta hai.
+          {/* Architecture Comparison */}
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 pt-1">
+            <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+              <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-muted">
+                ❌ String JSON Approach
+              </p>
+              <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+                Role badalne ke liye backend ko poora 150B JSON string read karna padta hai, parse karo, mutate karo, phir poora 150B rewrite karo. Heavy CPU + network overhead!
+              </p>
+            </div>
+            <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+              <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-accent">
+                ⚡ Redis Hash Approach
+              </p>
+              <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+                <code className="font-mono text-[12px]">HSET sess:alice role admin</code> sirf ~25 bytes bhejta hai. Redis memory me in-place update karta hai — zero serialization cost, 85% bandwidth saved.
+              </p>
+            </div>
           </div>
         </div>
       )}

@@ -40,15 +40,15 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
   const keyPoints = getFallbackKeyPoints(day);
 
   return (
-    <header className="space-y-2.5 sm:space-y-3">
+    <header className="space-y-2 sm:space-y-2.5">
       {/* Title */}
-      <h1 className="text-[26px] font-extrabold leading-[1.15] tracking-tight text-theme-text sm:text-[34px]">
+      <h1 className="text-[22px] sm:text-[28px] font-extrabold leading-tight tracking-tight text-theme-text">
         Day {day.dayNumber}: {day.title}
       </h1>
 
       {/* 1-Line Core Mental Model / Definition */}
-      <div className="flex items-start gap-2.5 rounded-xl border border-theme-border bg-theme-surface-alt/40 px-3.5 py-2.5 sm:px-4 sm:py-3 text-[15px] sm:text-[16px] leading-snug text-theme-text shadow-2xs">
-        <span className="text-base flex-shrink-0 select-none pt-0.5 leading-none" aria-hidden="true">
+      <div className="flex items-center gap-2 rounded-lg border border-theme-border bg-theme-surface-alt/40 px-3 py-1.5 sm:px-3.5 sm:py-2 text-[14px] sm:text-[15px] leading-snug text-theme-text shadow-2xs">
+        <span className="text-sm flex-shrink-0 select-none leading-none" aria-hidden="true">
           💡
         </span>
         <p className="font-semibold text-theme-text">{definition}</p>
@@ -56,21 +56,21 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
 
       {/* 3 Scannable Key Takeaway Cards */}
       {keyPoints.length > 0 && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-2.5">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-2">
           {keyPoints.map((point, idx) => (
             <div
               key={idx}
-              className="p-3 sm:p-3.5 rounded-xl border border-theme-border bg-theme-surface shadow-2xs space-y-1 transition-all duration-150 hover:border-theme-border/80"
+              className="px-2.5 py-2 sm:px-3 sm:py-2 rounded-lg border border-theme-border bg-theme-surface shadow-2xs transition-all duration-150 hover:border-theme-border/80"
             >
-              <div className="flex items-center gap-2">
-                <span className="text-base select-none leading-none" aria-hidden="true">
+              <div className="flex items-center gap-1.5">
+                <span className="text-sm select-none leading-none" aria-hidden="true">
                   {point.icon || '📌'}
                 </span>
-                <h3 className="text-[15px] font-bold leading-snug tracking-tight text-theme-text">
+                <h3 className="text-[13.5px] sm:text-[14px] font-bold leading-tight tracking-tight text-theme-text">
                   {point.title}
                 </h3>
               </div>
-              <p className="text-[13.5px] sm:text-[14px] text-theme-muted leading-relaxed">
+              <p className="mt-1 text-[12px] sm:text-[12.5px] text-theme-muted leading-snug">
                 {point.description}
               </p>
             </div>
@@ -84,7 +84,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
           <button
             type="button"
             onClick={() => setShowRecap(!showRecap)}
-            className="text-[13.5px] sm:text-[14px] text-theme-muted hover:text-theme-text flex items-center gap-1.5 select-none transition-colors"
+            className="text-[12.5px] sm:text-[13px] text-theme-muted hover:text-theme-text flex items-center gap-1.5 select-none transition-colors"
           >
             <Sparkles className="w-3.5 h-3.5 text-theme-accent" />
             <span>
@@ -98,7 +98,7 @@ export const DayHeader: React.FC<DayHeaderProps> = ({ day }) => {
           </button>
 
           {showRecap && (
-            <div className="mt-2 p-3.5 sm:p-4 rounded-xl bg-theme-surface border border-theme-border text-[14.5px] sm:text-[15px] text-theme-muted leading-relaxed select-text animate-in fade-in duration-150">
+            <div className="mt-1.5 p-3 sm:p-3.5 rounded-lg bg-theme-surface border border-theme-border text-[13.5px] sm:text-[14px] text-theme-muted leading-relaxed select-text animate-in fade-in duration-150">
               <p>{day.recap}</p>
             </div>
           )}

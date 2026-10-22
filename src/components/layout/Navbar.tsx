@@ -7,9 +7,14 @@ import { BrandMark } from './BrandMark';
 interface NavbarProps {
   onOpenCommandPalette: () => void;
   onToggleMobileMenu?: () => void;
+  isMobileMenuOpen?: boolean;
 }
 
-export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMobileMenu }) => {
+export const Navbar: React.FC<NavbarProps> = ({
+  onOpenCommandPalette,
+  onToggleMobileMenu,
+  isMobileMenuOpen,
+}) => {
   const { theme, setTheme } = useSettingsStore();
   const isMac =
     typeof navigator !== 'undefined' && /Mac|iPhone|iPad|iPod/.test(navigator.platform);
@@ -44,10 +49,20 @@ export const Navbar: React.FC<NavbarProps> = ({ onOpenCommandPalette, onToggleMo
             <button
               type="button"
               onClick={onToggleMobileMenu}
-              className="p-1.5 rounded-lg text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt lg:hidden"
-              aria-label="Open navigation menu"
+              className="inline-flex h-11 w-11 items-center justify-center rounded-lg text-theme-muted hover:text-theme-text hover:bg-theme-surface-alt lg:hidden"
+              aria-label={
+                isMobileMenuOpen
+                  ? 'Close navigation menu'
+                  : 'Open navigation menu'
+              }
+              aria-haspopup="dialog"
+              aria-expanded={isMobileMenuOpen}
+              aria-controls={
+                isMobileMenuOpen ? 'mobile-roadmap-navigation' : undefined
+              }
+              data-sidebar-trigger
             >
-              <Menu className="w-5 h-5" />
+              <Menu aria-hidden="true" className="w-5 h-5" />
             </button>
           )}
 

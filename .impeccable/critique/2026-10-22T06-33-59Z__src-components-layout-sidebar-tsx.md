@@ -85,8 +85,6 @@ At 1440 the sidebar is calm, legible, and the rail is the one moment of craft. O
 
 ## Persona Red Flags
 
-**Alex (Power User)**: Ctrl+K is the one power path, but the sidebar has no collapse-all, no recent/next-day links, and does not scroll the active day into view when a stage grows. Collapsing the active stage leaves the header tinted but removes the day; reopening is a two-click memory test.
-
 **Jordan (First-Timer)**: "S1/S4/S6" and "Day 38" assume the numbering model; the footer explains publishing gaps in internal terms and never says what a stage is. The calendar glyph looks like a date, but Day 38 is a sequence. No demo count says a day contains six demos.
 
 **Sam (Screen reader / keyboard)**: The exact mobile failures above. On desktop, each day link contains an unnamed image (the exposed Calendar icon) announced alongside the label; there is no `<nav>` landmark (the `<aside>` is unlabeled); the close button is 28×28; the "Day N" labels are 11px. The focus ring is correct once settled: 3px amber, 2px offset.
@@ -95,9 +93,12 @@ At 1440 the sidebar is calm, legible, and the rail is the one moment of craft. O
 
 ## Minor Observations
 
+- There is no collapse-all, no recent/next-day link, and no scroll-to-active when a stage grows; with 10+ days the active row can open off-screen. Ctrl+K is the only power path.
+- Collapsing the active stage leaves the header tinted but removes the day; reopening is a two-click memory test.
+
 - On home, S6 is expanded by the `stageId || 's6-queues-async'` fallback with no active stage; S1/S4 are collapsed. It reads as an unexplained default — collapse all, or label S6 as the current stage.
-- `/stage/s6-queues-async/day/99` silently renders home content while staying on the bad URL; the sidebar loses all active state and the node. A "Day not found" message with a link back would recover better.
-- The calendar icon on every day row is decorative noise and semantically wrong; the day number is the real anchor. Replace it with a small ordinal chip.
+- `/stage/s6-queues-async/day/99` silently redirects to home; the sidebar loses all active state and the node, with no "Day not found" explanation. A small not-found message with a link back would recover better.
+- The calendar icon on every day row is decorative noise, semantically wrong, and exposed to screen readers as an unnamed image; the day number is the real anchor. Replace it with an aria-hidden ordinal chip.
 - Stage buttons lack `aria-controls`; `title` tooltips duplicate the visible label and never appear on touch.
 - The sidebar is 1px taller than the viewport (844px starting at y=57 in a 900px viewport), so its bottom sits just below the fold.
 - Light rail contrast is 1.49:1 and the node is 1.93:1 against the tinted row, below 3:1 for meaningful graphics. The node has a glow plus weight/tint backups, so it is not the sole signal, but it should not be relied on at low vision.

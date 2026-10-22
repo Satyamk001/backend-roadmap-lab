@@ -174,7 +174,6 @@ export const RdbVsAofDemo: React.FC = () => {
       notesAnchor="persistence-2-aof-append-only-file"
       whatJustHappened={snapshot.whatJustHappened}
       whyItMatters={snapshot.whyItMatters}
-      canvasClassName="min-h-[77.75rem] max-[380px]:min-h-[80rem] sm:min-h-[37.5rem]"
       logs={logs}
       challenges={challenges}
       stateSnapshot={{
@@ -193,17 +192,18 @@ export const RdbVsAofDemo: React.FC = () => {
       resetLabel="Reset crash scenario"
       extraOptions={
         <>
-          <label className="flex items-center gap-2 text-[15px] text-theme-muted">
-            <span>AOF fsync</span>
+          <label className="flex items-center gap-2 text-[14.5px] text-theme-muted">
+            <span className="font-mono text-[12px] font-bold">fsync policy:</span>
             <select
               value={snapshot.fsyncPolicy}
               onChange={(event) => handleFsync(event.target.value as FsyncPolicy)}
               disabled={!snapshot.aofEnabled || crashed}
-              className="min-h-9 rounded-lg border border-theme-border bg-theme-surface px-2 py-1.5 text-[14px] font-semibold text-theme-text disabled:opacity-50"
+              aria-label="AOF fsync policy"
+              className="min-h-8 rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1 font-mono text-[13px] font-semibold text-theme-text disabled:opacity-50"
             >
-              <option value="always">always</option>
-              <option value="everysec">everysec</option>
-              <option value="no">no</option>
+              <option value="always">always (max durability)</option>
+              <option value="everysec">everysec (default)</option>
+              <option value="no">no (OS flush)</option>
             </select>
           </label>
           <DemoActionButton
@@ -211,7 +211,7 @@ export const RdbVsAofDemo: React.FC = () => {
             disabled={!snapshot.aofEnabled || aofBufferEntries.length === 0 || crashed}
           >
             <RefreshCw className="h-4 w-4" aria-hidden="true" />
-            <span>Flush AOF now</span>
+            <span>Flush buffer</span>
           </DemoActionButton>
           <DemoActionButton onClick={handleAdvance} disabled={crashed}>
             <Clock className="h-4 w-4" aria-hidden="true" />
@@ -223,12 +223,12 @@ export const RdbVsAofDemo: React.FC = () => {
         <>
           {crashed ? (
             <DemoActionButton
-              variant="secondary"
-              className="border-semantic-success/60 text-semantic-success hover:bg-semantic-success-bg font-semibold"
+              variant="primary"
+              className="font-bold shadow-xs"
               onClick={handleRestart}
             >
-              <Power className="h-4 w-4 text-semantic-success" aria-hidden="true" />
-              <span>Restart server</span>
+              <Power className="h-4 w-4" aria-hidden="true" />
+              <span>Restart & Recover server</span>
             </DemoActionButton>
           ) : (
             <DemoActionButton variant="primary" onClick={handleWrite}>
@@ -238,114 +238,160 @@ export const RdbVsAofDemo: React.FC = () => {
           )}
           <DemoActionButton onClick={handleSaveRdb} disabled={crashed}>
             <Save className="h-4 w-4" aria-hidden="true" />
-            <span>Save RDB snapshot</span>
+            <span>Save RDB snapshot (BGSAVE)</span>
           </DemoActionButton>
           <DemoActionButton variant="danger" onClick={handleCrash} disabled={crashed}>
             <AlertTriangle className="h-4 w-4 text-semantic-error" aria-hidden="true" />
-            <span>Crash server</span>
+            <span>Simulate crash</span>
           </DemoActionButton>
         </>
       }
     >
       <div className="space-y-4">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <div
-            role="group"
-            aria-label="Persistence mode"
-            className="flex flex-wrap items-center gap-1 rounded-lg border border-theme-border bg-theme-surface-alt p-1"
-          >
-            {(['rdb', 'aof'] as const).map((option) => {
-              const active = mode === option;
-              return (
-                <button
-                  key={option}
-                  type="button"
-                  aria-pressed={active}
-                  onClick={() => handleMode(option)}
-                  className={`inline-flex min-h-8 items-center gap-1 rounded-md px-2.5 py-1 text-[13px] font-semibold transition-colors ${
-                    active
-                      ? 'bg-theme-surface text-theme-text shadow-xs'
-                      : 'text-theme-muted hover:text-theme-text'
-                  }`}
-                >
-                  {active && <CheckCircle2 className="h-3.5 w-3.5" aria-hidden="true" />}
-                  <span>{option === 'rdb' ? 'RDB only' : 'AOF on'}</span>
-                </button>
-              );
-            })}
-          </div>
-          <span className="rounded-full border border-theme-border bg-theme-surface-alt px-2 py-0.5 font-mono text-[12px] text-theme-muted">
-            status: {snapshot.serverStatus}
-          </span>
-        </div>
-
-        <div className="min-h-[7.5rem]">
-          {report ? (
+        {/* Persistence Mode & Engine Health Strip */}
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-theme-border/70 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="font-mono text-[12px] font-bold uppercase tracking-wider text-theme-muted">
+              Persistence Strategy:
+            </span>
             <div
-              className={`rounded-xl border p-3.5 ${
-                report.lostCount > 0
-                  ? 'border-semantic-error/40 bg-semantic-error-bg'
-                  : 'border-semantic-success/40 bg-semantic-success-bg'
+              role="group"
+              aria-label="Persistence mode"
+              className="flex items-center gap-1 rounded-xl border border-theme-border bg-theme-surface-alt/70 p-1 shadow-2xs"
+            >
+              {(['rdb', 'aof'] as const).map((option) => {
+                const active = mode === option;
+                return (
+                  <button
+                    key={option}
+                    type="button"
+                    aria-pressed={active}
+                    onClick={() => handleMode(option)}
+                    className={`inline-flex min-h-7 items-center gap-1.5 rounded-lg px-2.5 py-1 text-[12.5px] font-semibold transition-all ${
+                      active
+                        ? 'bg-theme-surface text-theme-text shadow-xs ring-1 ring-theme-border'
+                        : 'text-theme-muted hover:text-theme-text'
+                    }`}
+                  >
+                    {active && <CheckCircle2 className="h-3.5 w-3.5 text-theme-accent" aria-hidden="true" />}
+                    <span>{option === 'rdb' ? 'RDB Snapshot Only' : 'AOF Log Enabled'}</span>
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <span
+              className={`inline-flex items-center gap-1.5 rounded-full border px-2.5 py-0.5 font-mono text-[11.5px] font-bold uppercase tracking-wider ${
+                crashed
+                  ? 'border-semantic-error/50 bg-semantic-error-bg text-semantic-error shadow-xs'
+                  : 'border-semantic-success/50 bg-semantic-success-bg text-semantic-success'
               }`}
             >
-              <div className="flex items-start gap-2">
+              <span
+                className={`h-2 w-2 rounded-full ${
+                  crashed ? 'bg-semantic-error' : 'bg-semantic-success animate-pulse'
+                }`}
+              />
+              <span>Server {snapshot.serverStatus}</span>
+            </span>
+          </div>
+        </div>
+
+        {/* Dynamic Crash & Post-Mortem Report Banner */}
+        <div>
+          {report ? (
+            <div
+              className={`rounded-xl border p-4 shadow-2xs transition-all ${
+                report.lostCount > 0
+                  ? 'border-semantic-error/40 bg-semantic-error-bg/60'
+                  : 'border-semantic-success/40 bg-semantic-success-bg/60'
+              }`}
+            >
+              <div className="flex items-start gap-3">
                 {report.lostCount > 0 ? (
                   <AlertTriangle
-                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-semantic-error"
+                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-semantic-error"
                     aria-hidden="true"
                   />
                 ) : (
                   <CheckCircle2
-                    className="mt-0.5 h-4 w-4 flex-shrink-0 text-semantic-success"
+                    className="mt-0.5 h-5 w-5 flex-shrink-0 text-semantic-success"
                     aria-hidden="true"
                   />
                 )}
-                <div className="min-w-0">
-                  <p className="text-[16px] font-semibold leading-snug text-theme-text">
-                    {report.recoveredSource} recovery: {report.recoveredCount} keys aayi,{' '}
-                    {report.lostCount} {report.lostCount === 1 ? 'write' : 'writes'} lost.
+                <div className="min-w-0 space-y-1">
+                  <p className="text-[16px] font-bold leading-snug text-theme-text">
+                    {report.recoveredSource} Recovery Complete: {report.recoveredCount} keys recovered,{' '}
+                    <span className={report.lostCount > 0 ? 'text-semantic-error font-extrabold' : 'text-semantic-success'}>
+                      {report.lostCount} {report.lostCount === 1 ? 'write' : 'writes'} lost
+                    </span>.
                   </p>
-                  <p className="mt-0.5 text-[15px] text-theme-muted">
-                    Crash se pehle RAM me {report.totalBeforeCrash} keys thi.
+                  <p className="text-[14px] text-theme-muted">
+                    Crash se pehle RAM me total {report.totalBeforeCrash} keys thi.
                   </p>
                   {report.lostKeys.length > 0 && (
-                    <p className="mt-1 font-mono text-[13px] text-semantic-error">
-                      lost: {report.lostKeys.join(', ')}
+                    <p className="font-mono text-[12.5px] text-semantic-error">
+                      Lost keys (not in snapshot): {report.lostKeys.join(', ')}
                     </p>
                   )}
                 </div>
               </div>
             </div>
+          ) : crashed ? (
+            <div className="rounded-xl border border-semantic-error/50 bg-semantic-error-bg/40 p-4 shadow-2xs space-y-1">
+              <div className="flex items-center gap-2 text-semantic-error font-bold text-[15px]">
+                <AlertTriangle className="h-4 w-4" aria-hidden="true" />
+                <span>Server Crashed! Volatile RAM is completely wiped.</span>
+              </div>
+              <p className="text-[14px] text-theme-muted">
+                Disk persistence engine check karega: RDB snapshot load hoga ya AOF log replay chalega. Upar <strong className="text-theme-text">Restart & Recover server</strong> dabao.
+              </p>
+            </div>
           ) : (
-            <div className="rounded-xl border border-dashed border-theme-border bg-theme-bg p-3.5 text-[15px] leading-relaxed text-theme-muted">
-              Crash ke baad recovery report yahan aayegi. Pehle ek write karo, phir crash karke restart karo.
+            <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 text-[14px] leading-relaxed text-theme-muted flex flex-wrap items-center justify-between gap-2">
+              <span>
+                💡 <strong>Try this experiment:</strong> Write cart dabao, bina RDB save kiye crash karo, aur dekho RDB vs AOF mode me data bachta hai ya nahi!
+              </span>
+              <span className="font-mono text-[11px] text-theme-muted uppercase font-bold">
+                writes pending crash: {writeCount}
+              </span>
             </div>
           )}
         </div>
 
-        <div className="grid grid-cols-1 gap-3 lg:grid-cols-3">
+        {/* 3-Tier Persistence Architecture */}
+        <div className="grid grid-cols-1 gap-3.5 lg:grid-cols-3">
+          {/* Tier 1: Volatile RAM */}
           <article
             data-highlight-id="ram-card"
-            className="rounded-xl border border-theme-border bg-theme-bg p-3"
+            className={`rounded-xl border bg-theme-bg p-4 shadow-2xs space-y-3 transition-colors ${
+              crashed ? 'border-semantic-error/60 ring-1 ring-semantic-error/30' : 'border-theme-border'
+            }`}
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-[16px] font-semibold tracking-tight text-theme-text sm:text-[17px]">
+            <div className="flex items-center justify-between gap-2 border-b border-theme-border/60 pb-2.5">
+              <span className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-theme-text">
                 <Database className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                RAM
+                Tier 1: Volatile RAM
               </span>
-              <span className="font-mono text-[13px] tabular-nums text-theme-muted">
+              <span className="font-mono text-[11px] rounded bg-theme-surface-alt px-2 py-0.5 text-theme-muted font-bold">
                 {snapshot.ramKeyCount} keys
               </span>
             </div>
-            <p className="mt-1 text-[15px] text-theme-muted">volatile · crash par wipe</p>
 
-            <div className="mt-3 h-[10rem] space-y-1.5 overflow-y-auto pr-0.5">
+            <p className="text-[13px] text-theme-muted">
+              Sub-millisecond access · power loss / crash par 100% wipe.
+            </p>
+
+            <div className="h-[9.5rem] space-y-1.5 overflow-y-auto pr-0.5">
               {crashed ? (
-                <p className="rounded-lg border border-semantic-error/40 bg-semantic-error-bg px-2.5 py-2 text-[15px] font-semibold text-semantic-error">
-                  RAM wiped. Restart se recovery hogi.
-                </p>
+                <div className="flex h-full flex-col items-center justify-center rounded-lg border border-semantic-error/40 bg-semantic-error-bg/30 p-3 text-center">
+                  <p className="text-[13.5px] font-bold text-semantic-error">RAM WIPED ON CRASH</p>
+                  <p className="text-[12px] text-theme-muted mt-0.5">Memory empty. Restart required.</p>
+                </div>
               ) : ramKeys.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
+                <p className="rounded-lg border border-dashed border-theme-border px-3 py-2 text-[13px] text-theme-muted">
                   Koi key nahi.
                 </p>
               ) : (
@@ -355,10 +401,10 @@ export const RdbVsAofDemo: React.FC = () => {
                     data-highlight-id={`ram:${key}`}
                     className="flex items-center justify-between gap-2 rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5"
                   >
-                    <code className="break-all font-mono text-[12px] text-theme-text">
+                    <code className="break-all font-mono text-[12px] font-semibold text-theme-text">
                       {key}
                     </code>
-                    <span className="font-mono text-[13px] font-semibold text-theme-text">
+                    <span className="font-mono text-[12px] font-bold text-theme-text">
                       {value}
                     </span>
                   </div>
@@ -367,26 +413,28 @@ export const RdbVsAofDemo: React.FC = () => {
             </div>
           </article>
 
+          {/* Tier 2: RDB Disk Snapshot */}
           <article
             data-highlight-id="rdb-snapshot"
-            className="rounded-xl border border-theme-border bg-theme-bg p-3"
+            className="rounded-xl border border-theme-border bg-theme-bg p-4 shadow-2xs space-y-3"
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-[16px] font-semibold tracking-tight text-theme-text sm:text-[17px]">
+            <div className="flex items-center justify-between gap-2 border-b border-theme-border/60 pb-2.5">
+              <span className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-theme-text">
                 <HardDrive className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                RDB snapshot
+                Tier 2: RDB Snapshot
               </span>
-              <span className="font-mono text-[13px] tabular-nums text-theme-muted">
+              <span className="font-mono text-[11px] rounded bg-theme-surface-alt px-2 py-0.5 text-theme-muted font-bold">
                 {rdbKeys.length} keys
               </span>
             </div>
-            <p className="mt-1 text-[15px] text-theme-muted">
-              point-in-time · save ke baad ka data nahi
+
+            <p className="text-[13px] text-theme-muted">
+              Point-in-time image · snapshot ke baad ke writes disk par nahi hote.
             </p>
 
-            <div className="mt-3 h-[10rem] space-y-1.5 overflow-y-auto pr-0.5">
+            <div className="h-[9.5rem] space-y-1.5 overflow-y-auto pr-0.5">
               {rdbKeys.length === 0 ? (
-                <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
+                <p className="rounded-lg border border-dashed border-theme-border px-3 py-2 text-[13px] text-theme-muted">
                   Snapshot abhi nahi hai.
                 </p>
               ) : (
@@ -396,97 +444,90 @@ export const RdbVsAofDemo: React.FC = () => {
                     data-highlight-id={`rdb:${key}`}
                     className="flex items-center justify-between gap-2 rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5"
                   >
-                    <code className="break-all font-mono text-[12px] text-theme-text">
+                    <code className="break-all font-mono text-[12px] font-semibold text-theme-text">
                       {key}
                     </code>
-                    <span className="font-mono text-[13px] font-semibold text-theme-text">
+                    <span className="font-mono text-[12px] font-bold text-theme-text">
                       {value}
                     </span>
                   </div>
                 ))
               )}
             </div>
-            <p className="mt-2 font-mono text-[12px] text-theme-muted">
-              saved at t{snapshot.rdbSnapshot?.tick ?? '—'}
-            </p>
+
+            <div className="font-mono text-[11.5px] text-theme-muted pt-0.5">
+              Snapshot saved at: <strong className="text-theme-text">t{snapshot.rdbSnapshot?.tick ?? '—'}</strong>
+            </div>
           </article>
 
+          {/* Tier 3: AOF Disk Log */}
           <article
             data-highlight-id="aof-disk"
-            className="rounded-xl border border-theme-border bg-theme-bg p-3"
+            className="rounded-xl border border-theme-border bg-theme-bg p-4 shadow-2xs space-y-3"
           >
-            <div className="flex items-center justify-between gap-2">
-              <span className="flex items-center gap-2 text-[16px] font-semibold tracking-tight text-theme-text sm:text-[17px]">
+            <div className="flex items-center justify-between gap-2 border-b border-theme-border/60 pb-2.5">
+              <span className="flex items-center gap-2 text-[15px] font-bold tracking-tight text-theme-text">
                 <HardDrive className="h-4 w-4 text-theme-accent" aria-hidden="true" />
-                AOF log
+                Tier 3: AOF Log
               </span>
-              <span className="font-mono text-[13px] tabular-nums text-theme-muted">
-                {snapshot.aofEnabled ? 'on' : 'off'}
+              <span className="font-mono text-[11px] rounded bg-theme-surface-alt px-2 py-0.5 text-theme-muted font-bold uppercase">
+                {snapshot.aofEnabled ? `ON (${snapshot.fsyncPolicy})` : 'OFF'}
               </span>
             </div>
-            <p className="mt-1 text-[15px] text-theme-muted">
-              command log · fsynced writes replay
+
+            <p className="text-[13px] text-theme-muted">
+              Continuous append log · restart par har command replay hoti hai.
             </p>
 
             {!snapshot.aofEnabled ? (
-              <div className="mt-3 flex h-36 items-center justify-center rounded-lg border border-dashed border-theme-border px-3 py-2 text-center text-[15px] leading-relaxed text-theme-muted">
-                AOF off hai. RDB-only mode me restart sirf snapshot load karega.
+              <div className="flex h-[9.5rem] items-center justify-center rounded-lg border border-dashed border-theme-border bg-theme-surface-alt/20 p-3 text-center text-[13px] text-theme-muted">
+                AOF disabled hai. RDB-only mode me crash recovery sirf purane snapshot se hogi.
               </div>
             ) : (
-              <>
-                <div className="mt-3 h-24 space-y-1.5 overflow-y-auto pr-0.5">
-                  {aofDiskEntries.length === 0 ? (
-                    <p className="rounded-lg border border-dashed border-theme-border px-2.5 py-2 text-[15px] text-theme-muted">
-                      Disk par koi command nahi.
-                    </p>
-                  ) : (
-                    aofDiskEntries.map((entry) => (
-                      <div
-                        key={entry.id}
-                        data-highlight-id={`aof:${entry.key}`}
-                        className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5"
-                      >
-                        <code className="block break-all font-mono text-[12px] text-theme-text">
-                          {entry.command} {entry.key} {entry.value}
-                        </code>
-                        <span className="font-mono text-[11px] text-theme-muted">
-                          t{entry.tick} · fsynced
-                        </span>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                <div className="mt-2 h-10 overflow-y-auto">
-                  {aofBufferEntries.length > 0 ? (
-                    <p
-                      data-highlight-id={`aof-buffer:${aofBufferEntries[aofBufferEntries.length - 1]?.key ?? ''}`}
-                      className="flex h-full items-center gap-1.5 rounded-lg border border-semantic-inflight/40 bg-semantic-inflight-bg px-2.5 text-[13px] font-semibold text-semantic-inflight"
+              <div className="h-[9.5rem] space-y-1.5 overflow-y-auto pr-0.5">
+                {aofDiskEntries.length === 0 ? (
+                  <p className="rounded-lg border border-dashed border-theme-border px-3 py-2 text-[13px] text-theme-muted">
+                    Disk par koi append log nahi.
+                  </p>
+                ) : (
+                  aofDiskEntries.map((entry) => (
+                    <div
+                      key={entry.id}
+                      data-highlight-id={`aof:${entry.key}`}
+                      className="rounded-lg border border-theme-border bg-theme-surface px-2.5 py-1.5 font-mono text-[11.5px]"
                     >
-                      <Clock className="h-3.5 w-3.5" aria-hidden="true" />
-                      Buffer: {aofBufferEntries.length} pending fsync
-                    </p>
-                  ) : (
-                    <p className="flex h-full items-center rounded-lg border border-theme-border bg-theme-surface-alt/40 px-2.5 text-[13px] text-theme-muted">
-                      Buffer empty — sab fsynced hain.
-                    </p>
-                  )}
-                </div>
-              </>
+                      <div className="flex items-center justify-between text-theme-text font-bold">
+                        <span>{entry.command} {entry.key}</span>
+                        <span>{entry.value}</span>
+                      </div>
+                      <span className="text-[10px] text-semantic-success">
+                        fsynced to disk (t{entry.tick})
+                      </span>
+                    </div>
+                  ))
+                )}
+              </div>
             )}
           </article>
         </div>
 
-        <div className="grid grid-cols-1 gap-2 sm:grid-cols-2">
-          <div className="rounded-lg border border-theme-border bg-theme-surface-alt/40 px-3 py-2.5 text-[15px] leading-relaxed text-theme-muted">
-            <span className="font-semibold text-theme-text">RDB: </span>
-            photo jitni purani, utna data. Fast restart, but snapshot ke baad ke
-            writes lost.
+        {/* Architecture Comparison */}
+        <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2 pt-1">
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-muted">
+              📸 RDB Snapshot Mode
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              Periodic photo. File compact hoti hai aur restart super-fast hota hai, lekin snapshot aur crash ke beech ke saare writes permanently lose ho jaate hain.
+            </p>
           </div>
-          <div className="rounded-lg border border-theme-border bg-theme-surface-alt/40 px-3 py-2.5 text-[15px] leading-relaxed text-theme-muted">
-            <span className="font-semibold text-theme-text">AOF: </span>
-            har command ka log. fsynced writes replay hote hain, isliye crash
-            loss kam.
+          <div className="rounded-xl border border-theme-border bg-theme-surface-alt/30 p-3.5 space-y-1">
+            <p className="font-mono text-[11.5px] font-bold uppercase tracking-wider text-theme-accent">
+              📝 AOF Append-Log Mode
+            </p>
+            <p className="text-[14px] sm:text-[14.5px] text-theme-muted leading-relaxed">
+              Continuous append log. Har write fsync ho kar disk par safe rehti hai. Restart par log replay hota hai — maximum durability, zero loss with <code className="font-mono text-[12px]">always</code>!
+            </p>
           </div>
         </div>
       </div>
