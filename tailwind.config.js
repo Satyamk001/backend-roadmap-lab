@@ -12,6 +12,7 @@ export default {
           bg: 'var(--color-bg)',
           surface: 'var(--color-surface)',
           'surface-alt': 'var(--color-surface-alt)',
+          'surface-hover': 'var(--color-surface-hover)',
           border: 'var(--color-border)',
           text: 'var(--color-text)',
           muted: 'var(--color-muted)',

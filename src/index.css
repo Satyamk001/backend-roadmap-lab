@@ -6,6 +6,7 @@
   --color-bg: #FFFBEB;
   --color-surface: #FFFFFF;
   --color-surface-alt: #FEF3C7;
+  --color-surface-hover: rgba(28, 25, 23, 0.045);
   --color-border: #FDE68A;
   --color-text: #1C1917;
   --color-muted: #57534E;
@@ -48,7 +49,8 @@
   --page-glow-secondary-y: 68%;
 
   /* Sidebar timeline rail: neutral track, amber endpoint */
-  --sidebar-rail: #D6D3D1;
+  --sidebar-rail: #A8A29E;
+  --sidebar-node-core: var(--color-accent);
   --sidebar-node-glow: rgba(245, 158, 11, 0.6);
   --sidebar-node-glow-soft: rgba(245, 158, 11, 0.2);
 
@@ -61,6 +63,7 @@
   --color-bg: #0F0D0A;
   --color-surface: #1C1917;
   --color-surface-alt: #292524;
+  --color-surface-hover: rgba(250, 250, 249, 0.055);
   --color-border: #44403C;
   --color-text: #FAFAF9;
   --color-muted: #A8A29E;
@@ -103,7 +106,8 @@
   --page-glow-secondary-y: 64%;
 
   /* Sidebar timeline rail: neutral track, amber endpoint */
-  --sidebar-rail: #3F3B37;
+  --sidebar-rail: #57534E;
+  --sidebar-node-core: var(--color-primary);
   --sidebar-node-glow: rgba(251, 191, 36, 0.58);
   --sidebar-node-glow-soft: rgba(251, 191, 36, 0.2);
 
@@ -248,7 +252,7 @@ p {
 .sidebar-timeline::before {
   content: '';
   position: absolute;
-  left: 4px;
+  left: 0;
   top: 2px;
   bottom: 2px;
   z-index: 1;
@@ -262,14 +266,14 @@ p {
 
 .sidebar-timeline-node {
   position: absolute;
-  left: 0;
+  left: -4.5px;
   top: 0;
   z-index: 2;
   width: 9px;
   height: 9px;
   margin-top: -4.5px;
   border-radius: 9999px;
-  background: var(--color-primary);
+  background: var(--sidebar-node-core);
   box-shadow:
     0 0 0 2px var(--color-surface-alt),
     0 0 7px 1px var(--sidebar-node-glow),

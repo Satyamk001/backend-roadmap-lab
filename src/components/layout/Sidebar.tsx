@@ -15,6 +15,7 @@ interface StageDayListProps {
   isStageActive: boolean;
   activeDayId?: string;
   expandedStages: Record<string, boolean>;
+  id?: string;
   onNavigate?: () => void;
 }
 
@@ -24,6 +25,7 @@ const StageDayList: React.FC<StageDayListProps> = ({
   isStageActive,
   activeDayId,
   expandedStages,
+  id,
   onNavigate,
 }) => {
   const activeLinkRef = useRef<HTMLAnchorElement | null>(null);
@@ -58,7 +60,7 @@ const StageDayList: React.FC<StageDayListProps> = ({
   }, [activeDayId, isStageActive, days.length, expandedStages]);
 
   return (
-    <div className="sidebar-timeline ml-4 my-1">
+    <div id={id} className="sidebar-timeline ml-4 my-1">
       <div className="space-y-1">
         {days.map((day) => {
           const isDayActive =
@@ -70,20 +72,18 @@ const StageDayList: React.FC<StageDayListProps> = ({
               ref={isDayActive ? activeLinkRef : undefined}
               to={`/stage/${stageId}/day/${day.dayNumber}`}
               onClick={onNavigate}
-              className={`group relative flex items-start gap-2.5 py-2 pl-4 pr-2 rounded-lg text-sm transition-all duration-150 ${
-                isDayActive ? 'text-theme-text' : 'text-theme-muted hover:text-theme-text'
-              }`}
+              className="group relative flex items-start gap-2.5 py-2 pl-4 pr-2 rounded-lg text-sm text-theme-text transition-colors duration-150"
               title={`Day ${day.dayNumber}: ${day.trackerTask || day.title}`}
             >
               <span
                 aria-hidden="true"
                 className={`pointer-events-none absolute inset-y-0 left-3 right-0 rounded-lg transition-colors duration-150 ${
-                  isDayActive ? 'bg-theme-surface-alt' : 'bg-transparent group-hover:bg-theme-surface-alt'
+                  isDayActive ? 'bg-theme-surface-alt' : 'bg-transparent group-hover:bg-theme-surface-hover'
                 }`}
               />
-              <Calendar className="relative w-3.5 h-3.5 mt-0.5 flex-shrink-0" />
+              <Calendar className="relative w-3.5 h-3.5 mt-0.5 flex-shrink-0 text-theme-muted" />
               <div className="relative min-w-0 flex-1 leading-snug">
-                <div className={`whitespace-normal break-words ${isDayActive ? 'font-bold text-theme-text' : 'font-semibold text-theme-text'}`}>
+                <div className={`whitespace-normal break-words ${isDayActive ? 'font-semibold text-theme-text' : 'font-medium text-theme-text'}`}>
                   {day.trackerTask || day.title}
                 </div>
                 <div className={`mt-0.5 text-[11px] ${isDayActive ? 'font-medium text-theme-accent' : 'text-theme-muted'}`}>
@@ -155,8 +155,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ isMobileOpen, onCloseMobile })
         </div>
       )}
 
-      <div className="text-xs font-bold uppercase tracking-wider text-theme-muted font-mono px-2 py-1 mb-2">
-        Stages &amp; Days
+      <div className="px-2 py-1 mb-2 text-xs font-medium text-theme-muted">
+        Stages &amp; days
       </div>
 
       <div className="overflow-y-auto flex-1">
